@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Tournament</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --tg-theme-bg-color: #0a0e27;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #aaaaaa;
+            --tg-theme-link-color: #8774e1;
+            --tg-theme-button-color: #8774e1;
+            --tg-theme-button-text-color: #ffffff;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary-gradient);
+            padding: 20px;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 10px 30px rgba(103, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .profile-info {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .user-info h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .balance-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .currency-toggle {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .currency-btn {
+            padding: 6px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .currency-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 1px solid rgba(103, 126, 234, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .action-card:active {
+            transform: scale(0.95);
+        }
+
+        .action-card:active::before {
+            opacity: 0.1;
+        }
+
+        .action-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-title {
+            font-size: 14px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Games Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d1b4e 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .game-card:active {
+            transform: scale(0.95);
+            border-color: rgba(103, 126, 234, 0.5);
+        }
+
+        .game-image {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 60%);
+        }
+
+        .game-info {
+            padding: 15px;
+        }
+
+        .game-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .game-subtitle {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .tournament-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--secondary-gradient);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        /* Premium Card */
+        .premium-card {
+            background: var(--warning-gradient);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-card::before {
+            content: '✨';
+            position: absolute;
+            font-size: 120px;
+            opacity: 0.1;
+            right: -20px;
+            top: -20px;
+        }
+
+        .premium-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .premium-desc {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .premium-btn {
+            background: white;
+            color: #fa709a;
+            padding: 12px 24px;
+            border-radius: 15px;
+            border: none;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(103, 126, 234, 0.2);
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            min-width: 70px;
+        }
+
+        .nav-item.active {
+            background: var(--primary-gradient);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d1b4e 100%);
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            animation: slideUp 0.3s;
+            position: relative;
+            border: 2px solid rgba(103, 126, 234, 0.3);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid rgba(103, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: none;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .tournament-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tournament-item {
+            background: rgba(103, 126, 234, 0.1);
+            border: 1px solid rgba(103, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tournament-item:active {
+            transform: scale(0.98);
+            background: rgba(103, 126, 234, 0.2);
+        }
+
+        .tournament-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .tournament-mode {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .tournament-prize {
+            background: var(--success-gradient);
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .tournament-info {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .tournament-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-in {
+            animation: slideInUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="profile-info">
+                <div class="avatar" id="userAvatar">👤</div>
+                <div class="user-info">
+                    <h2 id="userName">Загрузка...</h2>
+                    <p id="userStatus">Игрок</p>
+                </div>
+            </div>
+            <div class="balance-card">
+                <div class="balance-label">💰 Баланс</div>
+                <div class="balance-amount">
+                    <span id="balanceAmount">0.00</span>
+                    <span id="balanceCurrency">$</span>
+                </div>
+                <div class="currency-toggle">
+                    <button class="currency-btn active" data-currency="USD">USD</button>
+                    <button class="currency-btn" data-currency="UZS">UZS</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Quick Actions -->
+            <h3 class="section-title">Быстрые действия</h3>
+            <div class="quick-actions animate-in">
+                <div class="action-card" onclick="showTopup()">
+                    <div class="action-icon">💳</div>
+                    <div class="action-title">Пополнить</div>
+                </div>
+                <div class="action-card" onclick="showWithdraw()">
+                    <div class="action-icon">💸</div>
+                    <div class="action-title">Вывести</div>
+                </div>
+                <div class="action-card" onclick="showBonus()">
+                    <div class="action-icon">🎁</div>
+                    <div class="action-title">Бонусы</div>
+                </div>
+                <div class="action-card" onclick="showShop()">
+                    <div class="action-icon">🛍️</div>
+                    <div class="action-title">Магазин</div>
+                </div>
+            </div>
+
+            <!-- Premium Card -->
+            <div class="premium-card animate-in">
+                <h3 class="premium-title">Получи Premium статус!</h3>
+                <p class="premium-desc">Ежедневные бонусы, бесплатные турниры и эксклюзивные привилегии</p>
+                <button class="premium-btn" onclick="showPremium()">Подробнее →</button>
+            </div>
+
+            <!-- Games -->
+            <h3 class="section-title">Игры</h3>
+            <div class="games-grid animate-in">
+                <div class="game-card" onclick="showTournaments('cod')">
+                    <div class="game-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        🎮
+                    </div>
+                    <div class="tournament-badge">🔥 3 турнира</div>
+                    <div class="game-info">
+                        <div class="game-title">Call of Duty</div>
+                        <div class="game-subtitle">Mobile</div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="showTournaments('so2')">
+                    <div class="game-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        🎯
+                    </div>
+                    <div class="tournament-badge">⚡ 2 турнира</div>
+                    <div class="game-info">
+                        <div class="game-title">Standoff 2</div>
+                        <div class="game-subtitle">Shooter</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rating Preview -->
+            <h3 class="section-title">Топ игроков</h3>
+            <div class="tournament-list animate-in" id="ratingPreview">
+                <div class="loading">Загрузка рейтинга...</div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showPage('home')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Главная</div>
+            </div>
+            <div class="nav-item" onclick="showPage('tournaments')">
+                <div class="nav-icon">🏆</div>
+                <div class="nav-label">Турниры</div>
+            </div>
+            <div class="nav-item" onclick="showPage('bonus')">
+                <div class="nav-icon">🎁</div>
+                <div class="nav-label">Бонусы</div>
+            </div>
+            <div class="nav-item" onclick="showPage('profile')">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Профиль</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-close" onclick="closeModal()">×</div>
+            <h3 class="modal-title" id="modalTitle"></h3>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // User data (будет приходить от бота)
+        let userData = {
+            user_id: tg.initDataUnsafe?.user?.id || 123456,
+            username: tg.initDataUnsafe?.user?.username || 'user',
+            full_name: tg.initDataUnsafe?.user?.first_name || 'Игрок',
+            balance: 0,
+            currency: 'USD',
+            subscription: 'Нет'
+        };
+
+        const USD_TO_UZS = 12000;
+
+        // Initialize
+        async function init() {
+            updateUI();
+            loadUserData();
+            loadRating();
+        }
+
+        function updateUI() {
+            document.getElementById('userName').textContent = userData.full_name;
+            document.getElementById('userAvatar').textContent = userData.full_name[0].toUpperCase();
+            updateBalance();
+        }
+
+        function updateBalance() {
+            const currency = userData.currency;
+            const amount = currency === 'USD' ? userData.balance : userData.balance * USD_TO_UZS;
+            document.getElementById('balanceAmount').textContent = amount.toFixed(2);
+            document.getElementById('balanceCurrency').textContent = currency === 'USD' ? '$' : 'сўм';
+            
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.currency === currency);
+            });
+        }
+
+        // Currency toggle
+        document.querySelectorAll('.currency-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                userData.currency = btn.dataset.currency;
+                updateBalance();
+                sendToBot('currency_changed', { currency: btn.dataset.currency });
+            });
+        });
+
+        // Load data functions (мок-данные, замените на реальный API)
+        async function loadUserData() {
+            // В реальном приложении здесь будет запрос к вашему серверу
+            // Данные можно передать через initData от бота
+            setTimeout(() => {
+                userData.balance = 15.50;
+                updateBalance();
+            }, 500);
+        }
+
+        async function loadRating() {
+            const container = document.getElementById('ratingPreview');
+            
+            // Мок-данные рейтинга
+            setTimeout(() => {
+                const rating = [
+                    { place: 1, name: 'ProGamer', balance: 156.50, emoji: '🥇' },
+                    { place: 2, name: 'SkillMaster', balance: 142.30, emoji: '🥈' },
+                    { place: 3, name: 'TopPlayer', balance: 128.90, emoji: '🥉' }
+                ];
+
+                container.innerHTML = rating.map(user => `
+                    <div class="tournament-item">
+                        <div class="tournament-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 24px;">${user.emoji}</span>
+                                <div>
+                                    <div class="tournament-mode">${user.name}</div>
+                                    <div style="font-size: 12px; opacity: 0.7;">Место ${user.place}</div>
+                                </div>
+                            </div>
+                            <div class="tournament-prize">$${user.balance.toFixed(2)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }, 800);
+        }
+
+        // Modal functions
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        // Action functions
+        function showTopup() {
+            const content = `
+                <div class="input-group">
+                    <label class="input-label">Сумма пополнения</label>
+                    <input type="number" class="input-field" id="topupAmount" placeholder="10.00" min="1">
+                </div>
+                <div style="margin-bottom: 15px; font-size: 13px; opacity: 0.7;">
+                    Минимум: $1.00<br>
+                    Комиссия: 0%
+                </div>
+                <button class="btn btn-primary" onclick="processTopup()">
+                    💳 Пополнить баланс
+                </button>
+            `;
+            showModal('💰 Пополнение баланса', content);
+        }
+
+        function processTopup() {
+            const amount = document.getElementById('topupAmount').value;
+            if (amount && amount >= 1) {
+                sendToBot('topup', { amount: parseFloat(amount) });
+                closeModal();
+                tg.showAlert('Запрос на пополнение отправлен!');
+            } else {
+                tg.showAlert('Введите сумму от $1');
+            }
+        }
+
+        function showWithdraw() {
+            const content = `
+                <div class="input-group">
+                    <label class="input-label">Номер карты</label>
+                    <input type="text" class="input-field" id="cardNumber" placeholder="8600 1234 5678 9012">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Сумма вывода</label>
+                    <input type="number" class="input-field" id="withdrawAmount" placeholder="10.00" min="5">
+                </div>
+                <div style="margin-bottom: 15px; font-size: 13px; opacity: 0.7;">
+                    Минимум: $5.00<br>
+                    Ваш баланс: $${userData.balance.toFixed(2)}
+                </div>
+                <button class="btn btn-primary" onclick="processWithdraw()">
+                    💸 Вывести средства
+                </button>
+            `;
+            showModal('💸 Вывод средств', content);
+        }
+
+        function processWithdraw() {
+            const card = document.getElementById('cardNumber').value;
+            const amount = document.getElementById('withdrawAmount').value;
+            if (card && amount && amount >= 5 && amount <= userData.balance) {
+                sendToBot('withdraw', { card, amount: parseFloat(amount) });
+                closeModal();
+                tg.showAlert('Заявка на вывод отправлена!');
+            } else {
+                tg.showAlert('Проверьте данные');
+            }
+        }
+
+        function showBonus() {
+            const content = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">🎁</div>
+                    <h4 style="margin-bottom: 15px;">Ежедневный бонус</h4>
+                    <p style="opacity: 0.8; margin-bottom: 20px;">Получай $0.05 каждый день!</p>
+                    <button class="btn btn-primary" onclick="claimDaily()">
+                        🎁 Получить бонус
+                    </button>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" style="background: var(--secondary-gradient);" onclick="showPromo()">
+                        🎫 Ввести промокод
+                    </button>
+                </div>
+            `;
+            showModal('🎁 Бонусы', content);
+        }
+
+        function claimDaily() {
+            sendToBot('claim_daily');
+            closeModal();
+            tg.showAlert('Бонус получен! +$0.05');
+            userData.balance += 0.05;
+            updateBalance();
+        }
+
+        function showPromo() {
+            const content = `
+                <div class="input-group">
+                    <label class="input-label">Промокод</label>
+                    <input type="text" class="input-field" id="promoCode" placeholder="PROMO2024">
+                </div>
+                <button class="btn btn-primary" onclick="applyPromo()">
+                    ✅ Активировать
+                </button>
+            `;
+            showModal('🎫 Промокод', content);
+        }
+
+        function applyPromo() {
+            const code = document.getElementById('promoCode').value;
+            if (code) {
+                sendToBot('promo', { code });
+                closeModal();
+            }
+        }
+
+        function showPremium() {
+            const content = `
+                <div style="text-align: center; padding: 10px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">👑</div>
+                    <h4 style="margin-bottom: 20px;">Premium подписки</h4>
+                </div>
+                <div class="tournament-list">
+                    <div class="tournament-item" onclick="buyPremium('player')">
+                        <div class="tournament-header">
+                            <div class="tournament-mode">Premium Player</div>
+                            <div class="tournament-prize">$2.00</div>
+                        </div>
+                        <div class="tournament-info">• $0.10 в день<br>• Базовые привилегии</div>
+                    </div>
+                    <div class="tournament-item" onclick="buyPremium('pro')">
+                        <div class="tournament-header">
+                            <div class="tournament-mode">Premium Pro</div>
+                            <div class="tournament-prize">$4.00</div>
+                        </div>
+                        <div class="tournament-info">• $0.15 в день<br>• +10% к выигрышу</div>
+                    </div>
+                    <div class="tournament-item" onclick="buyPremium('boss')">
+                        <div class="tournament-header">
+                            <div class="tournament-mode">Premium Boss</div>
+                            <div class="tournament-prize">$6.00</div>
+                        </div>
+                        <div class="tournament-info">• $0.25 в день<br>• +20% к выигрышу<br>• 1 бесплатный турнир</div>
+                    </div>
+                </div>
+            `;
+            showModal('👑 Premium подписки', content);
+        }
+
+        function buyPremium(plan) {
+            sendToBot('buy_premium', { plan });
+            closeModal();
+            tg.showAlert('Запрос отправлен!');
+        }
+
+        function showShop() {
+            const content = `
+                <div style="text-align: center; padding: 10px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">🛍️</div>
+                    <h4 style="margin-bottom: 20px;">Магазин игр</h4>
+                </div>
+                <div class="tournament-list">
+                    <div class="tournament-item" onclick="showGameShop('cod')">
+                        <div class="tournament-header">
+                            <div class="tournament-mode">🎮 Call of Duty</div>
+                            <div style="font-size: 20px;">→</div>
+                        </div>
+                        <div class="tournament-info">Battle Pass, CP и многое другое</div>
+                    </div>
+                    <div class="tournament-item" onclick="showGameShop('so2')">
+                        <div class="tournament-header">
+                            <div class="tournament-mode">🎯 Standoff 2</div>
+                            <div style="font-size: 20px;">→</div>
+                        </div>
+                        <div class="tournament-info">Battle Pass, Gold и другое</div>
+                    </div>
+                </div>
+            `;
+            showModal('🛍️ Магазин', content);
+        }
+
+        function showGameShop(game) {
+            const items = {
+                cod: [
+                    { name: 'Battle Pass', price: 3.00, desc: 'Сезонный пропуск' },
+                    { name: 'CP Points', price: 1.50, desc: 'Внутриигровая валюта' }
+                ],
+                so2: [
+                    { name: 'Battle Pass', price: 2.00, desc: 'Сезонный пропуск' },
+                    { name: 'Gold', price: 1.00, desc: 'Золото в игре' }
+                ]
+            };
+
+            const content = `
+                <div class="tournament-list">
+                    ${items[game].map(item => `
+                        <div class="tournament-item" onclick="buyItem('${game}', '${item.name}')">
+                            <div class="tournament-header">
+                                <div>
+                                    <div class="tournament-mode">${item.name}</div>
+                                    <div style="font-size: 12px; opacity: 0.7;">${item.desc}</div>
+                                </div>
+                                <div class="tournament-prize">$${item.price.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal('🛍️ ' + (game === 'cod' ? 'Call of Duty' : 'Standoff 2'), content);
+        }
+
+        function buyItem(game, item) {
+            sendToBot('buy_item', { game, item });
+            closeModal();
+            tg.showAlert('Покупка обработана!');
+        }
+
+        function showTournaments(game) {
+            const tournaments = {
+                cod: [
+                    { mode: 'Battle Royale', fee: 2.0, prize: 10.0, players: '8/16', info: 'Solo режим' },
+                    { mode: 'Team Deathmatch', fee: 1.5, prize: 7.5, players: '12/20', info: '5v5 формат' },
+                    { mode: 'Search & Destroy', fee: 3.0, prize: 15.0, players: '6/10', info: 'Премиум турнир' }
+                ],
+                so2: [
+                    { mode: 'Competitive 5v5', fee: 2.5, prize: 12.5, players: '9/16', info: 'Рейтинговый' },
+                    { mode: 'Arms Race', fee: 1.0, prize: 5.0, players: '14/20', info: 'Быстрая игра' }
+                ]
+            };
+
+            const content = `
+                <div class="tournament-list">
+                    ${tournaments[game].map((t, i) => `
+                        <div class="tournament-item" onclick="joinTournament('${game}', ${i})">
+                            <div class="tournament-header">
+                                <div class="tournament-mode">${t.mode}</div>
+                                <div class="tournament-prize">$${t.prize.toFixed(2)}</div>
+                            </div>
+                            <div class="tournament-info">${t.info}</div>
+                            <div class="tournament-stats">
+                                <div class="stat-item">👥 ${t.players}</div>
+                                <div class="stat-item">💰 $${t.fee.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal('🏆 Турниры ' + (game === 'cod' ? 'COD' : 'SO2'), content);
+        }
+
+        function joinTournament(game, index) {
+            sendToBot('join_tournament', { game, index });
+            closeModal();
+            tg.showAlert('Вы записаны на турнир!');
+        }
+
+        // Navigation
+        function showPage(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            if (page === 'tournaments') {
+                showModal('🏆 Все турниры', '<div class="loading">Загрузка турниров...</div>');
+                setTimeout(() => {
+                    showTournaments('cod');
+                }, 500);
+            } else if (page === 'bonus') {
+                showBonus();
+            } else if (page === 'profile') {
+                const content = `
+                    <div style="text-align: center; padding: 20px;">
+                        <div class="avatar" style="width: 80px; height: 80px; font-size: 36px; margin: 0 auto 20px;">${userData.full_name[0].toUpperCase()}</div>
+                        <h3 style="margin-bottom: 10px;">${userData.full_name}</h3>
+                        <p style="opacity: 0.7; margin-bottom: 20px;">@${userData.username}</p>
+                        <div style="background: rgba(103, 126, 234, 0.1); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
+                            <div style="font-size: 14px; opacity: 0.7; margin-bottom: 5px;">Баланс</div>
+                            <div style="font-size: 24px; font-weight: 700;">$${userData.balance.toFixed(2)}</div>
+                        </div>
+                        <div style="background: rgba(103, 126, 234, 0.1); border-radius: 15px; padding: 15px;">
+                            <div style="font-size: 14px; opacity: 0.7; margin-bottom: 5px;">Подписка</div>
+                            <div style="font-size: 18px; font-weight: 600;">${userData.subscription}</div>
+                        </div>
+                    </div>
+                `;
+                showModal('👤 Профиль', content);
+            }
+        }
+
+        // Send data to bot
+        function sendToBot(action, data = {}) {
+            const payload = {
+                action,
+                user_id: userData.user_id,
+                ...data
+            };
+            
+            console.log('Send to bot:', payload);
+            
+            // В реальном приложении здесь будет отправка данных боту
+            // tg.sendData(JSON.stringify(payload));
+            
+            // Или через callback query если используете inline buttons
+            // tg.close();
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
