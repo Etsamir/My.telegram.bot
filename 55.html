@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Tournament Elite</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #141414;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --accent: #ffffff;
+            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Glass Effect Mixin */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Header */
+        .header {
+            padding: 24px 20px;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: #ffffff;
+            border: 2px solid var(--bg-primary);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.9); }
+        }
+
+        .user-info h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .user-info p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Balance Card */
+        .balance-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            animation: rotate-gradient 10s linear infinite;
+        }
+
+        @keyframes rotate-gradient {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .balance-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 42px;
+            font-weight: 800;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .currency-symbol {
+            font-size: 28px;
+            color: var(--text-secondary);
+        }
+
+        .currency-toggle {
+            display: flex;
+            gap: 8px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .currency-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.5px;
+        }
+
+        .currency-btn.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .action-btn {
+            aspect-ratio: 1;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+            border-color: var(--accent);
+        }
+
+        .action-btn:active::before {
+            opacity: 1;
+        }
+
+        .action-icon {
+            font-size: 28px;
+            filter: grayscale(100%);
+        }
+
+        .action-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        /* Premium Card */
+        .premium-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-card::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .premium-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .premium-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .premium-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .premium-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .premium-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.3px;
+        }
+
+        .premium-cta:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Games Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .game-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .game-card:active {
+            transform: scale(0.97);
+            border-color: var(--accent);
+        }
+
+        .game-image {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%);
+        }
+
+        .game-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--bg-primary);
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            z-index: 1;
+        }
+
+        .game-info {
+            padding: 16px;
+        }
+
+        .game-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .game-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .leader-item {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .leader-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .leader-item:active::before {
+            opacity: 1;
+        }
+
+        .leader-rank {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .leader-rank.gold {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.05) 100%);
+            border-color: rgba(255,215,0,0.3);
+        }
+
+        .leader-rank.silver {
+            background: linear-gradient(135deg, rgba(192,192,192,0.2) 0%, rgba(192,192,192,0.05) 100%);
+            border-color: rgba(192,192,192,0.3);
+        }
+
+        .leader-rank.bronze {
+            background: linear-gradient(135deg, rgba(205,127,50,0.2) 0%, rgba(205,127,50,0.05) 100%);
+            border-color: rgba(205,127,50,0.3);
+        }
+
+        .leader-info {
+            flex: 1;
+        }
+
+        .leader-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .leader-username {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .leader-balance {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 0 0 2px 2px;
+            transition: width 0.3s;
+        }
+
+        .nav-item.active::before {
+            width: 40%;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            filter: grayscale(100%);
+            transition: filter 0.3s;
+        }
+
+        .nav-item.active .nav-icon {
+            filter: grayscale(0%);
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--text-primary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px 24px;
+            max-width: 420px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .modal-close:active {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* List Items */
+        .list-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .list-item:active {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent);
+            transform: scale(0.98);
+        }
+
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .list-item-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .list-item-price {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .list-item-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .list-item-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 16px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="profile-section">
+                <div class="avatar-container">
+                    <div class="avatar" id="userAvatar">?</div>
+                    <div class="status-dot"></div>
+                </div>
+                <div class="user-info">
+                    <h2 id="userName">Loading...</h2>
+                    <p id="userStatus">Elite Player</p>
+                </div>
+            </div>
+            
+            <div class="balance-card">
+                <div class="balance-content">
+                    <div class="balance-label">Your Balance</div>
+                    <div class="balance-amount">
+                        <span id="balanceAmount">0.00</span>
+                        <span class="currency-symbol" id="currencySymbol">$</span>
+                    </div>
+                    <div class="currency-toggle">
+                        <button class="currency-btn active" data-currency="USD">USD</button>
+                        <button class="currency-btn" data-currency="UZS">UZS</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Quick Actions -->
+            <h3 class="section-title">Quick Actions</h3>
+            <div class="quick-actions fade-in">
+                <div class="action-btn" onclick="showTopup()">
+                    <div class="action-icon">💳</div>
+                    <div class="action-label">Deposit</div>
+                </div>
+                <div class="action-btn" onclick="showWithdraw()">
+                    <div class="action-icon">💸</div>
+                    <div class="action-label">Withdraw</div>
+                </div>
+                <div class="action-btn" onclick="showBonus()">
+                    <div class="action-icon">🎁</div>
+                    <div class="action-label">Bonus</div>
+                </div>
+                <div class="action-btn" onclick="showShop()">
+                    <div class="action-icon">🛍️</div>
+                    <div class="action-label">Shop</div>
+                </div>
+            </div>
+
+            <!-- Premium Card -->
+            <div class="premium-card fade-in">
+                <div class="premium-content">
+                    <div class="premium-badge">Premium</div>
+                    <h3 class="premium-title">Unlock Elite Status</h3>
+                    <p class="premium-desc">Get daily bonuses, free tournaments, and exclusive rewards with premium membership</p>
+                    <button class="premium-cta" onclick="showPremium()">
+                        <span>Explore Plans</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Games -->
+            <h3 class="section-title">Games</h3>
+            <div class="games-grid fade-in">
+                <div class="game-card" onclick="showTournaments('cod')">
+                    <div class="game-image">
+                        🎮
+                        <div class="game-badge">3 Active</div>
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">Call of Duty</div>
+                        <div class="game-subtitle">Mobile</div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="showTournaments('so2')">
+                    <div class="game-image">
+                        🎯
+                        <div class="game-badge">2 Active</div>
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">Standoff 2</div>
+                        <div class="game-subtitle">Shooter</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <h3 class="section-title">Top Players</h3>
+            <div class="leaderboard fade-in" id="leaderboard">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading rankings...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('tournaments')">
+                <div class="nav-icon">🏆</div>
+                <div class="nav-label">Tournaments</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('bonus')">
+                <div class="nav-icon">🎁</div>
+                <div class="nav-label">Bonus</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile')">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Profile</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-close" onclick="closeModal()">×</div>
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle"></h3>
+                <div class="modal-subtitle" id="modalSubtitle"></div>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        tg.setHeaderColor('#000000');
+        tg.setBackgroundColor('#000000');
+
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:5000'; // Change to your server URL
+        const USD_TO_UZS = 12000;
+
+        // User data
+        let userData = {
+            user_id: tg.initDataUnsafe?.user?.id || 123456,
+            username: tg.initDataUnsafe?.user?.username || 'user',
+            full_name: tg.initDataUnsafe?.user?.first_name || 'Player',
+            balance: 0,
+            currency: 'USD',
+            subscription: 'None',
+            cod_nick: '',
+            cod_uid: '',
+            so_nick: '',
+            so_uid: ''
+        };
+
+        // API Request Helper
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const initData = Telegram.WebApp.initData;
+            const headers = {
+                'X-Telegram-Init-Data': initData,
+                'Content-Type': 'application/json'
+            };
+
+            const config = {
+                method: method,
+                headers: headers
+            };
+
+            if (data) {
+                config.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(API_BASE_URL + endpoint, config);
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Initialize
+        async function init() {
+            await loadUserData();
+            updateUI();
+            await loadLeaderboard();
+            setupCurrencyToggle();
+        }
+
+        function updateUI() {
+            document.getElementById('userName').textContent = userData.full_name;
+            document.getElementById('userAvatar').textContent = userData.full_name[0].toUpperCase();
+            updateBalance();
+        }
+
+        function updateBalance() {
+            const currency = userData.currency;
+            const amount = currency === 'USD' ? userData.balance : userData.balance * USD_TO_UZS;
+            const symbol = currency === 'USD' ? '$' : 'сўм';
+            
+            document.getElementById('balanceAmount').textContent = amount.toFixed(2);
+            document.getElementById('currencySymbol').textContent = symbol;
+            
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.currency === currency);
+            });
+        }
+
+        function setupCurrencyToggle() {
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    userData.currency = btn.dataset.currency;
+                    try {
+                        await apiRequest('/api/user/update', 'POST', { currency: btn.dataset.currency });
+                        updateBalance();
+                        tg.HapticFeedback.impactOccurred('light');
+                    } catch (error) {
+                        console.error('Failed to update currency:', error);
+                    }
+                });
+            });
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const data = await apiRequest('/api/user');
+                userData = { ...userData, ...data };
+                updateBalance();
+            } catch (error) {
+                console.error('Failed to load user data:', error);
+            }
+        }
+
+        // Load leaderboard
+        async function loadLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            try {
+                const leaders = await apiRequest('/api/top-10');
+                
+                const rankClass = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+
+                container.innerHTML = leaders.map((leader, index) => {
+                    const rank = index + 1;
+                    const emoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+                    
+                    return `
+                        <div class="leader-item">
+                            <div class="leader-rank ${rankClass[rank] || ''}">${emoji}</div>
+                            <div class="leader-info">
+                                <div class="leader-name">${leader.full_name}</div>
+                                <div class="leader-username">${leader.username ? '@' + leader.username : ''}</div>
+                            </div>
+                            <div class="leader-balance">$${leader.balance.toFixed(2)}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load leaderboard:', error);
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error loading leaderboard</div></div>';
+            }
+        }
+
+        // Modal functions
+        function showModal(title, subtitle, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalSubtitle').textContent = subtitle || '';
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modal').classList.add('show');
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Action functions
+        function showTopup() {
+            const content = `
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="topupAmount" placeholder="10.00" min="1" step="0.01">
+                    <div class="form-hint">Minimum deposit: $1.00 • No fees</div>
+                </div>
+                <button class="btn btn-primary" onclick="processTopup()">
+                    Deposit Funds
+                </button>
+            `;
+            showModal('Deposit', 'Add funds to your account', content);
+        }
+
+        async function processTopup() {
+            const amount = parseFloat(document.getElementById('topupAmount').value);
+            if (amount && amount >= 1) {
+                try {
+                    await apiRequest('/api/transaction', 'POST', {
+                        amount: amount,
+                        type: 'deposit',
+                        description: 'Deposit via web app'
+                    });
+                    closeModal();
+                    tg.showAlert('Deposit request submitted!');
+                    await loadUserData();
+                } catch (error) {
+                    tg.showAlert('Error processing deposit');
+                }
+            } else {
+                tg.showAlert('Please enter amount from $1');
+            }
+        }
+
+        function showWithdraw() {
+            const content = `
+                <div class="form-group">
+                    <label class="form-label">Card Number</label>
+                    <input type="text" class="form-input" id="cardNumber" placeholder="8600 1234 5678 9012">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="withdrawAmount" placeholder="10.00" min="5" step="0.01">
+                    <div class="form-hint">Minimum: $5.00 • Your balance: $${userData.balance.toFixed(2)}</div>
+                </div>
+                <button class="btn btn-primary" onclick="processWithdraw()">
+                    Withdraw Funds
+                </button>
+            `;
+            showModal('Withdraw', 'Transfer funds to your card', content);
+        }
+
+        async function processWithdraw() {
+            const card = document.getElementById('cardNumber').value;
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            
+            if (card && amount && amount >= 5 && amount <= userData.balance) {
+                try {
+                    await apiRequest('/api/transaction', 'POST', {
+                        amount: -amount,
+                        type: 'withdraw',
+                        description: `Withdrawal to card: ${card}`
+                    });
+                    closeModal();
+                    tg.showAlert('Withdrawal request submitted!');
+                    await loadUserData();
+                } catch (error) {
+                    tg.showAlert('Error processing withdrawal');
+                }
+            } else {
+                tg.showAlert('Please check your input');
+            }
+        }
+
+        function showBonus() {
+            const content = `
+                <div class="empty-state" style="padding: 20px;">
+                    <div class="empty-icon">🎁</div>
+                    <h4 class="empty-title">Daily Bonus</h4>
+                    <p class="empty-text" style="margin-bottom: 24px;">Claim your daily bonus!</p>
+                    <button class="btn btn-primary" onclick="claimDaily()" style="margin-bottom: 12px;">
+                        Claim Daily Bonus
+                    </button>
+                    <button class="btn btn-secondary" onclick="showPromo()">
+                        Enter Promo Code
+                    </button>
+                </div>
+            `;
+            showModal('Bonuses', 'Get rewards daily', content);
+        }
+
+        async function claimDaily() {
+            try {
+                const result = await apiRequest('/api/daily-bonus', 'POST');
+                closeModal();
+                tg.showAlert(`Daily bonus claimed! +$${result.bonus_amount.toFixed(2)}`);
+                userData.balance = result.new_balance;
+                updateBalance();
+            } catch (error) {
+                const errorData = await error.json().catch(() => ({}));
+                if (errorData.error === 'Already claimed') {
+                    const hours = errorData.remaining_hours || 0;
+                    const minutes = errorData.remaining_minutes || 0;
+                    tg.showAlert(`Already claimed today. Next bonus in ${hours}h ${minutes}m`);
+                } else {
+                    tg.showAlert('Error claiming daily bonus');
+                }
+            }
+        }
+
+        function showPromo() {
+            const content = `
+                <div class="form-group">
+                    <label class="form-label">Promo Code</label>
+                    <input type="text" class="form-input" id="promoCode" placeholder="PROMO2024" style="text-transform: uppercase;">
+                </div>
+                <button class="btn btn-primary" onclick="applyPromo()">
+                    Activate Code
+                </button>
+            `;
+            showModal('Promo Code', 'Enter your promotional code', content);
+        }
+
+        async function applyPromo() {
+            const code = document.getElementById('promoCode').value.toUpperCase();
+            if (code) {
+                try {
+                    const result = await apiRequest('/api/promo/use', 'POST', { code: code });
+                    closeModal();
+                    tg.showAlert(result.message || 'Promo code applied successfully!');
+                    await loadUserData();
+                } catch (error) {
+                    const errorData = await error.json().catch(() => ({}));
+                    tg.showAlert(errorData.error || 'Error applying promo code');
+                }
+            }
+        }
+
+        function showPremium() {
+            const content = `
+                <div class="list-items">
+                    <div class="list-item" onclick="buyPremium('player')">
+                        <div class="list-item-header">
+                            <div class="list-item-title">🧑‍💼 Premium Player</div>
+                            <div class="list-item-price">$2.00</div>
+                        </div>
+                        <div class="list-item-description">
+                            • $0.10 daily bonus<br>
+                            • Basic privileges
+                        </div>
+                    </div>
+                    <div class="list-item" onclick="buyPremium('pro')">
+                        <div class="list-item-header">
+                            <div class="list-item-title">🥷 Premium Pro</div>
+                            <div class="list-item-price">$4.00</div>
+                        </div>
+                        <div class="list-item-description">
+                            • $0.15 daily bonus<br>
+                            • +10% win bonus<br>
+                            • Priority support
+                        </div>
+                    </div>
+                    <div class="list-item" onclick="buyPremium('boss')">
+                        <div class="list-item-header">
+                            <div class="list-item-title">🤴 Premium Boss</div>
+                            <div class="list-item-price">$6.00</div>
+                        </div>
+                        <div class="list-item-description">
+                            • $0.25 daily bonus<br>
+                            • +20% win bonus<br>
+                            • 1 free tournament<br>
+                            • VIP badge
+                        </div>
+                    </div>
+                </div>
+            `;
+            showModal('Premium Plans', 'Choose your membership', content);
+        }
+
+        async function buyPremium(planCode) {
+            try {
+                const result = await apiRequest('/api/buy-subscription', 'POST', { plan_code: planCode });
+                closeModal();
+                tg.showAlert('Premium purchase successful!');
+                await loadUserData();
+            } catch (error) {
+                const errorData = await error.json().catch(() => ({}));
+                tg.showAlert(errorData.error || 'Error buying subscription');
+            }
+        }
+
+        async function showShop() {
+            try {
+                const items = await apiRequest('/api/shop/items');
+                const games = {};
+                
+                items.forEach(item => {
+                    if (!games[item.game]) {
+                        games[item.game] = [];
+                    }
+                    games[item.game].push(item);
+                });
+
+                const content = `
+                    <div class="list-items">
+                        ${Object.entries(games).map(([game, gameItems]) => `
+                            <div class="list-item" onclick="showGameShop('${game}')">
+                                <div class="list-item-header">
+                                    <div class="list-item-title">${game === 'cod' ? '🎮 Call of Duty' : '🎯 Standoff 2'}</div>
+                                    <div style="color: var(--text-secondary);">→</div>
+                                </div>
+                                <div class="list-item-description">${gameItems.length} items available</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                showModal('Game Shop', 'Purchase in-game items', content);
+            } catch (error) {
+                console.error('Failed to load shop items:', error);
+                tg.showAlert('Error loading shop items');
+            }
+        }
+
+        async function showGameShop(game) {
+            try {
+                const items = await apiRequest(`/api/shop/items?game=${game}`);
+                const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+                
+                const content = `
+                    <div class="list-items">
+                        ${items.map(item => `
+                            <div class="list-item" onclick="buyItem('${game}', '${item.item_key}')">
+                                <div class="list-item-header">
+                                    <div class="list-item-title">${item.name}</div>
+                                    <div class="list-item-price">$${item.price.toFixed(2)}</div>
+                                </div>
+                                <div class="list-item-description">${item.description}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                showModal(gameName, 'Available items', content);
+            } catch (error) {
+                console.error('Failed to load game shop:', error);
+                tg.showAlert('Error loading shop items');
+            }
+        }
+
+        async function buyItem(game, itemKey) {
+            try {
+                const result = await apiRequest('/api/buy-item', 'POST', {
+                    game: game,
+                    item_key: itemKey
+                });
+                closeModal();
+                tg.showAlert(`Purchase successful! ${result.item_name} bought for $${result.price}`);
+                await loadUserData();
+            } catch (error) {
+                const errorData = await error.json().catch(() => ({}));
+                tg.showAlert(errorData.error || 'Error buying item');
+            }
+        }
+
+        async function showTournaments(game) {
+            try {
+                const tournaments = await apiRequest(`/api/tournaments?game=${game}`);
+                const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+                
+                const content = `
+                    <div class="list-items">
+                        ${tournaments.map(t => `
+                            <div class="list-item" onclick="joinTournament(${t.id})">
+                                <div class="list-item-header">
+                                    <div class="list-item-title">${t.mode}</div>
+                                    <div class="list-item-price">$${t.prize.toFixed(2)}</div>
+                                </div>
+                                <div class="list-item-description">${t.info}</div>
+                                <div class="list-item-stats">
+                                    <div class="stat">👥 ${t.participants_count}/${t.max_participants}</div>
+                                    <div class="stat">💰 $${t.fee.toFixed(2)} entry</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                showModal(gameName, 'Active tournaments', content);
+            } catch (error) {
+                console.error('Failed to load tournaments:', error);
+                tg.showAlert('Error loading tournaments');
+            }
+        }
+
+        async function joinTournament(tournamentId) {
+            try {
+                await apiRequest('/api/join-tournament', 'POST', { tournament_id: tournamentId });
+                closeModal();
+                tg.showAlert('Tournament registration successful!');
+            } catch (error) {
+                const errorData = await error.json().catch(() => ({}));
+                tg.showAlert(errorData.error || 'Error joining tournament');
+            }
+        }
+
+        // Navigation
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+
+            if (tab === 'tournaments') {
+                showModal('All Tournaments', '', '<div class="loading"><div class="loading-spinner"></div>Loading tournaments...</div>');
+                setTimeout(() => showTournaments('cod'), 500);
+            } else if (tab === 'bonus') {
+                showBonus();
+            } else if (tab === 'profile') {
+                const content = `
+                    <div class="empty-state">
+                        <div class="avatar" style="width: 80px; height: 80px; font-size: 36px; margin: 0 auto 20px; border: 2px solid var(--border);">
+                            ${userData.full_name[0].toUpperCase()}
+                        </div>
+                        <h3 class="empty-title">${userData.full_name}</h3>
+                        <p class="empty-text" style="margin-bottom: 24px;">@${userData.username}</p>
+                        
+                        <div class="list-items">
+                            <div class="list-item">
+                                <div class="list-item-header">
+                                    <div class="list-item-title">Balance</div>
+                                    <div class="list-item-price">$${userData.balance.toFixed(2)}</div>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-header">
+                                    <div class="list-item-title">Subscription</div>
+                                    <div style="color: var(--text-secondary);">${userData.subscription}</div>
+                                </div>
+                            </div>
+                            ${userData.cod_nick ? `
+                                <div class="list-item">
+                                    <div class="list-item-header">
+                                        <div class="list-item-title">COD Nickname</div>
+                                        <div style="color: var(--text-secondary);">${userData.cod_nick}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${userData.cod_uid ? `
+                                <div class="list-item">
+                                    <div class="list-item-header">
+                                        <div class="list-item-title">COD UID</div>
+                                        <div style="color: var(--text-secondary);">${userData.cod_uid}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${userData.so_nick ? `
+                                <div class="list-item">
+                                    <div class="list-item-header">
+                                        <div class="list-item-title">SO2 Nickname</div>
+                                        <div style="color: var(--text-secondary);">${userData.so_nick}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${userData.so_uid ? `
+                                <div class="list-item">
+                                    <div class="list-item-header">
+                                        <div class="list-item-title">SO2 UID</div>
+                                        <div style="color: var(--text-secondary);">${userData.so_uid}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                showModal('Profile', 'Your account information', content);
+            }
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
