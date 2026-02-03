@@ -1080,10 +1080,6 @@
         tg.setHeaderColor('#000000');
         tg.setBackgroundColor('#000000');
 
-        // API Configuration
-        const API_BASE_URL = 'http://localhost:5000'; // Change to your server URL
-        const USD_TO_UZS = 12000;
-
         // User data
         let userData = {
             user_id: tg.initDataUnsafe?.user?.id || 123456,
@@ -1091,47 +1087,16 @@
             full_name: tg.initDataUnsafe?.user?.first_name || 'Player',
             balance: 0,
             currency: 'USD',
-            subscription: 'None',
-            cod_nick: '',
-            cod_uid: '',
-            so_nick: '',
-            so_uid: ''
+            subscription: 'None'
         };
 
-        // API Request Helper
-        async function apiRequest(endpoint, method = 'GET', data = null) {
-            const initData = Telegram.WebApp.initData;
-            const headers = {
-                'X-Telegram-Init-Data': initData,
-                'Content-Type': 'application/json'
-            };
-
-            const config = {
-                method: method,
-                headers: headers
-            };
-
-            if (data) {
-                config.body = JSON.stringify(data);
-            }
-
-            try {
-                const response = await fetch(API_BASE_URL + endpoint, config);
-                if (!response.ok) {
-                    throw new Error(`API request failed: ${response.statusText}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                throw error;
-            }
-        }
+        const USD_TO_UZS = 12000;
 
         // Initialize
-        async function init() {
-            await loadUserData();
+        function init() {
             updateUI();
-            await loadLeaderboard();
+            loadUserData();
+            loadLeaderboard();
             setupCurrencyToggle();
         }
 
@@ -1156,57 +1121,48 @@
 
         function setupCurrencyToggle() {
             document.querySelectorAll('.currency-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
+                btn.addEventListener('click', () => {
                     userData.currency = btn.dataset.currency;
-                    try {
-                        await apiRequest('/api/user/update', 'POST', { currency: btn.dataset.currency });
-                        updateBalance();
-                        tg.HapticFeedback.impactOccurred('light');
-                    } catch (error) {
-                        console.error('Failed to update currency:', error);
-                    }
+                    updateBalance();
+                    sendToBot('currency_changed', { currency: btn.dataset.currency });
+                    tg.HapticFeedback.impactOccurred('light');
                 });
             });
         }
 
         // Load user data
         async function loadUserData() {
-            try {
-                const data = await apiRequest('/api/user');
-                userData = { ...userData, ...data };
+            // Simulate API call
+            setTimeout(() => {
+                userData.balance = 15.50;
                 updateBalance();
-            } catch (error) {
-                console.error('Failed to load user data:', error);
-            }
+            }, 500);
         }
 
         // Load leaderboard
         async function loadLeaderboard() {
             const container = document.getElementById('leaderboard');
-            try {
-                const leaders = await apiRequest('/api/top-10');
-                
+            
+            setTimeout(() => {
+                const leaders = [
+                    { rank: 1, name: 'ProGamer', username: '@progamer', balance: 156.50, emoji: '🥇' },
+                    { rank: 2, name: 'SkillMaster', username: '@skillm', balance: 142.30, emoji: '🥈' },
+                    { rank: 3, name: 'TopPlayer', username: '@topp', balance: 128.90, emoji: '🥉' }
+                ];
+
                 const rankClass = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
-                container.innerHTML = leaders.map((leader, index) => {
-                    const rank = index + 1;
-                    const emoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-                    
-                    return `
-                        <div class="leader-item">
-                            <div class="leader-rank ${rankClass[rank] || ''}">${emoji}</div>
-                            <div class="leader-info">
-                                <div class="leader-name">${leader.full_name}</div>
-                                <div class="leader-username">${leader.username ? '@' + leader.username : ''}</div>
-                            </div>
-                            <div class="leader-balance">$${leader.balance.toFixed(2)}</div>
+                container.innerHTML = leaders.map(l => `
+                    <div class="leader-item">
+                        <div class="leader-rank ${rankClass[l.rank] || ''}">${l.emoji}</div>
+                        <div class="leader-info">
+                            <div class="leader-name">${l.name}</div>
+                            <div class="leader-username">${l.username}</div>
                         </div>
-                    `;
-                }).join('');
-            } catch (error) {
-                console.error('Failed to load leaderboard:', error);
-                container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error loading leaderboard</div></div>';
-            }
+                        <div class="leader-balance">$${l.balance.toFixed(2)}</div>
+                    </div>
+                `).join('');
+            }, 800);
         }
 
         // Modal functions
@@ -1238,21 +1194,12 @@
             showModal('Deposit', 'Add funds to your account', content);
         }
 
-        async function processTopup() {
-            const amount = parseFloat(document.getElementById('topupAmount').value);
+        function processTopup() {
+            const amount = document.getElementById('topupAmount').value;
             if (amount && amount >= 1) {
-                try {
-                    await apiRequest('/api/transaction', 'POST', {
-                        amount: amount,
-                        type: 'deposit',
-                        description: 'Deposit via web app'
-                    });
-                    closeModal();
-                    tg.showAlert('Deposit request submitted!');
-                    await loadUserData();
-                } catch (error) {
-                    tg.showAlert('Error processing deposit');
-                }
+                sendToBot('topup', { amount: parseFloat(amount) });
+                closeModal();
+                tg.showAlert('Deposit request submitted!');
             } else {
                 tg.showAlert('Please enter amount from $1');
             }
@@ -1276,23 +1223,13 @@
             showModal('Withdraw', 'Transfer funds to your card', content);
         }
 
-        async function processWithdraw() {
+        function processWithdraw() {
             const card = document.getElementById('cardNumber').value;
-            const amount = parseFloat(document.getElementById('withdrawAmount').value);
-            
+            const amount = document.getElementById('withdrawAmount').value;
             if (card && amount && amount >= 5 && amount <= userData.balance) {
-                try {
-                    await apiRequest('/api/transaction', 'POST', {
-                        amount: -amount,
-                        type: 'withdraw',
-                        description: `Withdrawal to card: ${card}`
-                    });
-                    closeModal();
-                    tg.showAlert('Withdrawal request submitted!');
-                    await loadUserData();
-                } catch (error) {
-                    tg.showAlert('Error processing withdrawal');
-                }
+                sendToBot('withdraw', { card, amount: parseFloat(amount) });
+                closeModal();
+                tg.showAlert('Withdrawal request submitted!');
             } else {
                 tg.showAlert('Please check your input');
             }
@@ -1303,7 +1240,7 @@
                 <div class="empty-state" style="padding: 20px;">
                     <div class="empty-icon">🎁</div>
                     <h4 class="empty-title">Daily Bonus</h4>
-                    <p class="empty-text" style="margin-bottom: 24px;">Claim your daily bonus!</p>
+                    <p class="empty-text" style="margin-bottom: 24px;">Claim $0.05 every day!</p>
                     <button class="btn btn-primary" onclick="claimDaily()" style="margin-bottom: 12px;">
                         Claim Daily Bonus
                     </button>
@@ -1315,23 +1252,12 @@
             showModal('Bonuses', 'Get rewards daily', content);
         }
 
-        async function claimDaily() {
-            try {
-                const result = await apiRequest('/api/daily-bonus', 'POST');
-                closeModal();
-                tg.showAlert(`Daily bonus claimed! +$${result.bonus_amount.toFixed(2)}`);
-                userData.balance = result.new_balance;
-                updateBalance();
-            } catch (error) {
-                const errorData = await error.json().catch(() => ({}));
-                if (errorData.error === 'Already claimed') {
-                    const hours = errorData.remaining_hours || 0;
-                    const minutes = errorData.remaining_minutes || 0;
-                    tg.showAlert(`Already claimed today. Next bonus in ${hours}h ${minutes}m`);
-                } else {
-                    tg.showAlert('Error claiming daily bonus');
-                }
-            }
+        function claimDaily() {
+            sendToBot('claim_daily');
+            closeModal();
+            tg.showAlert('Daily bonus claimed! +$0.05');
+            userData.balance += 0.05;
+            updateBalance();
         }
 
         function showPromo() {
@@ -1347,184 +1273,143 @@
             showModal('Promo Code', 'Enter your promotional code', content);
         }
 
-        async function applyPromo() {
+        function applyPromo() {
             const code = document.getElementById('promoCode').value.toUpperCase();
             if (code) {
-                try {
-                    const result = await apiRequest('/api/promo/use', 'POST', { code: code });
-                    closeModal();
-                    tg.showAlert(result.message || 'Promo code applied successfully!');
-                    await loadUserData();
-                } catch (error) {
-                    const errorData = await error.json().catch(() => ({}));
-                    tg.showAlert(errorData.error || 'Error applying promo code');
-                }
+                sendToBot('promo', { code });
+                closeModal();
+                tg.showAlert('Promo code processing...');
             }
         }
 
         function showPremium() {
+            const plans = [
+                { id: 'player', name: 'Premium Player', price: 2.0, daily: 0.10, features: ['$0.10 daily bonus', 'Basic privileges'] },
+                { id: 'pro', name: 'Premium Pro', price: 4.0, daily: 0.15, features: ['$0.15 daily bonus', '+10% win bonus', 'Priority support'] },
+                { id: 'boss', name: 'Premium Boss', price: 6.0, daily: 0.25, features: ['$0.25 daily bonus', '+20% win bonus', '1 free tournament', 'VIP badge'] }
+            ];
+
             const content = `
                 <div class="list-items">
-                    <div class="list-item" onclick="buyPremium('player')">
-                        <div class="list-item-header">
-                            <div class="list-item-title">🧑‍💼 Premium Player</div>
-                            <div class="list-item-price">$2.00</div>
+                    ${plans.map(p => `
+                        <div class="list-item" onclick="buyPremium('${p.id}')">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${p.name}</div>
+                                <div class="list-item-price">$${p.price.toFixed(2)}</div>
+                            </div>
+                            <div class="list-item-description">
+                                ${p.features.map(f => `• ${f}`).join('<br>')}
+                            </div>
                         </div>
-                        <div class="list-item-description">
-                            • $0.10 daily bonus<br>
-                            • Basic privileges
-                        </div>
-                    </div>
-                    <div class="list-item" onclick="buyPremium('pro')">
-                        <div class="list-item-header">
-                            <div class="list-item-title">🥷 Premium Pro</div>
-                            <div class="list-item-price">$4.00</div>
-                        </div>
-                        <div class="list-item-description">
-                            • $0.15 daily bonus<br>
-                            • +10% win bonus<br>
-                            • Priority support
-                        </div>
-                    </div>
-                    <div class="list-item" onclick="buyPremium('boss')">
-                        <div class="list-item-header">
-                            <div class="list-item-title">🤴 Premium Boss</div>
-                            <div class="list-item-price">$6.00</div>
-                        </div>
-                        <div class="list-item-description">
-                            • $0.25 daily bonus<br>
-                            • +20% win bonus<br>
-                            • 1 free tournament<br>
-                            • VIP badge
-                        </div>
-                    </div>
+                    `).join('')}
                 </div>
             `;
             showModal('Premium Plans', 'Choose your membership', content);
         }
 
-        async function buyPremium(planCode) {
-            try {
-                const result = await apiRequest('/api/buy-subscription', 'POST', { plan_code: planCode });
-                closeModal();
-                tg.showAlert('Premium purchase successful!');
-                await loadUserData();
-            } catch (error) {
-                const errorData = await error.json().catch(() => ({}));
-                tg.showAlert(errorData.error || 'Error buying subscription');
-            }
+        function buyPremium(plan) {
+            sendToBot('buy_premium', { plan });
+            closeModal();
+            tg.showAlert('Premium purchase initiated!');
         }
 
-        async function showShop() {
-            try {
-                const items = await apiRequest('/api/shop/items');
-                const games = {};
-                
-                items.forEach(item => {
-                    if (!games[item.game]) {
-                        games[item.game] = [];
-                    }
-                    games[item.game].push(item);
-                });
+        function showShop() {
+            const games = [
+                { id: 'cod', name: 'Call of Duty', icon: '🎮', items: 2 },
+                { id: 'so2', name: 'Standoff 2', icon: '🎯', items: 2 }
+            ];
 
-                const content = `
-                    <div class="list-items">
-                        ${Object.entries(games).map(([game, gameItems]) => `
-                            <div class="list-item" onclick="showGameShop('${game}')">
-                                <div class="list-item-header">
-                                    <div class="list-item-title">${game === 'cod' ? '🎮 Call of Duty' : '🎯 Standoff 2'}</div>
-                                    <div style="color: var(--text-secondary);">→</div>
-                                </div>
-                                <div class="list-item-description">${gameItems.length} items available</div>
+            const content = `
+                <div class="list-items">
+                    ${games.map(g => `
+                        <div class="list-item" onclick="showGameShop('${g.id}')">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${g.icon} ${g.name}</div>
+                                <div style="color: var(--text-secondary);">→</div>
                             </div>
-                        `).join('')}
-                    </div>
-                `;
-                showModal('Game Shop', 'Purchase in-game items', content);
-            } catch (error) {
-                console.error('Failed to load shop items:', error);
-                tg.showAlert('Error loading shop items');
-            }
+                            <div class="list-item-description">${g.items} items available</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal('Game Shop', 'Purchase in-game items', content);
         }
 
-        async function showGameShop(game) {
-            try {
-                const items = await apiRequest(`/api/shop/items?game=${game}`);
-                const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-                
-                const content = `
-                    <div class="list-items">
-                        ${items.map(item => `
-                            <div class="list-item" onclick="buyItem('${game}', '${item.item_key}')">
-                                <div class="list-item-header">
-                                    <div class="list-item-title">${item.name}</div>
-                                    <div class="list-item-price">$${item.price.toFixed(2)}</div>
-                                </div>
-                                <div class="list-item-description">${item.description}</div>
+        function showGameShop(game) {
+            const items = {
+                cod: [
+                    { name: 'Battle Pass', price: 3.00, desc: 'Season pass with exclusive rewards' },
+                    { name: 'CP Points', price: 1.50, desc: 'In-game currency for purchases' }
+                ],
+                so2: [
+                    { name: 'Battle Pass', price: 2.00, desc: 'Season pass with exclusive rewards' },
+                    { name: 'Gold', price: 1.00, desc: 'Premium currency for items' }
+                ]
+            };
+
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            
+            const content = `
+                <div class="list-items">
+                    ${items[game].map(item => `
+                        <div class="list-item" onclick="buyItem('${game}', '${item.name}')">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${item.name}</div>
+                                <div class="list-item-price">$${item.price.toFixed(2)}</div>
                             </div>
-                        `).join('')}
-                    </div>
-                `;
-                showModal(gameName, 'Available items', content);
-            } catch (error) {
-                console.error('Failed to load game shop:', error);
-                tg.showAlert('Error loading shop items');
-            }
+                            <div class="list-item-description">${item.desc}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal(gameName, 'Available items', content);
         }
 
-        async function buyItem(game, itemKey) {
-            try {
-                const result = await apiRequest('/api/buy-item', 'POST', {
-                    game: game,
-                    item_key: itemKey
-                });
-                closeModal();
-                tg.showAlert(`Purchase successful! ${result.item_name} bought for $${result.price}`);
-                await loadUserData();
-            } catch (error) {
-                const errorData = await error.json().catch(() => ({}));
-                tg.showAlert(errorData.error || 'Error buying item');
-            }
+        function buyItem(game, item) {
+            sendToBot('buy_item', { game, item });
+            closeModal();
+            tg.showAlert('Purchase processed!');
         }
 
-        async function showTournaments(game) {
-            try {
-                const tournaments = await apiRequest(`/api/tournaments?game=${game}`);
-                const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-                
-                const content = `
-                    <div class="list-items">
-                        ${tournaments.map(t => `
-                            <div class="list-item" onclick="joinTournament(${t.id})">
-                                <div class="list-item-header">
-                                    <div class="list-item-title">${t.mode}</div>
-                                    <div class="list-item-price">$${t.prize.toFixed(2)}</div>
-                                </div>
-                                <div class="list-item-description">${t.info}</div>
-                                <div class="list-item-stats">
-                                    <div class="stat">👥 ${t.participants_count}/${t.max_participants}</div>
-                                    <div class="stat">💰 $${t.fee.toFixed(2)} entry</div>
-                                </div>
+        function showTournaments(game) {
+            const tournaments = {
+                cod: [
+                    { mode: 'Battle Royale', fee: 2.0, prize: 10.0, players: '8/16', info: 'Solo mode' },
+                    { mode: 'Team Deathmatch', fee: 1.5, prize: 7.5, players: '12/20', info: '5v5 format' },
+                    { mode: 'Search & Destroy', fee: 3.0, prize: 15.0, players: '6/10', info: 'Premium tournament' }
+                ],
+                so2: [
+                    { mode: 'Competitive 5v5', fee: 2.5, prize: 12.5, players: '9/16', info: 'Ranked match' },
+                    { mode: 'Arms Race', fee: 1.0, prize: 5.0, players: '14/20', info: 'Quick game' }
+                ]
+            };
+
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            
+            const content = `
+                <div class="list-items">
+                    ${tournaments[game].map((t, i) => `
+                        <div class="list-item" onclick="joinTournament('${game}', ${i})">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${t.mode}</div>
+                                <div class="list-item-price">$${t.prize.toFixed(2)}</div>
                             </div>
-                        `).join('')}
-                    </div>
-                `;
-                showModal(gameName, 'Active tournaments', content);
-            } catch (error) {
-                console.error('Failed to load tournaments:', error);
-                tg.showAlert('Error loading tournaments');
-            }
+                            <div class="list-item-description">${t.info}</div>
+                            <div class="list-item-stats">
+                                <div class="stat">👥 ${t.players}</div>
+                                <div class="stat">💰 $${t.fee.toFixed(2)} entry</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal(gameName, 'Active tournaments', content);
         }
 
-        async function joinTournament(tournamentId) {
-            try {
-                await apiRequest('/api/join-tournament', 'POST', { tournament_id: tournamentId });
-                closeModal();
-                tg.showAlert('Tournament registration successful!');
-            } catch (error) {
-                const errorData = await error.json().catch(() => ({}));
-                tg.showAlert(errorData.error || 'Error joining tournament');
-            }
+        function joinTournament(game, index) {
+            sendToBot('join_tournament', { game, index });
+            closeModal();
+            tg.showAlert('Tournament registration successful!');
         }
 
         // Navigation
@@ -1562,43 +1447,23 @@
                                     <div style="color: var(--text-secondary);">${userData.subscription}</div>
                                 </div>
                             </div>
-                            ${userData.cod_nick ? `
-                                <div class="list-item">
-                                    <div class="list-item-header">
-                                        <div class="list-item-title">COD Nickname</div>
-                                        <div style="color: var(--text-secondary);">${userData.cod_nick}</div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            ${userData.cod_uid ? `
-                                <div class="list-item">
-                                    <div class="list-item-header">
-                                        <div class="list-item-title">COD UID</div>
-                                        <div style="color: var(--text-secondary);">${userData.cod_uid}</div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            ${userData.so_nick ? `
-                                <div class="list-item">
-                                    <div class="list-item-header">
-                                        <div class="list-item-title">SO2 Nickname</div>
-                                        <div style="color: var(--text-secondary);">${userData.so_nick}</div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            ${userData.so_uid ? `
-                                <div class="list-item">
-                                    <div class="list-item-header">
-                                        <div class="list-item-title">SO2 UID</div>
-                                        <div style="color: var(--text-secondary);">${userData.so_uid}</div>
-                                    </div>
-                                </div>
-                            ` : ''}
                         </div>
                     </div>
                 `;
                 showModal('Profile', 'Your account information', content);
             }
+        }
+
+        // Send data to bot
+        function sendToBot(action, data = {}) {
+            const payload = {
+                action,
+                user_id: userData.user_id,
+                ...data
+            };
+            
+            console.log('Send to bot:', payload);
+            // tg.sendData(JSON.stringify(payload));
         }
 
         // Initialize app
