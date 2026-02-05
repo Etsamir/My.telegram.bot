@@ -6,191 +6,129 @@
     <title>Game Tournament Elite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Все стили остаются такими же */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-primary: #000000;
-            --bg-secondary: #0a0a0a;
-            --bg-tertiary: #141414;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-tertiary: #808080;
-            --accent: #ffffff;
-            --border: rgba(255, 255, 255, 0.1);
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --shadow: rgba(0, 0, 0, 0.5);
-            --success: #00ff88;
-            --warning: #ffaa00;
-            --error: #ff4444;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            padding-bottom: 80px;
-            position: relative;
-        }
-
-        /* Остальные стили остаются без изменений */
-        /* ... (полный CSS стиль как у вас) ... */
-
-        /* Добавим новые стили для синхронизации */
-        .sync-indicator {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .sync-indicator.syncing {
-            animation: pulse 1s infinite;
-            border-color: var(--success);
-        }
-
-        .sync-indicator.error {
-            border-color: var(--error);
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px 24px;
-            max-width: 400px;
-            width: 90%;
-            z-index: 1001;
-            transition: transform 0.3s;
-            backdrop-filter: blur(20px);
-        }
-
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .notification.success {
-            border-color: var(--success);
-        }
-
-        .notification.error {
-            border-color: var(--error);
-        }
-
-        .notification.warning {
-            border-color: var(--warning);
-        }
-
-        .notification-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .notification-icon {
-            font-size: 24px;
-        }
-
-        .notification-message {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .notification-close {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            transition: opacity 0.3s;
-        }
-
-        .loading-spinner-large {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        .loading-text {
-            font-size: 16px;
-            color: var(--text-secondary);
-        }
+        /* SIZNING CSS KODINGIZ O'ZGARISHSIZ QOLDI */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #000000; --bg-secondary: #0a0a0a; --bg-tertiary: #141414; --text-primary: #ffffff; --text-secondary: #b0b0b0; --text-tertiary: #808080; --accent: #ffffff; --border: rgba(255, 255, 255, 0.1); --glass: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --shadow: rgba(0, 0, 0, 0.5); }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow-x: hidden; padding-bottom: 80px; position: relative; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+        .container { max-width: 100%; padding: 0; position: relative; z-index: 1; }
+        .glass { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
+        .header { padding: 24px 20px; background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%); position: relative; overflow: hidden; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%); }
+        .profile-section { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+        .avatar-container { position: relative; }
+        .avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; position: relative; overflow: hidden; }
+        .avatar::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%); }
+        .status-dot { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #ffffff; border: 2px solid var(--bg-primary); border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(0.9); } }
+        .user-info h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .user-info p { font-size: 14px; color: var(--text-secondary); }
+        .balance-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 24px; position: relative; overflow: hidden; }
+        .balance-card::before { content: ''; position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); animation: rotate-gradient 10s linear infinite; }
+        @keyframes rotate-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .balance-content { position: relative; z-index: 1; }
+        .balance-label { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+        .balance-amount { font-size: 42px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px; letter-spacing: -1px; }
+        .currency-symbol { font-size: 28px; color: var(--text-secondary); }
+        .currency-toggle { display: flex; gap: 8px; padding: 4px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid var(--border); }
+        .currency-btn { flex: 1; padding: 10px; border-radius: 8px; background: transparent; border: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.5px; }
+        .currency-btn.active { background: var(--accent); color: var(--bg-primary); box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); }
+        .main-content { padding: 24px 20px; }
+        .section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.5px; position: relative; padding-left: 16px; }
+        .section-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 20px; background: var(--accent); border-radius: 2px; }
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
+        .action-btn { aspect-ratio: 1; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .action-btn::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%); opacity: 0; transition: opacity 0.3s; }
+        .action-btn:active { transform: scale(0.95); border-color: var(--accent); }
+        .action-btn:active::before { opacity: 1; }
+        .action-icon { font-size: 28px; filter: grayscale(100%); }
+        .action-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; letter-spacing: 0.3px; }
+        .premium-card { background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid var(--glass-border); border-radius: 24px; padding: 28px; margin-bottom: 32px; position: relative; overflow: hidden; }
+        .premium-card::before { content: ''; position: absolute; top: -100px; right: -100px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%); animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .premium-content { position: relative; z-index: 1; }
+        .premium-badge { display: inline-block; padding: 6px 14px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+        .premium-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .premium-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; }
+        .premium-cta { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: var(--accent); color: var(--bg-primary); border: none; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.3s; letter-spacing: 0.3px; }
+        .premium-cta:active { transform: scale(0.95); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+        .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+        .game-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .game-card:active { transform: scale(0.97); border-color: var(--accent); }
+        .game-image { width: 100%; height: 140px; background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); display: flex; align-items: center; justify-content: center; font-size: 56px; position: relative; overflow: hidden; }
+        .game-image::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%); }
+        .game-badge { position: absolute; top: 12px; right: 12px; padding: 6px 12px; background: rgba(255, 255, 255, 0.95); color: var(--bg-primary); border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; z-index: 1; }
+        .game-info { padding: 16px; }
+        .game-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
+        .game-subtitle { font-size: 12px; color: var(--text-secondary); }
+        .leaderboard { display: flex; flex-direction: column; gap: 12px; }
+        .leader-item { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 16px; transition: all 0.3s; position: relative; overflow: hidden; }
+        .leader-item::before { content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: var(--accent); opacity: 0; transition: opacity 0.3s; }
+        .leader-item:active::before { opacity: 1; }
+        .leader-rank { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
+        .leader-rank.gold { background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.05) 100%); border-color: rgba(255,215,0,0.3); }
+        .leader-rank.silver { background: linear-gradient(135deg, rgba(192,192,192,0.2) 0%, rgba(192,192,192,0.05) 100%); border-color: rgba(192,192,192,0.3); }
+        .leader-rank.bronze { background: linear-gradient(135deg, rgba(205,127,50,0.2) 0%, rgba(205,127,50,0.05) 100%); border-color: rgba(205,127,50,0.3); }
+        .leader-info { flex: 1; }
+        .leader-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .leader-username { font-size: 12px; color: var(--text-secondary); }
+        .leader-balance { font-size: 16px; font-weight: 700; white-space: nowrap; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: flex; justify-content: space-around; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 20px; cursor: pointer; transition: all 0.3s; border-radius: 12px; position: relative; }
+        .nav-item::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 0; height: 3px; background: var(--accent); border-radius: 0 0 2px 2px; transition: width 0.3s; }
+        .nav-item.active::before { width: 40%; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.05); }
+        .nav-icon { font-size: 24px; filter: grayscale(100%); transition: filter 0.3s; }
+        .nav-item.active .nav-icon { filter: grayscale(0%); }
+        .nav-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.3px; }
+        .nav-item.active .nav-label { color: var(--text-primary); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s; }
+        .modal.show { display: flex; opacity: 1; }
+        .modal-content { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 24px; padding: 32px 24px; max-width: 420px; width: 100%; max-height: 80vh; overflow-y: auto; position: relative; animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-close { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: all 0.3s; }
+        .modal-close:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.9); }
+        .modal-header { margin-bottom: 24px; }
+        .modal-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .modal-subtitle { font-size: 14px; color: var(--text-secondary); }
+        .modal-body { margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input { width: 100%; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; color: var(--text-primary); font-size: 16px; transition: all 0.3s; }
+        .form-input:focus { outline: none; border-color: var(--accent); background: rgba(255, 255, 255, 0.05); }
+        .form-input::placeholder { color: var(--text-tertiary); }
+        .form-hint { font-size: 12px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.3s; letter-spacing: 0.3px; }
+        .btn-primary { background: var(--accent); color: var(--bg-primary); }
+        .btn-primary:active { transform: scale(0.98); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:active { background: rgba(255, 255, 255, 0.08); }
+        .list-items { display: flex; flex-direction: column; gap: 12px; }
+        .list-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 16px; padding: 18px; cursor: pointer; transition: all 0.3s; }
+        .list-item:active { background: rgba(255, 255, 255, 0.05); border-color: var(--accent); transform: scale(0.98); }
+        .list-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .list-item-title { font-size: 16px; font-weight: 700; }
+        .list-item-price { padding: 6px 14px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; font-size: 14px; font-weight: 700; }
+        .list-item-description { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
+        .list-item-stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-tertiary); }
+        .stat { display: flex; align-items: center; gap: 6px; }
+        .loading { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .loading-spinner { width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-icon { font-size: 72px; margin-bottom: 16px; opacity: 0.3; filter: grayscale(100%); }
+        .empty-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .empty-text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
     </style>
 </head>
 <body>
-    <!-- Синхронизация индикатор -->
-    <div class="sync-indicator" id="syncIndicator" onclick="forceSync()">
-        <div id="syncIcon">⟳</div>
-    </div>
-
-    <!-- Уведомления -->
-    <div class="notification" id="notification">
-        <div class="notification-content">
-            <div class="notification-icon" id="notificationIcon"></div>
-            <div class="notification-message" id="notificationMessage"></div>
-            <div class="notification-close" onclick="hideNotification()">×</div>
-        </div>
-    </div>
-
-    <!-- Загрузка -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner-large"></div>
-        <div class="loading-text" id="loadingText">Loading...</div>
-    </div>
-
-    <!-- Основной контейнер -->
-    <div class="container" id="mainContainer" style="display: none;">
-        <!-- Header -->
+    <div class="container">
         <div class="header">
             <div class="profile-section">
                 <div class="avatar-container">
@@ -198,38 +136,36 @@
                     <div class="status-dot"></div>
                 </div>
                 <div class="user-info">
-                    <h2 id="userName">Loading...</h2>
-                    <p id="userStatus">Connecting...</p>
+                    <h2 id="userName">Yuklanmoqda...</h2>
+                    <p id="userStatus">Elite Player</p>
                 </div>
             </div>
             
             <div class="balance-card">
                 <div class="balance-content">
-                    <div class="balance-label">Your Balance</div>
+                    <div class="balance-label">Balans</div>
                     <div class="balance-amount">
                         <span id="balanceAmount">0.00</span>
                         <span class="currency-symbol" id="currencySymbol">$</span>
                     </div>
                     <div class="currency-toggle">
-                        <button class="currency-btn active" data-currency="USD" onclick="changeCurrency('USD')">USD</button>
-                        <button class="currency-btn" data-currency="UZS" onclick="changeCurrency('UZS')">UZS</button>
+                        <button class="currency-btn active" data-currency="USD">USD</button>
+                        <button class="currency-btn" data-currency="UZS">UZS</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
-            <!-- Quick Actions -->
-            <h3 class="section-title">Quick Actions</h3>
+            <h3 class="section-title">Tezkor</h3>
             <div class="quick-actions fade-in">
                 <div class="action-btn" onclick="showTopup()">
                     <div class="action-icon">💳</div>
-                    <div class="action-label">Deposit</div>
+                    <div class="action-label">Depozit</div>
                 </div>
                 <div class="action-btn" onclick="showWithdraw()">
                     <div class="action-icon">💸</div>
-                    <div class="action-label">Withdraw</div>
+                    <div class="action-label">Yechish</div>
                 </div>
                 <div class="action-btn" onclick="showBonus()">
                     <div class="action-icon">🎁</div>
@@ -237,30 +173,28 @@
                 </div>
                 <div class="action-btn" onclick="showShop()">
                     <div class="action-icon">🛍️</div>
-                    <div class="action-label">Shop</div>
+                    <div class="action-label">Do'kon</div>
                 </div>
             </div>
 
-            <!-- Premium Card -->
-            <div class="premium-card fade-in" id="premiumCard">
+            <div class="premium-card fade-in">
                 <div class="premium-content">
                     <div class="premium-badge">Premium</div>
-                    <h3 class="premium-title">Unlock Elite Status</h3>
-                    <p class="premium-desc">Get daily bonuses, free tournaments, and exclusive rewards with premium membership</p>
+                    <h3 class="premium-title">Elite Status</h3>
+                    <p class="premium-desc">Kunlik bonuslar, bepul turnirlar va maxsus mukofotlar</p>
                     <button class="premium-cta" onclick="showPremium()">
-                        <span>Explore Plans</span>
+                        <span>Tanlash</span>
                         <span>→</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Games -->
-            <h3 class="section-title">Games</h3>
+            <h3 class="section-title">O'yinlar</h3>
             <div class="games-grid fade-in">
                 <div class="game-card" onclick="showTournaments('cod')">
                     <div class="game-image">
                         🎮
-                        <div class="game-badge" id="codTournamentsCount">0 Active</div>
+                        <div class="game-badge">3 Active</div>
                     </div>
                     <div class="game-info">
                         <div class="game-title">Call of Duty</div>
@@ -270,7 +204,7 @@
                 <div class="game-card" onclick="showTournaments('so2')">
                     <div class="game-image">
                         🎯
-                        <div class="game-badge" id="so2TournamentsCount">0 Active</div>
+                        <div class="game-badge">2 Active</div>
                     </div>
                     <div class="game-info">
                         <div class="game-title">Standoff 2</div>
@@ -279,25 +213,23 @@
                 </div>
             </div>
 
-            <!-- Leaderboard -->
-            <h3 class="section-title">Top Players</h3>
+            <h3 class="section-title">Reyting</h3>
             <div class="leaderboard fade-in" id="leaderboard">
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <div>Loading rankings...</div>
+                    <div>Yuklanmoqda...</div>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <div class="nav-item active" onclick="switchTab('home')">
                 <div class="nav-icon">🏠</div>
-                <div class="nav-label">Home</div>
+                <div class="nav-label">Asosiy</div>
             </div>
             <div class="nav-item" onclick="switchTab('tournaments')">
                 <div class="nav-icon">🏆</div>
-                <div class="nav-label">Tournaments</div>
+                <div class="nav-label">Turnir</div>
             </div>
             <div class="nav-item" onclick="switchTab('bonus')">
                 <div class="nav-icon">🎁</div>
@@ -305,12 +237,11 @@
             </div>
             <div class="nav-item" onclick="switchTab('profile')">
                 <div class="nav-icon">👤</div>
-                <div class="nav-label">Profile</div>
+                <div class="nav-label">Profil</div>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <div class="modal-close" onclick="closeModal()">×</div>
@@ -323,1065 +254,426 @@
     </div>
 
     <script>
-        // Конфигурация
-        const API_BASE_URL = 'http://localhost:5000'; // Измените на ваш URL
-        const SYNC_INTERVAL = 30000; // 30 секунд
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        tg.setHeaderColor('#000000');
+        tg.setBackgroundColor('#000000');
+
+        // URL parametrlaridan User ma'lumotlarini o'qish (Bot yuborgan)
+        const urlParams = new URLSearchParams(window.location.search);
+        const userParam = urlParams.get('user');
+        
+        // Default ma'lumotlar
+        let userData = {
+            user_id: tg.initDataUnsafe?.user?.id || 0,
+            username: tg.initDataUnsafe?.user?.username || 'user',
+            full_name: tg.initDataUnsafe?.user?.first_name || 'Player',
+            balance: 0,
+            currency: 'USD',
+            subscription: "Yo'q"
+        };
+
+        // Agar URL da ma'lumot bo'lsa, uni o'qiymiz
+        if (userParam) {
+            try {
+                const parsedUser = JSON.parse(userParam);
+                userData = { ...userData, ...parsedUser };
+                console.log("Botdan kelgan ma'lumot yuklandi:", userData);
+            } catch (e) {
+                console.error("User ma'lumotini o'qishda xatolik:", e);
+            }
+        }
+
         const USD_TO_UZS = 12000;
 
-        // Глобальные переменные
-        let tg = null;
-        let userData = null;
-        let syncInterval = null;
-        let isSyncing = false;
-        let lastSync = null;
-
-        // Инициализация Telegram WebApp
-        function initTelegram() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                tg = window.Telegram.WebApp;
-                tg.expand();
-                tg.ready();
-                tg.setHeaderColor('#000000');
-                tg.setBackgroundColor('#000000');
-                
-                // Показываем кнопку назад в заголовке
-                if (tg.isVersionAtLeast('6.1')) {
-                    tg.BackButton.show();
-                    tg.BackButton.onClick(() => {
-                        if (document.getElementById('modal').classList.contains('show')) {
-                            closeModal();
-                        } else {
-                            switchTab('home');
-                        }
-                    });
-                }
-                
-                return true;
-            }
-            return false;
+        // Initialize
+        function init() {
+            updateUI();
+            loadLeaderboard();
+            setupCurrencyToggle();
         }
 
-        // Показать/скрыть уведомление
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            const icon = document.getElementById('notificationIcon');
-            const messageEl = document.getElementById('notificationMessage');
-            
-            notification.className = `notification show ${type}`;
-            messageEl.textContent = message;
-            
-            switch(type) {
-                case 'success': icon.textContent = '✅'; break;
-                case 'error': icon.textContent = '❌'; break;
-                case 'warning': icon.textContent = '⚠️'; break;
-                default: icon.textContent = 'ℹ️';
-            }
-            
-            // Автоматическое скрытие через 5 секунд
-            setTimeout(hideNotification, 5000);
-        }
-
-        function hideNotification() {
-            document.getElementById('notification').classList.remove('show');
-        }
-
-        // Показать/скрыть загрузку
-        function showLoading(text = 'Loading...') {
-            document.getElementById('loadingText').textContent = text;
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
-
-        // Обновить индикатор синхронизации
-        function updateSyncIndicator(syncing = false, error = false) {
-            const indicator = document.getElementById('syncIndicator');
-            const icon = document.getElementById('syncIcon');
-            
-            indicator.classList.remove('syncing', 'error');
-            
-            if (error) {
-                indicator.classList.add('error');
-                icon.textContent = '⚠️';
-                icon.title = 'Sync error - Click to retry';
-            } else if (syncing) {
-                indicator.classList.add('syncing');
-                icon.textContent = '⟳';
-                icon.title = 'Syncing...';
-            } else {
-                icon.textContent = '✓';
-                icon.title = `Synced ${lastSync ? new Date(lastSync).toLocaleTimeString() : 'now'}`;
-            }
-        }
-
-        // Принудительная синхронизация
-        async function forceSync() {
-            await syncUserData();
-            await syncTournaments();
-            await syncLeaderboard();
-            showNotification('Data synchronized successfully!', 'success');
-        }
-
-        // API вызовы с обработкой ошибок
-        async function apiCall(endpoint, options = {}) {
-            const initData = tg ? tg.initData : '';
-            
-            const defaultOptions = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Telegram-Init-Data': initData
-                }
-            };
-            
-            const finalOptions = {
-                ...defaultOptions,
-                ...options,
-                headers: {
-                    ...defaultOptions.headers,
-                    ...options.headers
-                }
-            };
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, finalOptions);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error(`API Error (${endpoint}):`, error);
-                showNotification(`Connection error: ${error.message}`, 'error');
-                updateSyncIndicator(false, true);
-                throw error;
-            }
-        }
-
-        // Синхронизация данных пользователя
-        async function syncUserData() {
-            if (isSyncing) return;
-            
-            isSyncing = true;
-            updateSyncIndicator(true);
-            
-            try {
-                const data = await apiCall('/api/user/profile');
-                userData = data;
-                
-                // Обновить UI
-                updateUserUI();
-                lastSync = new Date();
-                updateSyncIndicator(false);
-                
-                return data;
-            } catch (error) {
-                updateSyncIndicator(false, true);
-                return null;
-            } finally {
-                isSyncing = false;
-            }
-        }
-
-        // Синхронизация турниров
-        async function syncTournaments() {
-            try {
-                const tournaments = await apiCall('/api/tournaments');
-                
-                // Подсчитать активные турниры по играм
-                const codTournaments = tournaments.filter(t => t.game === 'cod');
-                const so2Tournaments = tournaments.filter(t => t.game === 'so2');
-                
-                document.getElementById('codTournamentsCount').textContent = `${codTournaments.length} Active`;
-                document.getElementById('so2TournamentsCount').textContent = `${so2Tournaments.length} Active`;
-                
-                return tournaments;
-            } catch (error) {
-                return [];
-            }
-        }
-
-        // Синхронизация рейтинга
-        async function syncLeaderboard() {
-            try {
-                const leaders = await apiCall('/api/top-10');
-                const container = document.getElementById('leaderboard');
-                
-                if (leaders && leaders.length > 0) {
-                    const rankClass = { 1: 'gold', 2: 'silver', 3: 'bronze' };
-                    const emojiMap = { 1: '🥇', 2: '🥈', 3: '🥉' };
-                    
-                    container.innerHTML = leaders.map((leader, index) => {
-                        const rank = index + 1;
-                        const emoji = emojiMap[rank] || rank;
-                        const rankClassType = rankClass[rank] || '';
-                        
-                        return `
-                            <div class="leader-item">
-                                <div class="leader-rank ${rankClassType}">${emoji}</div>
-                                <div class="leader-info">
-                                    <div class="leader-name">${leader.full_name || 'Unknown'}</div>
-                                    <div class="leader-username">${leader.username || ''}</div>
-                                </div>
-                                <div class="leader-balance">$${leader.balance.toFixed(2)}</div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-                
-                return leaders;
-            } catch (error) {
-                return [];
-            }
-        }
-
-        // Обновить UI пользователя
-        function updateUserUI() {
-            if (!userData) return;
-            
-            // Основная информация
-            document.getElementById('userName').textContent = userData.full_name || 'Player';
-            document.getElementById('userAvatar').textContent = (userData.full_name || 'P')[0].toUpperCase();
-            
-            // Статус подписки
-            const status = userData.subscription === "Yo'q" ? 'Free Player' : userData.subscription;
-            document.getElementById('userStatus').textContent = status;
-            
-            // Обновить премиум карточку
-            updatePremiumCard();
-            
-            // Обновить баланс
+        function updateUI() {
+            document.getElementById('userName').textContent = userData.full_name;
+            document.getElementById('userAvatar').textContent = userData.full_name ? userData.full_name[0].toUpperCase() : '?';
             updateBalance();
+            
+            // Statusni yangilash
+            const sub = userData.subscription || "Yo'q";
+            let statusText = "Player";
+            if (sub === 'pro') statusText = "Pro Player";
+            if (sub === 'boss') statusText = "Boss Player";
+            document.getElementById('userStatus').textContent = statusText;
         }
 
-        // Обновить баланс
         function updateBalance() {
-            if (!userData) return;
-            
-            const currency = userData.currency || 'USD';
+            const currency = userData.currency;
             const amount = currency === 'USD' ? userData.balance : userData.balance * USD_TO_UZS;
-            const symbol = currency === 'USD' ? '$' : 'сўм';
+            const symbol = currency === 'USD' ? '$' : ' so\'m';
             
             document.getElementById('balanceAmount').textContent = amount.toFixed(2);
             document.getElementById('currencySymbol').textContent = symbol;
             
-            // Обновить активную кнопку валюты
             document.querySelectorAll('.currency-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.currency === currency);
             });
         }
 
-        // Обновить премиум карточку
-        function updatePremiumCard() {
-            const card = document.getElementById('premiumCard');
-            const badge = card.querySelector('.premium-badge');
-            const title = card.querySelector('.premium-title');
-            const desc = card.querySelector('.premium-desc');
-            const cta = card.querySelector('.premium-cta');
-            
-            if (userData.subscription && userData.subscription !== "Yo'q") {
-                badge.textContent = 'Active Premium';
-                badge.style.background = 'rgba(0, 255, 136, 0.1)';
-                badge.style.borderColor = 'rgba(0, 255, 136, 0.3)';
-                title.textContent = userData.subscription;
-                desc.textContent = `Active until ${new Date(userData.sub_expiry).toLocaleDateString()}`;
-                cta.innerHTML = '<span>Manage Subscription</span><span>→</span>';
-                cta.onclick = () => showSubscriptionManagement();
-            } else {
-                badge.textContent = 'Premium';
-                badge.style.background = '';
-                badge.style.borderColor = '';
-                title.textContent = 'Unlock Elite Status';
-                desc.textContent = 'Get daily bonuses, free tournaments, and exclusive rewards with premium membership';
-                cta.innerHTML = '<span>Explore Plans</span><span>→</span>';
-                cta.onclick = () => showPremium();
-            }
-        }
-
-        // Изменить валюту
-        async function changeCurrency(currency) {
-            showLoading('Updating currency...');
-            
-            try {
-                await apiCall('/api/user/update', {
-                    method: 'POST',
-                    body: JSON.stringify({ currency: currency })
+        function setupCurrencyToggle() {
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    userData.currency = btn.dataset.currency;
+                    updateBalance();
+                    // Botga xabar jo'natmaymiz, faqat vizual o'zgaradi
+                    tg.HapticFeedback.impactOccurred('light');
                 });
-                
-                userData.currency = currency;
-                updateBalance();
-                showNotification(`Currency changed to ${currency}`, 'success');
-            } catch (error) {
-                showNotification('Failed to update currency', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Показать пополнение
-        async function showTopup() {
-            const content = `
-                <div class="form-group">
-                    <label class="form-label">Amount (USD)</label>
-                    <input type="number" class="form-input" id="topupAmount" placeholder="10.00" min="1" step="0.01">
-                    <div class="form-hint">Minimum: $1.00</div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Payment Method</label>
-                    <select class="form-input" id="topupMethod">
-                        <option value="p2p">P2P Transfer</option>
-                        <option value="smartglocal">Smart Glocal</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" onclick="processTopup()">
-                    Continue to Payment
-                </button>
-            `;
-            
-            showModal('Deposit Funds', 'Add money to your account', content);
-        }
-
-        // Обработать пополнение
-        async function processTopup() {
-            const amount = parseFloat(document.getElementById('topupAmount').value);
-            const method = document.getElementById('topupMethod').value;
-            
-            if (!amount || amount < 1) {
-                showNotification('Please enter amount from $1.00', 'warning');
-                return;
-            }
-            
-            showLoading('Creating payment...');
-            
-            try {
-                const result = await apiCall('/api/topup/create', {
-                    method: 'POST',
-                    body: JSON.stringify({ amount: amount, method: method })
-                });
-                
-                if (result.success) {
-                    let paymentMessage = '';
-                    
-                    if (method === 'smartglocal') {
-                        paymentMessage = `Please complete payment via Smart Glocal`;
-                        // Открыть ссылку на оплату
-                        window.open(result.payment_link, '_blank');
-                    } else {
-                        paymentMessage = `Please transfer $${amount} to card: 8600 0000 0000 0000`;
-                    }
-                    
-                    closeModal();
-                    showNotification(paymentMessage, 'success');
-                    
-                    // Обновить данные через 5 секунд
-                    setTimeout(syncUserData, 5000);
-                }
-            } catch (error) {
-                showNotification('Payment creation failed', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Показать вывод
-        async function showWithdraw() {
-            const content = `
-                <div class="form-group">
-                    <label class="form-label">Card Number</label>
-                    <input type="text" class="form-input" id="withdrawCard" placeholder="8600 1234 5678 9012">
-                    <div class="form-hint">Uzcard, Humo, Visa, Mastercard</div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Amount (USD)</label>
-                    <input type="number" class="form-input" id="withdrawAmount" 
-                           placeholder="${userData?.balance?.toFixed(2) || '0.00'}" 
-                           min="5" max="${userData?.balance || 0}" step="0.01">
-                    <div class="form-hint">Minimum: $5.00 | Available: $${userData?.balance?.toFixed(2) || '0.00'}</div>
-                </div>
-                <button class="btn btn-primary" onclick="processWithdraw()">
-                    Submit Withdrawal Request
-                </button>
-            `;
-            
-            showModal('Withdraw Funds', 'Transfer to your card', content);
-        }
-
-        // Обработать вывод
-        async function processWithdraw() {
-            const card = document.getElementById('withdrawCard').value;
-            const amount = parseFloat(document.getElementById('withdrawAmount').value);
-            
-            if (!card || card.length < 16) {
-                showNotification('Please enter valid card number', 'warning');
-                return;
-            }
-            
-            if (!amount || amount < 5 || amount > (userData?.balance || 0)) {
-                showNotification('Invalid amount. Minimum $5.00', 'warning');
-                return;
-            }
-            
-            showLoading('Processing withdrawal...');
-            
-            try {
-                const result = await apiCall('/api/withdraw/create', {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        amount: amount, 
-                        card_number: card 
-                    })
-                });
-                
-                if (result.success) {
-                    closeModal();
-                    showNotification(`Withdrawal request submitted! Funds will arrive within ${result.estimated_time}`, 'success');
-                    
-                    // Обновить баланс
-                    await syncUserData();
-                }
-            } catch (error) {
-                showNotification('Withdrawal request failed', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Показать бонусы
-        async function showBonus() {
-            const dailyBonus = userData?.daily_bonus || 0.05;
-            const lastClaim = userData?.last_daily;
-            
-            let bonusStatus = 'Available';
-            let buttonDisabled = false;
-            let timeRemaining = '';
-            
-            if (lastClaim) {
-                const lastClaimDate = new Date(lastClaim);
-                const now = new Date();
-                const diffHours = (now - lastClaimDate) / (1000 * 60 * 60);
-                
-                if (diffHours < 24) {
-                    const remainingHours = 24 - diffHours;
-                    bonusStatus = `Next bonus in ${Math.ceil(remainingHours)}h`;
-                    buttonDisabled = true;
-                    timeRemaining = `Last claimed: ${lastClaimDate.toLocaleString()}`;
-                }
-            }
-            
-            const content = `
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="font-size: 48px; margin-bottom: 16px;">🎁</div>
-                    <h3 style="margin-bottom: 8px;">Daily Bonus: $${dailyBonus.toFixed(2)}</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 24px;">${bonusStatus}</p>
-                    ${timeRemaining ? `<p style="font-size: 12px; color: var(--text-tertiary);">${timeRemaining}</p>` : ''}
-                </div>
-                
-                <button class="btn btn-primary" onclick="claimDailyBonus()" ${buttonDisabled ? 'disabled style="opacity: 0.5;"' : ''}>
-                    ${buttonDisabled ? 'Already Claimed Today' : 'Claim Daily Bonus'}
-                </button>
-                
-                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
-                    <h4 style="margin-bottom: 16px;">Promo Code</h4>
-                    <div class="form-group">
-                        <input type="text" class="form-input" id="promoCode" placeholder="Enter promo code" style="text-transform: uppercase;">
-                    </div>
-                    <button class="btn btn-secondary" onclick="applyPromoCode()">
-                        Activate Code
-                    </button>
-                </div>
-            `;
-            
-            showModal('Daily Bonus & Promo', 'Get free rewards every day', content);
-        }
-
-        // Получить ежедневный бонус
-        async function claimDailyBonus() {
-            showLoading('Claiming bonus...');
-            
-            try {
-                const result = await apiCall('/api/daily-bonus', {
-                    method: 'POST'
-                });
-                
-                if (result.success) {
-                    userData.balance = result.new_balance;
-                    userData.last_daily = new Date().toISOString();
-                    updateUserUI();
-                    showNotification(`Daily bonus claimed! +$${result.bonus_amount.toFixed(2)}`, 'success');
-                    closeModal();
-                } else {
-                    showNotification(result.error || 'Bonus already claimed', 'warning');
-                }
-            } catch (error) {
-                showNotification('Failed to claim bonus', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Применить промокод
-        async function applyPromoCode() {
-            const code = document.getElementById('promoCode').value.toUpperCase();
-            
-            if (!code) {
-                showNotification('Please enter promo code', 'warning');
-                return;
-            }
-            
-            showLoading('Activating promo code...');
-            
-            try {
-                const result = await apiCall('/api/promo/use', {
-                    method: 'POST',
-                    body: JSON.stringify({ code: code })
-                });
-                
-                if (result.success) {
-                    await syncUserData();
-                    showNotification(result.message || 'Promo code activated!', 'success');
-                    document.getElementById('promoCode').value = '';
-                } else {
-                    showNotification(result.error || 'Invalid promo code', 'error');
-                }
-            } catch (error) {
-                showNotification('Failed to activate promo code', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Показать магазин
-        async function showShop() {
-            showLoading('Loading shop...');
-            
-            try {
-                const [codItems, so2Items] = await Promise.all([
-                    apiCall('/api/shop/items?game=cod'),
-                    apiCall('/api/shop/items?game=so2')
-                ]);
-                
-                const content = `
-                    <div style="margin-bottom: 24px;">
-                        <h4 style="margin-bottom: 16px;">🎮 Call of Duty</h4>
-                        <div class="list-items" style="margin-bottom: 24px;">
-                            ${codItems.map(item => `
-                                <div class="list-item" onclick="buyItem('cod', '${item.item_key}')">
-                                    <div class="list-item-header">
-                                        <div class="list-item-title">${item.name}</div>
-                                        <div class="list-item-price">$${item.price.toFixed(2)}</div>
-                                    </div>
-                                    <div class="list-item-description">${item.description}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <h4 style="margin-bottom: 16px;">🎯 Standoff 2</h4>
-                        <div class="list-items">
-                            ${so2Items.map(item => `
-                                <div class="list-item" onclick="buyItem('so2', '${item.item_key}')">
-                                    <div class="list-item-header">
-                                        <div class="list-item-title">${item.name}</div>
-                                        <div class="list-item-price">$${item.price.toFixed(2)}</div>
-                                    </div>
-                                    <div class="list-item-description">${item.description}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-                
-                showModal('Game Shop', 'Purchase in-game items', content);
-            } catch (error) {
-                showNotification('Failed to load shop items', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Купить предмет
-        async function buyItem(game, itemKey) {
-            if (!confirm(`Are you sure you want to buy this item?`)) {
-                return;
-            }
-            
-            showLoading('Processing purchase...');
-            
-            try {
-                const result = await apiCall('/api/buy-item', {
-                    method: 'POST',
-                    body: JSON.stringify({ game: game, item_key: itemKey })
-                });
-                
-                if (result.success) {
-                    await syncUserData();
-                    showNotification(`Successfully purchased! New balance: $${result.new_balance.toFixed(2)}`, 'success');
-                    closeModal();
-                } else {
-                    showNotification(result.error || 'Purchase failed', 'error');
-                }
-            } catch (error) {
-                showNotification('Purchase failed', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Показать премиум планы
-        async function showPremium() {
-            showLoading('Loading plans...');
-            
-            try {
-                const plans = await apiCall('/api/subscriptions/plans');
-                
-                const content = `
-                    <div class="list-items">
-                        ${Object.entries(plans).map(([code, plan]) => `
-                            <div class="list-item" onclick="buySubscription('${code}')">
-                                <div class="list-item-header">
-                                    <div class="list-item-title">${plan.name}</div>
-                                    <div class="list-item-price">$${plan.price.toFixed(2)}</div>
-                                </div>
-                                <div class="list-item-description">
-                                    ${plan.features.map(f => `• ${f}`).join('<br>')}
-                                </div>
-                                <div class="list-item-stats">
-                                    <div class="stat">Daily: $${plan.daily_bonus.toFixed(2)}</div>
-                                    <div class="stat">Win Bonus: ${plan.bonus_win}%</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                
-                showModal('Premium Plans', 'Choose your membership', content);
-            } catch (error) {
-                showNotification('Failed to load plans', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Купить подписку
-        async function buySubscription(planCode) {
-            if (!confirm(`Are you sure you want to buy this subscription?`)) {
-                return;
-            }
-            
-            showLoading('Processing subscription...');
-            
-            try {
-                const result = await apiCall('/api/buy-subscription', {
-                    method: 'POST',
-                    body: JSON.stringify({ plan_code: planCode })
-                });
-                
-                if (result.success) {
-                    await syncUserData();
-                    showNotification(`Successfully purchased ${result.plan_name}!`, 'success');
-                    closeModal();
-                } else {
-                    showNotification(result.error || 'Purchase failed', 'error');
-                }
-            } catch (error) {
-                showNotification('Subscription purchase failed', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Управление подпиской
-        async function showSubscriptionManagement() {
-            const content = `
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="font-size: 48px; margin-bottom: 16px;">👑</div>
-                    <h3 style="margin-bottom: 8px;">${userData.subscription}</h3>
-                    <p style="color: var(--text-secondary);">
-                        Active until ${new Date(userData.sub_expiry).toLocaleDateString()}
-                    </p>
-                </div>
-                
-                <div class="list-items">
-                    <div class="list-item">
-                        <div class="list-item-header">
-                            <div class="list-item-title">Daily Bonus</div>
-                            <div style="color: var(--success);">$${userData.daily_bonus?.toFixed(2) || '0.00'}</div>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <div class="list-item-header">
-                            <div class="list-item-title">Free Tournaments</div>
-                            <div style="color: var(--success);">${userData.free_tournaments || 0} remaining</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="btn btn-secondary" onclick="cancelSubscription()" style="margin-top: 24px;">
-                    Cancel Subscription
-                </button>
-            `;
-            
-            showModal('Subscription Management', 'Manage your premium membership', content);
-        }
-
-        // Отменить подписку
-        async function cancelSubscription() {
-            if (!confirm('Are you sure you want to cancel your subscription? This action cannot be undone.')) {
-                return;
-            }
-            
-            showLoading('Cancelling subscription...');
-            
-            try {
-                // В реальном приложении здесь будет API вызов
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Сбросить данные подписки
-                userData.subscription = "Yo'q";
-                userData.sub_code = null;
-                userData.sub_expiry = null;
-                userData.free_tournaments = 0;
-                
-                // Обновить UI
-                updateUserUI();
-                showNotification('Subscription cancelled successfully', 'success');
-                closeModal();
-            } catch (error) {
-                showNotification('Failed to cancel subscription', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Показать турниры
-        async function showTournaments(game) {
-            showLoading('Loading tournaments...');
-            
-            try {
-                const tournaments = await apiCall(`/api/tournaments?game=${game}`);
-                
-                if (tournaments.length === 0) {
-                    const content = `
-                        <div class="empty-state">
-                            <div class="empty-icon">🏆</div>
-                            <h4 class="empty-title">No Tournaments</h4>
-                            <p class="empty-text">No active tournaments for this game at the moment.</p>
-                        </div>
-                    `;
-                    
-                    showModal(
-                        game === 'cod' ? 'Call of Duty Tournaments' : 'Standoff 2 Tournaments',
-                        'Active competitions',
-                        content
-                    );
-                    return;
-                }
-                
-                const content = `
-                    <div class="list-items">
-                        ${tournaments.map(t => `
-                            <div class="list-item" onclick="joinTournament(${t.id})">
-                                <div class="list-item-header">
-                                    <div class="list-item-title">${t.mode}</div>
-                                    <div class="list-item-price">$${t.prize.toFixed(2)}</div>
-                                </div>
-                                <div class="list-item-description">${t.info}</div>
-                                <div class="list-item-stats">
-                                    <div class="stat">👥 ${t.participants_count}/${t.max_participants}</div>
-                                    <div class="stat">💰 $${t.fee.toFixed(2)} entry</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                
-                showModal(
-                    game === 'cod' ? 'Call of Duty Tournaments' : 'Standoff 2 Tournaments',
-                    'Join active competitions',
-                    content
-                );
-            } catch (error) {
-                showNotification('Failed to load tournaments', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Присоединиться к турниру
-        async function joinTournament(tournamentId) {
-            if (!confirm('Are you sure you want to join this tournament?')) {
-                return;
-            }
-            
-            showLoading('Joining tournament...');
-            
-            try {
-                const result = await apiCall('/api/join-tournament', {
-                    method: 'POST',
-                    body: JSON.stringify({ tournament_id: tournamentId })
-                });
-                
-                if (result.success) {
-                    await syncUserData();
-                    showNotification('Successfully joined the tournament!', 'success');
-                    closeModal();
-                } else {
-                    showNotification(result.error || 'Failed to join tournament', 'error');
-                }
-            } catch (error) {
-                showNotification('Failed to join tournament', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Переключение вкладок
-        function switchTab(tab) {
-            // Обновить активную кнопку
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
             });
-            event.currentTarget.classList.add('active');
-            
-            // Обновить контент
-            document.getElementById('mainContainer').style.display = 'block';
-            
-            if (tab === 'tournaments') {
-                showLoading('Loading tournaments...');
-                syncTournaments().then(() => {
-                    // Показать выбор игры
-                    const content = `
-                        <div class="games-grid" style="margin-top: 16px;">
-                            <div class="game-card" onclick="showTournaments('cod')">
-                                <div class="game-image">
-                                    🎮
-                                </div>
-                                <div class="game-info">
-                                    <div class="game-title">Call of Duty</div>
-                                    <div class="game-subtitle">View tournaments</div>
-                                </div>
-                            </div>
-                            <div class="game-card" onclick="showTournaments('so2')">
-                                <div class="game-image">
-                                    🎯
-                                </div>
-                                <div class="game-info">
-                                    <div class="game-title">Standoff 2</div>
-                                    <div class="game-subtitle">View tournaments</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    showModal('Tournaments', 'Select game to view tournaments', content);
-                    hideLoading();
-                });
-            } else if (tab === 'profile') {
-                showProfile();
-            }
         }
 
-        // Показать профиль
-        async function showProfile() {
-            showLoading('Loading profile...');
+        // Fake Load User Data O'CHIRILDI. Endi URL dan o'qiydi.
+
+        // Load leaderboard (Hozircha statik, keyinchalik botdan olish mumkin)
+        async function loadLeaderboard() {
+            const container = document.getElementById('leaderboard');
             
-            try {
-                const stats = await apiCall('/api/user/stats');
-                const userTournaments = await apiCall('/api/tournaments/user');
-                
-                const content = `
-                    <div style="text-align: center; margin-bottom: 24px;">
-                        <div class="avatar" style="width: 80px; height: 80px; font-size: 36px; margin: 0 auto 16px;">
-                            ${(userData.full_name || 'P')[0].toUpperCase()}
+            setTimeout(() => {
+                const leaders = [
+                    { rank: 1, name: 'ProGamer', username: '@progamer', balance: 156.50, emoji: '🥇' },
+                    { rank: 2, name: 'SkillMaster', username: '@skillm', balance: 142.30, emoji: '🥈' },
+                    { rank: 3, name: 'TopPlayer', username: '@topp', balance: 128.90, emoji: '🥉' }
+                ];
+
+                const rankClass = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+
+                container.innerHTML = leaders.map(l => `
+                    <div class="leader-item">
+                        <div class="leader-rank ${rankClass[l.rank] || ''}">${l.emoji}</div>
+                        <div class="leader-info">
+                            <div class="leader-name">${l.name}</div>
+                            <div class="leader-username">${l.username}</div>
                         </div>
-                        <h3 style="margin-bottom: 4px;">${userData.full_name || 'Player'}</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 24px;">@${userData.username || 'No username'}</p>
+                        <div class="leader-balance">$${l.balance.toFixed(2)}</div>
                     </div>
-                    
-                    <div class="list-items">
-                        <div class="list-item">
-                            <div class="list-item-header">
-                                <div class="list-item-title">Global Rank</div>
-                                <div style="color: var(--success);">#${stats.rank || 'N/A'}</div>
-                            </div>
-                            <div class="list-item-description">
-                                Top ${stats.total_users || 0} players
-                            </div>
-                        </div>
-                        
-                        <div class="list-item">
-                            <div class="list-item-header">
-                                <div class="list-item-title">Active Tournaments</div>
-                                <div style="color: var(--success);">${userTournaments.length || 0}</div>
-                            </div>
-                            <div class="list-item-description">
-                                Currently participating
-                            </div>
-                        </div>
-                        
-                        <div class="list-item" onclick="showGameData('cod')">
-                            <div class="list-item-header">
-                                <div class="list-item-title">Call of Duty</div>
-                                <div style="color: var(--text-secondary);">→</div>
-                            </div>
-                            <div class="list-item-description">
-                                ${userData.cod_nick || 'Not set'} | ${userData.cod_uid || 'Not set'}
-                            </div>
-                        </div>
-                        
-                        <div class="list-item" onclick="showGameData('so2')">
-                            <div class="list-item-header">
-                                <div class="list-item-title">Standoff 2</div>
-                                <div style="color: var(--text-secondary);">→</div>
-                            </div>
-                            <div class="list-item-description">
-                                ${userData.so_nick || 'Not set'} | ${userData.so_uid || 'Not set'}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                showModal('Profile', 'Your account information', content);
-            } catch (error) {
-                showNotification('Failed to load profile data', 'error');
-            } finally {
-                hideLoading();
-            }
+                `).join('');
+            }, 800);
         }
 
-        // Показать игровые данные
-        function showGameData(game) {
-            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-            const nick = game === 'cod' ? userData.cod_nick : userData.so_nick;
-            const uid = game === 'cod' ? userData.cod_uid : userData.so_uid;
-            
-            const content = `
-                <div class="form-group">
-                    <label class="form-label">Nickname</label>
-                    <input type="text" class="form-input" id="${game}Nick" value="${nick || ''}" placeholder="Enter your nickname">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">UID</label>
-                    <input type="text" class="form-input" id="${game}Uid" value="${uid || ''}" placeholder="Enter your UID">
-                </div>
-                <button class="btn btn-primary" onclick="saveGameData('${game}')">
-                    Save Changes
-                </button>
-            `;
-            
-            showModal(`${gameName} Profile`, 'Update your game information', content);
-        }
-
-        // Сохранить игровые данные
-        async function saveGameData(game) {
-            const nick = document.getElementById(`${game}Nick`).value;
-            const uid = document.getElementById(`${game}Uid`).value;
-            
-            showLoading('Saving...');
-            
-            try {
-                const updateData = {};
-                if (game === 'cod') {
-                    updateData.cod_nick = nick;
-                    updateData.cod_uid = uid;
-                } else {
-                    updateData.so_nick = nick;
-                    updateData.so_uid = uid;
-                }
-                
-                await apiCall('/api/user/update', {
-                    method: 'POST',
-                    body: JSON.stringify(updateData)
-                });
-                
-                // Обновить локальные данные
-                if (game === 'cod') {
-                    userData.cod_nick = nick;
-                    userData.cod_uid = uid;
-                } else {
-                    userData.so_nick = nick;
-                    userData.so_uid = uid;
-                }
-                
-                showNotification('Game data saved successfully!', 'success');
-                closeModal();
-            } catch (error) {
-                showNotification('Failed to save game data', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Модальное окно
+        // Modal functions
         function showModal(title, subtitle, content) {
             document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalSubtitle').textContent = subtitle;
+            document.getElementById('modalSubtitle').textContent = subtitle || '';
             document.getElementById('modalBody').innerHTML = content;
             document.getElementById('modal').classList.add('show');
-            
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('show');
-            
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Action functions
+        function showTopup() {
+            const content = `
+                <div class="form-group">
+                    <label class="form-label">Miqdor ($)</label>
+                    <input type="number" class="form-input" id="topupAmount" placeholder="10.00" min="1" step="0.01">
+                    <div class="form-hint">Minimum depozit: $1.00</div>
+                </div>
+                <button class="btn btn-primary" onclick="processTopup()">
+                    To'ldirish
+                </button>
+            `;
+            showModal('Depozit', 'Hisobni to\'ldirish', content);
+        }
+
+        function processTopup() {
+            const amount = document.getElementById('topupAmount').value;
+            if (amount && amount >= 1) {
+                // Bot hozir faqat "transaction" yozadi, real to'lov integratsiyasi botda yo'q
+                // Shuning uchun biz shunchaki botga xabar beramiz
+                // Agar botda "create_transaction" logikasi bo'lsa, u ishlaydi
+                tg.showAlert('Botga so\'rov yuborildi. To\'lov tizimi tez orada ishga tushadi.');
+                closeModal();
+            } else {
+                tg.showAlert('Iltimos kamida $1 kiriting');
             }
         }
 
-        // Инициализация приложения
-        async function initApp() {
-            showLoading('Initializing...');
-            
-            // Инициализировать Telegram
-            if (!initTelegram()) {
-                showNotification('Telegram WebApp not detected', 'error');
-                hideLoading();
-                return;
+        function showWithdraw() {
+            const content = `
+                <div class="form-group">
+                    <label class="form-label">Karta raqami</label>
+                    <input type="text" class="form-input" id="cardNumber" placeholder="8600 1234 5678 9012">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Miqdor ($)</label>
+                    <input type="number" class="form-input" id="withdrawAmount" placeholder="10.00" min="5" step="0.01">
+                    <div class="form-hint">Minimum: $5.00 • Sizda bor: $${userData.balance.toFixed(2)}</div>
+                </div>
+                <button class="btn btn-primary" onclick="processWithdraw()">
+                    Yechib olish
+                </button>
+            `;
+            showModal('Pul yechish', 'Kartaga o\'tkazish', content);
+        }
+
+        function processWithdraw() {
+            const card = document.getElementById('cardNumber').value;
+            const amount = document.getElementById('withdrawAmount').value;
+            if (card && amount && amount >= 5 && amount <= userData.balance) {
+                // Hozir botda "withdraw" action yo'q, shuning uchun shunchaki yopamiz
+                tg.showAlert('So\'rov qabul qilindi! Adminlar ko\'rib chiqadi.');
+                closeModal();
+            } else {
+                tg.showAlert('Balans yetarli emas yoki ma\'lumot xato');
             }
+        }
+
+        function showBonus() {
+            const content = `
+                <div class="empty-state" style="padding: 20px;">
+                    <div class="empty-icon">🎁</div>
+                    <h4 class="empty-title">Kunlik Bonus</h4>
+                    <p class="empty-text" style="margin-bottom: 24px;">Har kuni bonus oling!</p>
+                    <button class="btn btn-primary" onclick="claimDaily()" style="margin-bottom: 12px;">
+                        Bonusni olish
+                    </button>
+                    <button class="btn btn-secondary" onclick="showPromo()">
+                        Promokod
+                    </button>
+                </div>
+            `;
+            showModal('Bonuslar', 'Kunlik sovg\'alar', content);
+        }
+
+        function claimDaily() {
+            sendToBot('claim_daily');
+            closeModal();
+            // Eslatma: WebApp yopiladi
+        }
+
+        function showPromo() {
+            const content = `
+                <div class="form-group">
+                    <label class="form-label">Promokod</label>
+                    <input type="text" class="form-input" id="promoCode" placeholder="PROMO2024" style="text-transform: uppercase;">
+                </div>
+                <button class="btn btn-primary" onclick="applyPromo()">
+                    Faollashtirish
+                </button>
+            `;
+            showModal('Promokod', 'Kodni kiriting', content);
+        }
+
+        function applyPromo() {
+            const code = document.getElementById('promoCode').value.toUpperCase();
+            if (code) {
+                sendToBot('promo', { code });
+                closeModal();
+            }
+        }
+
+        function showPremium() {
+            const plans = [
+                { id: 'player', name: 'Premium Player', price: 2.0, daily: 0.10, features: ['$0.10 kunlik bonus', 'Asosiy imkoniyatlar'] },
+                { id: 'pro', name: 'Premium Pro', price: 4.0, daily: 0.15, features: ['$0.15 kunlik bonus', '+10% yutuq bonusi', 'Tezkor yordam'] },
+                { id: 'boss', name: 'Premium Boss', price: 6.0, daily: 0.25, features: ['$0.25 kunlik bonus', '+20% yutuq bonusi', '1 bepul turnir', 'VIP belgi'] }
+            ];
+
+            const content = `
+                <div class="list-items">
+                    ${plans.map(p => `
+                        <div class="list-item" onclick="buyPremium('${p.id}')">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${p.name}</div>
+                                <div class="list-item-price">$${p.price.toFixed(2)}</div>
+                            </div>
+                            <div class="list-item-description">
+                                ${p.features.map(f => `• ${f}`).join('<br>')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal('Premium Rejalar', 'Obunani tanlang', content);
+        }
+
+        function buyPremium(plan) {
+            if (userData.balance < 2.0 && plan === 'player') { // Oddiy tekshiruv
+                 tg.showAlert('Balans yetarli emas! Iltimos hisobni to\'ldiring.');
+                 return;
+            }
+            sendToBot('buy_premium', { plan });
+            closeModal();
+        }
+
+        function showShop() {
+            const games = [
+                { id: 'cod', name: 'Call of Duty', icon: '🎮', items: 2 },
+                { id: 'so2', name: 'Standoff 2', icon: '🎯', items: 2 }
+            ];
+
+            const content = `
+                <div class="list-items">
+                    ${games.map(g => `
+                        <div class="list-item" onclick="showGameShop('${g.id}')">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${g.icon} ${g.name}</div>
+                                <div style="color: var(--text-secondary);">→</div>
+                            </div>
+                            <div class="list-item-description">${g.items} mahsulot</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal('Do\'kon', 'O\'yin ichi valyutalari', content);
+        }
+
+        function showGameShop(game) {
+            const items = {
+                cod: [
+                    { name: 'Battle Pass', price: 3.00, desc: 'Mavsumiy o\'tish va mukofotlar' },
+                    { name: 'CP', price: 1.50, desc: 'Call of Duty Points' }
+                ],
+                so2: [
+                    { name: 'Battle Pass', price: 2.00, desc: 'Mavsumiy o\'tish' },
+                    { name: 'Gold', price: 1.00, desc: 'Standoff 2 Gold' }
+                ]
+            };
+
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            // Eslatma: item.name botdagi bazadagi nom bilan bir xil bo'lishi kerak!
             
+            const content = `
+                <div class="list-items">
+                    ${items[game].map(item => `
+                        <div class="list-item" onclick="buyItem('${game}', '${item.name}')">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${item.name}</div>
+                                <div class="list-item-price">$${item.price.toFixed(2)}</div>
+                            </div>
+                            <div class="list-item-description">${item.desc}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal(gameName, 'Mavjud tovarlar', content);
+        }
+
+        function buyItem(game, item) {
+            sendToBot('buy_item', { game, item });
+            closeModal();
+        }
+
+        function showTournaments(game) {
+            const tournaments = {
+                cod: [
+                    { mode: 'Battle Royale', fee: 2.0, prize: 10.0, players: '8/16', info: 'Solo mode' },
+                    { mode: 'Team Deathmatch', fee: 1.5, prize: 7.5, players: '12/20', info: '5v5 format' },
+                    { mode: 'Search & Destroy', fee: 3.0, prize: 15.0, players: '6/10', info: 'Premium tournament' }
+                ],
+                so2: [
+                    { mode: 'Competitive 5v5', fee: 2.5, prize: 12.5, players: '9/16', info: 'Ranked match' },
+                    { mode: 'Arms Race', fee: 1.0, prize: 5.0, players: '14/20', info: 'Quick game' }
+                ]
+            };
+
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            
+            const content = `
+                <div class="list-items">
+                    ${tournaments[game].map((t, i) => `
+                        <div class="list-item" onclick="joinTournament('${game}', ${i})">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${t.mode}</div>
+                                <div class="list-item-price">$${t.prize.toFixed(2)}</div>
+                            </div>
+                            <div class="list-item-description">${t.info}</div>
+                            <div class="list-item-stats">
+                                <div class="stat">👥 ${t.players}</div>
+                                <div class="stat">💰 $${t.fee.toFixed(2)} kirish</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal(gameName, 'Faol turnirlar', content);
+        }
+
+        function joinTournament(game, index) {
+            if (userData.balance < 1.0) { // Minimal tekshiruv
+                 tg.showAlert('Balans yetarli emas!');
+                 return;
+            }
+            sendToBot('join_tournament', { game, index });
+            closeModal();
+        }
+
+        // Navigation
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+
+            if (tab === 'tournaments') {
+                showModal('Barcha Turnirlar', '', '<div class="loading"><div class="loading-spinner"></div>Yuklanmoqda...</div>');
+                setTimeout(() => showTournaments('cod'), 500);
+            } else if (tab === 'bonus') {
+                showBonus();
+            } else if (tab === 'profile') {
+                const content = `
+                    <div class="empty-state">
+                        <div class="avatar" style="width: 80px; height: 80px; font-size: 36px; margin: 0 auto 20px; border: 2px solid var(--border);">
+                            ${userData.full_name ? userData.full_name[0].toUpperCase() : '?'}
+                        </div>
+                        <h3 class="empty-title">${userData.full_name}</h3>
+                        <p class="empty-text" style="margin-bottom: 24px;">@${userData.username}</p>
+                        
+                        <div class="list-items">
+                            <div class="list-item">
+                                <div class="list-item-header">
+                                    <div class="list-item-title">Balans</div>
+                                    <div class="list-item-price">$${userData.balance.toFixed(2)}</div>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-header">
+                                    <div class="list-item-title">Obuna</div>
+                                    <div style="color: var(--text-secondary);">${userData.subscription || "Yo'q"}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                showModal('Profil', 'Sizning ma\'lumotlaringiz', content);
+            }
+        }
+
+        // Send data to bot (TUZATILDI)
+        function sendToBot(action, data = {}) {
+            const payload = {
+                action,
+                user_id: userData.user_id,
+                ...data
+            };
+            
+            console.log('Botga yuborilmoqda:', payload);
+            
+            // Mana shu qator avval kommentda edi, endi ishlaydi
             try {
-                // Загрузить начальные данные
-                await Promise.all([
-                    syncUserData(),
-                    syncTournaments(),
-                    syncLeaderboard()
-                ]);
-                
-                // Показать основной интерфейс
-                document.getElementById('mainContainer').style.display = 'block';
-                hideLoading();
-                
-                // Начать периодическую синхронизацию
-                syncInterval = setInterval(async () => {
-                    await syncUserData();
-                    await syncTournaments();
-                }, SYNC_INTERVAL);
-                
-                // Показать приветствие
-                setTimeout(() => {
-                    showNotification(`Welcome, ${userData.full_name || 'Player'}!`, 'success');
-                }, 1000);
-                
-            } catch (error) {
-                showNotification('Failed to initialize app', 'error');
-                hideLoading();
+                tg.sendData(JSON.stringify(payload));
+            } catch (e) {
+                alert("Botga yuborishda xatolik (Telegram ichida oching): " + e.message);
             }
         }
 
-        // Запуск приложения
-        window.addEventListener('DOMContentLoaded', initApp);
-
-        // Очистка при закрытии
-        window.addEventListener('beforeunload', () => {
-            if (syncInterval) {
-                clearInterval(syncInterval);
-            }
-        });
+        // Initialize app
+        init();
     </script>
 </body>
 </html>
