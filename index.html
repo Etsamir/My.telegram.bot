@@ -6,129 +6,654 @@
     <title>Game Tournament Elite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* SIZNING CSS KODINGIZ O'ZGARISHSIZ QOLDI */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --bg-primary: #000000; --bg-secondary: #0a0a0a; --bg-tertiary: #141414; --text-primary: #ffffff; --text-secondary: #b0b0b0; --text-tertiary: #808080; --accent: #ffffff; --border: rgba(255, 255, 255, 0.1); --glass: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --shadow: rgba(0, 0, 0, 0.5); }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow-x: hidden; padding-bottom: 80px; position: relative; }
-        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%); pointer-events: none; z-index: 0; }
-        .container { max-width: 100%; padding: 0; position: relative; z-index: 1; }
-        .glass { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
-        .header { padding: 24px 20px; background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%); position: relative; overflow: hidden; }
-        .header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%); }
-        .profile-section { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-        .avatar-container { position: relative; }
-        .avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; position: relative; overflow: hidden; }
-        .avatar::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%); }
-        .status-dot { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #ffffff; border: 2px solid var(--bg-primary); border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite; }
-        @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(0.9); } }
-        .user-info h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
-        .user-info p { font-size: 14px; color: var(--text-secondary); }
-        .balance-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 24px; position: relative; overflow: hidden; }
-        .balance-card::before { content: ''; position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); animation: rotate-gradient 10s linear infinite; }
-        @keyframes rotate-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .balance-content { position: relative; z-index: 1; }
-        .balance-label { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
-        .balance-amount { font-size: 42px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px; letter-spacing: -1px; }
-        .currency-symbol { font-size: 28px; color: var(--text-secondary); }
-        .currency-toggle { display: flex; gap: 8px; padding: 4px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid var(--border); }
-        .currency-btn { flex: 1; padding: 10px; border-radius: 8px; background: transparent; border: none; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.5px; }
-        .currency-btn.active { background: var(--accent); color: var(--bg-primary); box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); }
-        .main-content { padding: 24px 20px; }
-        .section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.5px; position: relative; padding-left: 16px; }
-        .section-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 20px; background: var(--accent); border-radius: 2px; }
-        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
-        .action-btn { aspect-ratio: 1; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
-        .action-btn::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%); opacity: 0; transition: opacity 0.3s; }
-        .action-btn:active { transform: scale(0.95); border-color: var(--accent); }
-        .action-btn:active::before { opacity: 1; }
-        .action-icon { font-size: 28px; filter: grayscale(100%); }
-        .action-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; letter-spacing: 0.3px; }
-        .premium-card { background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid var(--glass-border); border-radius: 24px; padding: 28px; margin-bottom: 32px; position: relative; overflow: hidden; }
-        .premium-card::before { content: ''; position: absolute; top: -100px; right: -100px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%); animation: float 6s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
-        .premium-content { position: relative; z-index: 1; }
-        .premium-badge { display: inline-block; padding: 6px 14px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
-        .premium-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
-        .premium-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; }
-        .premium-cta { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: var(--accent); color: var(--bg-primary); border: none; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.3s; letter-spacing: 0.3px; }
-        .premium-cta:active { transform: scale(0.95); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
-        .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
-        .game-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
-        .game-card:active { transform: scale(0.97); border-color: var(--accent); }
-        .game-image { width: 100%; height: 140px; background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); display: flex; align-items: center; justify-content: center; font-size: 56px; position: relative; overflow: hidden; }
-        .game-image::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%); }
-        .game-badge { position: absolute; top: 12px; right: 12px; padding: 6px 12px; background: rgba(255, 255, 255, 0.95); color: var(--bg-primary); border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; z-index: 1; }
-        .game-info { padding: 16px; }
-        .game-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
-        .game-subtitle { font-size: 12px; color: var(--text-secondary); }
-        .leaderboard { display: flex; flex-direction: column; gap: 12px; }
-        .leader-item { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 16px; transition: all 0.3s; position: relative; overflow: hidden; }
-        .leader-item::before { content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: var(--accent); opacity: 0; transition: opacity 0.3s; }
-        .leader-item:active::before { opacity: 1; }
-        .leader-rank { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
-        .leader-rank.gold { background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.05) 100%); border-color: rgba(255,215,0,0.3); }
-        .leader-rank.silver { background: linear-gradient(135deg, rgba(192,192,192,0.2) 0%, rgba(192,192,192,0.05) 100%); border-color: rgba(192,192,192,0.3); }
-        .leader-rank.bronze { background: linear-gradient(135deg, rgba(205,127,50,0.2) 0%, rgba(205,127,50,0.05) 100%); border-color: rgba(205,127,50,0.3); }
-        .leader-info { flex: 1; }
-        .leader-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-        .leader-username { font-size: 12px; color: var(--text-secondary); }
-        .leader-balance { font-size: 16px; font-weight: 700; white-space: nowrap; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: flex; justify-content: space-around; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 20px; cursor: pointer; transition: all 0.3s; border-radius: 12px; position: relative; }
-        .nav-item::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 0; height: 3px; background: var(--accent); border-radius: 0 0 2px 2px; transition: width 0.3s; }
-        .nav-item.active::before { width: 40%; }
-        .nav-item.active { background: rgba(255, 255, 255, 0.05); }
-        .nav-icon { font-size: 24px; filter: grayscale(100%); transition: filter 0.3s; }
-        .nav-item.active .nav-icon { filter: grayscale(0%); }
-        .nav-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.3px; }
-        .nav-item.active .nav-label { color: var(--text-primary); }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s; }
-        .modal.show { display: flex; opacity: 1; }
-        .modal-content { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 24px; padding: 32px 24px; max-width: 420px; width: 100%; max-height: 80vh; overflow-y: auto; position: relative; animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-close { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: all 0.3s; }
-        .modal-close:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.9); }
-        .modal-header { margin-bottom: 24px; }
-        .modal-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
-        .modal-subtitle { font-size: 14px; color: var(--text-secondary); }
-        .modal-body { margin-bottom: 24px; }
-        .form-group { margin-bottom: 20px; }
-        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-input { width: 100%; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; color: var(--text-primary); font-size: 16px; transition: all 0.3s; }
-        .form-input:focus { outline: none; border-color: var(--accent); background: rgba(255, 255, 255, 0.05); }
-        .form-input::placeholder { color: var(--text-tertiary); }
-        .form-hint { font-size: 12px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.3s; letter-spacing: 0.3px; }
-        .btn-primary { background: var(--accent); color: var(--bg-primary); }
-        .btn-primary:active { transform: scale(0.98); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
-        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--border); }
-        .btn-secondary:active { background: rgba(255, 255, 255, 0.08); }
-        .list-items { display: flex; flex-direction: column; gap: 12px; }
-        .list-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 16px; padding: 18px; cursor: pointer; transition: all 0.3s; }
-        .list-item:active { background: rgba(255, 255, 255, 0.05); border-color: var(--accent); transform: scale(0.98); }
-        .list-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .list-item-title { font-size: 16px; font-weight: 700; }
-        .list-item-price { padding: 6px 14px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; font-size: 14px; font-weight: 700; }
-        .list-item-description { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
-        .list-item-stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-tertiary); }
-        .stat { display: flex; align-items: center; gap: 6px; }
-        .loading { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
-        .loading-spinner { width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .empty-state { text-align: center; padding: 60px 20px; }
-        .empty-icon { font-size: 72px; margin-bottom: 16px; opacity: 0.3; filter: grayscale(100%); }
-        .empty-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-        .empty-text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
-        .fade-in { animation: fadeIn 0.6s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #141414;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --accent: #ffffff;
+            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .header {
+            padding: 24px 20px;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: #ffffff;
+            border: 2px solid var(--bg-primary);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.9); }
+        }
+
+        .user-info h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .user-info p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .balance-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            animation: rotate-gradient 10s linear infinite;
+        }
+
+        @keyframes rotate-gradient {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .balance-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 42px;
+            font-weight: 800;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .currency-symbol {
+            font-size: 28px;
+            color: var(--text-secondary);
+        }
+
+        .currency-toggle {
+            display: flex;
+            gap: 8px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .currency-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .currency-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .quick-actions {
+            padding: 0 20px 24px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .action-btn:active::before {
+            opacity: 1;
+        }
+
+        .action-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .action-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .games-section {
+            padding: 24px 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .game-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .game-card:active::before {
+            opacity: 1;
+        }
+
+        .game-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .game-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .game-info h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .game-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 12px 20px 20px;
+            z-index: 100;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--text-primary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            align-items: flex-end;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 0 auto 16px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .list-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-item {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .list-item:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .list-item-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .list-item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .list-item-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .list-item-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary:active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--text-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="header">
             <div class="profile-section">
                 <div class="avatar-container">
@@ -136,117 +661,124 @@
                     <div class="status-dot"></div>
                 </div>
                 <div class="user-info">
-                    <h2 id="userName">Yuklanmoqda...</h2>
-                    <p id="userStatus">Elite Player</p>
+                    <h2 id="userName">Loading...</h2>
+                    <p id="userHandle">@username</p>
                 </div>
             </div>
-            
+
             <div class="balance-card">
                 <div class="balance-content">
-                    <div class="balance-label">Balans</div>
+                    <div class="balance-label">Ваш баланс</div>
                     <div class="balance-amount">
-                        <span id="balanceAmount">0.00</span>
                         <span class="currency-symbol" id="currencySymbol">$</span>
+                        <span id="balanceAmount">0.00</span>
                     </div>
                     <div class="currency-toggle">
-                        <button class="currency-btn active" data-currency="USD">USD</button>
-                        <button class="currency-btn" data-currency="UZS">UZS</button>
+                        <button class="currency-btn active" onclick="switchCurrency('USD')">USD</button>
+                        <button class="currency-btn" onclick="switchCurrency('UZS')">UZS</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="main-content">
-            <h3 class="section-title">Tezkor</h3>
-            <div class="quick-actions fade-in">
-                <div class="action-btn" onclick="showTopup()">
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="actions-grid">
+                <div class="action-btn" onclick="showDeposit()">
                     <div class="action-icon">💳</div>
-                    <div class="action-label">Depozit</div>
+                    <div class="action-text">Пополнить</div>
                 </div>
                 <div class="action-btn" onclick="showWithdraw()">
                     <div class="action-icon">💸</div>
-                    <div class="action-label">Yechish</div>
+                    <div class="action-text">Вывести</div>
                 </div>
-                <div class="action-btn" onclick="showBonus()">
+                <div class="action-btn" onclick="showDaily()">
                     <div class="action-icon">🎁</div>
-                    <div class="action-label">Bonus</div>
+                    <div class="action-text">Ежедневный</div>
                 </div>
-                <div class="action-btn" onclick="showShop()">
-                    <div class="action-icon">🛍️</div>
-                    <div class="action-label">Do'kon</div>
-                </div>
-            </div>
-
-            <div class="premium-card fade-in">
-                <div class="premium-content">
-                    <div class="premium-badge">Premium</div>
-                    <h3 class="premium-title">Elite Status</h3>
-                    <p class="premium-desc">Kunlik bonuslar, bepul turnirlar va maxsus mukofotlar</p>
-                    <button class="premium-cta" onclick="showPremium()">
-                        <span>Tanlash</span>
-                        <span>→</span>
-                    </button>
-                </div>
-            </div>
-
-            <h3 class="section-title">O'yinlar</h3>
-            <div class="games-grid fade-in">
-                <div class="game-card" onclick="showTournaments('cod')">
-                    <div class="game-image">
-                        🎮
-                        <div class="game-badge">3 Active</div>
-                    </div>
-                    <div class="game-info">
-                        <div class="game-title">Call of Duty</div>
-                        <div class="game-subtitle">Mobile</div>
-                    </div>
-                </div>
-                <div class="game-card" onclick="showTournaments('so2')">
-                    <div class="game-image">
-                        🎯
-                        <div class="game-badge">2 Active</div>
-                    </div>
-                    <div class="game-info">
-                        <div class="game-title">Standoff 2</div>
-                        <div class="game-subtitle">Shooter</div>
-                    </div>
-                </div>
-            </div>
-
-            <h3 class="section-title">Reyting</h3>
-            <div class="leaderboard fade-in" id="leaderboard">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div>Yuklanmoqda...</div>
+                <div class="action-btn" onclick="showPromo()">
+                    <div class="action-icon">🎟️</div>
+                    <div class="action-text">Промокод</div>
                 </div>
             </div>
         </div>
 
-        <div class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('home')">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-label">Asosiy</div>
+        <!-- Games Section -->
+        <div class="games-section">
+            <div class="section-header">
+                <h2 class="section-title">Игры</h2>
             </div>
-            <div class="nav-item" onclick="switchTab('tournaments')">
-                <div class="nav-icon">🏆</div>
-                <div class="nav-label">Turnir</div>
+
+            <div class="game-card" onclick="showGameMenu('cod')">
+                <div class="game-header">
+                    <div class="game-icon">🎮</div>
+                    <div class="game-info">
+                        <h3>Call of Duty</h3>
+                        <p>Mobile tournaments</p>
+                    </div>
+                </div>
+                <div class="game-stats">
+                    <div class="stat">
+                        <div class="stat-label">Турниры</div>
+                        <div class="stat-value" id="codTournaments">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Игроки</div>
+                        <div class="stat-value" id="codPlayers">0</div>
+                    </div>
+                </div>
             </div>
-            <div class="nav-item" onclick="switchTab('bonus')">
-                <div class="nav-icon">🎁</div>
-                <div class="nav-label">Bonus</div>
-            </div>
-            <div class="nav-item" onclick="switchTab('profile')">
-                <div class="nav-icon">👤</div>
-                <div class="nav-label">Profil</div>
+
+            <div class="game-card" onclick="showGameMenu('so2')">
+                <div class="game-header">
+                    <div class="game-icon">🎯</div>
+                    <div class="game-info">
+                        <h3>Standoff 2</h3>
+                        <p>Competitive matches</p>
+                    </div>
+                </div>
+                <div class="game-stats">
+                    <div class="stat">
+                        <div class="stat-label">Турниры</div>
+                        <div class="stat-value" id="so2Tournaments">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Игроки</div>
+                        <div class="stat-value" id="so2Players">0</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <div class="modal-close" onclick="closeModal()">×</div>
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-grid">
+            <div class="nav-item active" onclick="switchTab('home')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Главная</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('tournaments')">
+                <div class="nav-icon">🏆</div>
+                <div class="nav-label">Турниры</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('bonus')">
+                <div class="nav-icon">🎁</div>
+                <div class="nav-label">Бонусы</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile')">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Профиль</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle"></h3>
+                <div class="modal-handle"></div>
+                <div class="modal-title" id="modalTitle">Title</div>
                 <div class="modal-subtitle" id="modalSubtitle"></div>
             </div>
             <div class="modal-body" id="modalBody"></div>
@@ -254,233 +786,501 @@
     </div>
 
     <script>
-        // Initialize Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
-        tg.setHeaderColor('#000000');
-        tg.setBackgroundColor('#000000');
+        tg.enableClosingConfirmation();
 
-        // URL parametrlaridan User ma'lumotlarini o'qish (Bot yuborgan)
-        const urlParams = new URLSearchParams(window.location.search);
-        const userParam = urlParams.get('user');
+        // API Configuration
+        const API_BASE = 'http://localhost:5000/api';
         
-        // Default ma'lumotlar
+        // User data
         let userData = {
-            user_id: tg.initDataUnsafe?.user?.id || 0,
-            username: tg.initDataUnsafe?.user?.username || 'user',
-            full_name: tg.initDataUnsafe?.user?.first_name || 'Player',
+            user_id: null,
+            username: 'user',
+            full_name: 'User',
             balance: 0,
+            subscription: 'none',
             currency: 'USD',
-            subscription: "Yo'q"
+            cod_nick: '',
+            cod_uid: '',
+            so_nick: '',
+            so_uid: '',
+            last_daily: null,
+            free_tournaments: 0
         };
 
-        // Agar URL da ma'lumot bo'lsa, uni o'qiymiz
-        if (userParam) {
+        let currentCurrency = 'USD';
+        const USD_TO_UZS_RATE = 12000;
+
+        // Initialize
+        async function init() {
+            console.log('Initializing app...');
+            
+            // Get Telegram user data
+            const telegramUser = tg.initDataUnsafe?.user;
+            if (telegramUser) {
+                userData.user_id = telegramUser.id;
+                userData.username = telegramUser.username || 'user';
+                userData.full_name = telegramUser.first_name || 'User';
+                
+                // Update UI with Telegram data
+                document.getElementById('userName').textContent = userData.full_name;
+                document.getElementById('userHandle').textContent = `@${userData.username}`;
+                document.getElementById('userAvatar').textContent = userData.full_name[0].toUpperCase();
+            }
+
+            // Load user data from API
+            await loadUserData();
+            
+            // Load tournaments
+            await loadTournaments();
+            
+            console.log('App initialized:', userData);
+        }
+
+        // API Functions
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData
+            };
+
+            const options = {
+                method,
+                headers
+            };
+
+            if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+
             try {
-                const parsedUser = JSON.parse(userParam);
-                userData = { ...userData, ...parsedUser };
-                console.log("Botdan kelgan ma'lumot yuklandi:", userData);
-            } catch (e) {
-                console.error("User ma'lumotini o'qishda xatolik:", e);
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                tg.showAlert('Ошибка подключения к серверу');
+                return null;
             }
         }
 
-        const USD_TO_UZS = 12000;
-
-        // Initialize
-        function init() {
-            updateUI();
-            loadLeaderboard();
-            setupCurrencyToggle();
+        async function loadUserData() {
+            const data = await apiCall('/user');
+            if (data) {
+                userData = { ...userData, ...data };
+                updateBalance();
+                console.log('User data loaded:', userData);
+            }
         }
 
-        function updateUI() {
-            document.getElementById('userName').textContent = userData.full_name;
-            document.getElementById('userAvatar').textContent = userData.full_name ? userData.full_name[0].toUpperCase() : '?';
-            updateBalance();
-            
-            // Statusni yangilash
-            const sub = userData.subscription || "Yo'q";
-            let statusText = "Player";
-            if (sub === 'pro') statusText = "Pro Player";
-            if (sub === 'boss') statusText = "Boss Player";
-            document.getElementById('userStatus').textContent = statusText;
+        async function loadTournaments() {
+            // Load COD tournaments
+            const codTournaments = await apiCall('/tournaments?game=cod');
+            if (codTournaments) {
+                document.getElementById('codTournaments').textContent = codTournaments.length;
+                let totalPlayers = 0;
+                codTournaments.forEach(t => totalPlayers += t.participants_count);
+                document.getElementById('codPlayers').textContent = totalPlayers;
+            }
+
+            // Load Standoff 2 tournaments
+            const so2Tournaments = await apiCall('/tournaments?game=standoff');
+            if (so2Tournaments) {
+                document.getElementById('so2Tournaments').textContent = so2Tournaments.length;
+                let totalPlayers = 0;
+                so2Tournaments.forEach(t => totalPlayers += t.participants_count);
+                document.getElementById('so2Players').textContent = totalPlayers;
+            }
         }
 
         function updateBalance() {
-            const currency = userData.currency;
-            const amount = currency === 'USD' ? userData.balance : userData.balance * USD_TO_UZS;
-            const symbol = currency === 'USD' ? '$' : ' so\'m';
+            const balance = currentCurrency === 'USD' 
+                ? userData.balance 
+                : userData.balance * USD_TO_UZS_RATE;
             
-            document.getElementById('balanceAmount').textContent = amount.toFixed(2);
-            document.getElementById('currencySymbol').textContent = symbol;
-            
-            document.querySelectorAll('.currency-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.currency === currency);
-            });
+            document.getElementById('balanceAmount').textContent = balance.toFixed(currentCurrency === 'USD' ? 2 : 0);
+            document.getElementById('currencySymbol').textContent = currentCurrency === 'USD' ? '$' : 'сўм';
         }
 
-        function setupCurrencyToggle() {
-            document.querySelectorAll('.currency-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    userData.currency = btn.dataset.currency;
-                    updateBalance();
-                    // Botga xabar jo'natmaymiz, faqat vizual o'zgaradi
-                    tg.HapticFeedback.impactOccurred('light');
-                });
-            });
-        }
-
-        // Fake Load User Data O'CHIRILDI. Endi URL dan o'qiydi.
-
-        // Load leaderboard (Hozircha statik, keyinchalik botdan olish mumkin)
-        async function loadLeaderboard() {
-            const container = document.getElementById('leaderboard');
+        function switchCurrency(currency) {
+            currentCurrency = currency;
             
-            setTimeout(() => {
-                const leaders = [
-                    { rank: 1, name: 'ProGamer', username: '@progamer', balance: 156.50, emoji: '🥇' },
-                    { rank: 2, name: 'SkillMaster', username: '@skillm', balance: 142.30, emoji: '🥈' },
-                    { rank: 3, name: 'TopPlayer', username: '@topp', balance: 128.90, emoji: '🥉' }
-                ];
-
-                const rankClass = { 1: 'gold', 2: 'silver', 3: 'bronze' };
-
-                container.innerHTML = leaders.map(l => `
-                    <div class="leader-item">
-                        <div class="leader-rank ${rankClass[l.rank] || ''}">${l.emoji}</div>
-                        <div class="leader-info">
-                            <div class="leader-name">${l.name}</div>
-                            <div class="leader-username">${l.username}</div>
-                        </div>
-                        <div class="leader-balance">$${l.balance.toFixed(2)}</div>
-                    </div>
-                `).join('');
-            }, 800);
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            updateBalance();
+            tg.HapticFeedback.impactOccurred('light');
         }
 
         // Modal functions
         function showModal(title, subtitle, content) {
             document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalSubtitle').textContent = subtitle || '';
+            document.getElementById('modalSubtitle').textContent = subtitle;
             document.getElementById('modalBody').innerHTML = content;
-            document.getElementById('modal').classList.add('show');
+            document.getElementById('modalOverlay').classList.add('active');
             tg.HapticFeedback.impactOccurred('medium');
         }
 
         function closeModal() {
-            document.getElementById('modal').classList.remove('show');
-            tg.HapticFeedback.impactOccurred('light');
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeModal();
+            }
         }
 
         // Action functions
-        function showTopup() {
+        function showDeposit() {
             const content = `
                 <div class="form-group">
-                    <label class="form-label">Miqdor ($)</label>
-                    <input type="number" class="form-input" id="topupAmount" placeholder="10.00" min="1" step="0.01">
-                    <div class="form-hint">Minimum depozit: $1.00</div>
+                    <label class="form-label">Сумма пополнения (USD)</label>
+                    <input type="number" class="form-input" id="depositAmount" placeholder="10.00" min="1" step="0.01">
                 </div>
-                <button class="btn btn-primary" onclick="processTopup()">
-                    To'ldirish
+                <button class="btn btn-primary" onclick="processDeposit()">
+                    Пополнить через SmartGlocal
                 </button>
             `;
-            showModal('Depozit', 'Hisobni to\'ldirish', content);
+            showModal('Пополнение баланса', 'Введите сумму для пополнения', content);
         }
 
-        function processTopup() {
-            const amount = document.getElementById('topupAmount').value;
-            if (amount && amount >= 1) {
-                // Bot hozir faqat "transaction" yozadi, real to'lov integratsiyasi botda yo'q
-                // Shuning uchun biz shunchaki botga xabar beramiz
-                // Agar botda "create_transaction" logikasi bo'lsa, u ishlaydi
-                tg.showAlert('Botga so\'rov yuborildi. To\'lov tizimi tez orada ishga tushadi.');
+        async function processDeposit() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            if (!amount || amount < 1) {
+                tg.showAlert('Введите корректную сумму');
+                return;
+            }
+
+            const result = await apiCall('/deposit', 'POST', { amount });
+            if (result && result.payment_url) {
+                tg.openLink(result.payment_url);
                 closeModal();
-            } else {
-                tg.showAlert('Iltimos kamida $1 kiriting');
             }
         }
 
         function showWithdraw() {
             const content = `
                 <div class="form-group">
-                    <label class="form-label">Karta raqami</label>
-                    <input type="text" class="form-input" id="cardNumber" placeholder="8600 1234 5678 9012">
+                    <label class="form-label">Номер карты</label>
+                    <input type="text" class="form-input" id="cardNumber" placeholder="8600 1234 5678 9012" maxlength="19">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Miqdor ($)</label>
-                    <input type="number" class="form-input" id="withdrawAmount" placeholder="10.00" min="5" step="0.01">
-                    <div class="form-hint">Minimum: $5.00 • Sizda bor: $${userData.balance.toFixed(2)}</div>
+                    <label class="form-label">Сумма вывода (USD)</label>
+                    <input type="number" class="form-input" id="withdrawAmount" placeholder="10.00" min="1" step="0.01">
                 </div>
+                <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">
+                    Доступно: $${userData.balance.toFixed(2)}
+                </p>
                 <button class="btn btn-primary" onclick="processWithdraw()">
-                    Yechib olish
+                    Вывести средства
                 </button>
             `;
-            showModal('Pul yechish', 'Kartaga o\'tkazish', content);
+            showModal('Вывод средств', 'Введите данные для вывода', content);
         }
 
-        function processWithdraw() {
-            const card = document.getElementById('cardNumber').value;
-            const amount = document.getElementById('withdrawAmount').value;
-            if (card && amount && amount >= 5 && amount <= userData.balance) {
-                // Hozir botda "withdraw" action yo'q, shuning uchun shunchaki yopamiz
-                tg.showAlert('So\'rov qabul qilindi! Adminlar ko\'rib chiqadi.');
+        async function processWithdraw() {
+            const card = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            
+            if (!card || card.length < 16) {
+                tg.showAlert('Введите корректный номер карты');
+                return;
+            }
+            
+            if (!amount || amount < 1) {
+                tg.showAlert('Введите корректную сумму');
+                return;
+            }
+            
+            if (amount > userData.balance) {
+                tg.showAlert('Недостаточно средств');
+                return;
+            }
+
+            const result = await apiCall('/withdraw', 'POST', { card_number: card, amount });
+            if (result && result.success) {
+                tg.showAlert('Заявка на вывод создана!');
+                await loadUserData();
                 closeModal();
-            } else {
-                tg.showAlert('Balans yetarli emas yoki ma\'lumot xato');
             }
         }
 
-        function showBonus() {
+        function showDaily() {
+            const canClaim = !userData.last_daily || 
+                new Date().toDateString() !== new Date(userData.last_daily).toDateString();
+            
+            const dailyAmount = userData.subscription === 'player' ? 0.10 :
+                               userData.subscription === 'pro' ? 0.15 :
+                               userData.subscription === 'boss' ? 0.25 : 0.05;
+
             const content = `
-                <div class="empty-state" style="padding: 20px;">
+                <div class="empty-state">
                     <div class="empty-icon">🎁</div>
-                    <h4 class="empty-title">Kunlik Bonus</h4>
-                    <p class="empty-text" style="margin-bottom: 24px;">Har kuni bonus oling!</p>
-                    <button class="btn btn-primary" onclick="claimDaily()" style="margin-bottom: 12px;">
-                        Bonusni olish
-                    </button>
-                    <button class="btn btn-secondary" onclick="showPromo()">
-                        Promokod
-                    </button>
+                    <h3 class="empty-title">Ежедневный бонус</h3>
+                    <p class="empty-text" style="margin-bottom: 24px;">
+                        ${canClaim ? 
+                            `Получите $${dailyAmount.toFixed(2)} прямо сейчас!` : 
+                            'Возвращайтесь завтра за новым бонусом!'
+                        }
+                    </p>
+                    ${canClaim ? 
+                        `<button class="btn btn-primary" onclick="claimDaily()">Получить бонус</button>` : 
+                        '<p style="color: var(--text-secondary);">Уже получено сегодня</p>'
+                    }
                 </div>
             `;
-            showModal('Bonuslar', 'Kunlik sovg\'alar', content);
+            showModal('Ежедневный бонус', '', content);
         }
 
-        function claimDaily() {
-            sendToBot('claim_daily');
-            closeModal();
-            // Eslatma: WebApp yopiladi
+        async function claimDaily() {
+            const result = await apiCall('/daily', 'POST');
+            if (result && result.success) {
+                tg.showAlert(`Получено $${result.amount.toFixed(2)}!`);
+                await loadUserData();
+                closeModal();
+            }
         }
 
         function showPromo() {
             const content = `
                 <div class="form-group">
-                    <label class="form-label">Promokod</label>
+                    <label class="form-label">Промокод</label>
                     <input type="text" class="form-input" id="promoCode" placeholder="PROMO2024" style="text-transform: uppercase;">
                 </div>
                 <button class="btn btn-primary" onclick="applyPromo()">
-                    Faollashtirish
+                    Активировать
                 </button>
             `;
-            showModal('Promokod', 'Kodni kiriting', content);
+            showModal('Промокод', 'Введите промокод', content);
         }
 
-        function applyPromo() {
+        async function applyPromo() {
             const code = document.getElementById('promoCode').value.toUpperCase();
-            if (code) {
-                sendToBot('promo', { code });
+            if (!code) {
+                tg.showAlert('Введите промокод');
+                return;
+            }
+
+            const result = await apiCall('/promo', 'POST', { code });
+            if (result && result.success) {
+                tg.showAlert(`Промокод активирован! +$${result.amount.toFixed(2)}`);
+                await loadUserData();
+                closeModal();
+            } else {
+                tg.showAlert('Неверный промокод');
+            }
+        }
+
+        async function showGameMenu(game) {
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            const content = `
+                <div class="list-items">
+                    <div class="list-item" onclick="showTournaments('${game}')">
+                        <div class="list-item-header">
+                            <div class="list-item-title">🏆 Турниры</div>
+                            <div style="color: var(--text-secondary);">→</div>
+                        </div>
+                        <div class="list-item-description">Участвуйте в соревнованиях</div>
+                    </div>
+                    <div class="list-item" onclick="showShop('${game}')">
+                        <div class="list-item-header">
+                            <div class="list-item-title">🛍️ Магазин</div>
+                            <div style="color: var(--text-secondary);">→</div>
+                        </div>
+                        <div class="list-item-description">Купить игровые предметы</div>
+                    </div>
+                    <div class="list-item" onclick="showProfile('${game}')">
+                        <div class="list-item-header">
+                            <div class="list-item-title">⚙️ Профиль игры</div>
+                            <div style="color: var(--text-secondary);">→</div>
+                        </div>
+                        <div class="list-item-description">Настройте ник и UID</div>
+                    </div>
+                </div>
+            `;
+            showModal(gameName, 'Выберите действие', content);
+        }
+
+        async function showTournaments(game) {
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            const apiGame = game === 'cod' ? 'cod' : 'standoff';
+            
+            showModal(gameName, 'Загрузка турниров...', '<div class="loading"><div class="loading-spinner"></div></div>');
+            
+            const tournaments = await apiCall(`/tournaments?game=${apiGame}`);
+            
+            if (!tournaments || tournaments.length === 0) {
+                const content = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🏆</div>
+                        <h3 class="empty-title">Нет активных турниров</h3>
+                        <p class="empty-text">Турниры скоро появятся!</p>
+                    </div>
+                `;
+                showModal(gameName, 'Турниры', content);
+                return;
+            }
+
+            const content = `
+                <div class="list-items">
+                    ${tournaments.map(t => `
+                        <div class="list-item" onclick="joinTournament(${t.id})">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${t.mode}</div>
+                                <div class="list-item-price">$${t.prize.toFixed(2)}</div>
+                            </div>
+                            <div class="list-item-description">${t.info}</div>
+                            <div class="list-item-stats">
+                                <div class="stat">👥 ${t.participants_count}/${t.max_participants}</div>
+                                <div class="stat">💰 $${t.fee.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal(gameName, 'Активные турниры', content);
+        }
+
+        async function joinTournament(tournamentId) {
+            const result = await apiCall(`/tournament/${tournamentId}/join`, 'POST');
+            if (result && result.success) {
+                tg.showAlert('Вы успешно присоединились к турниру!');
+                await loadUserData();
+                await loadTournaments();
                 closeModal();
             }
         }
 
+        async function showShop(game) {
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            const apiGame = game === 'cod' ? 'cod' : 'standoff';
+            
+            showModal(gameName, 'Загрузка магазина...', '<div class="loading"><div class="loading-spinner"></div></div>');
+            
+            const items = await apiCall(`/shop/items?game=${apiGame}`);
+            
+            if (!items || items.length === 0) {
+                const content = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🛍️</div>
+                        <h3 class="empty-title">Магазин пуст</h3>
+                        <p class="empty-text">Предметы скоро появятся!</p>
+                    </div>
+                `;
+                showModal(gameName, 'Магазин', content);
+                return;
+            }
+
+            const content = `
+                <div class="list-items">
+                    ${items.map(item => `
+                        <div class="list-item" onclick="buyItem(${item.id})">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${item.name}</div>
+                                <div class="list-item-price">$${item.price.toFixed(2)}</div>
+                            </div>
+                            <div class="list-item-description">${item.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal(gameName, 'Магазин', content);
+        }
+
+        async function buyItem(itemId) {
+            const result = await apiCall(`/shop/buy/${itemId}`, 'POST');
+            if (result && result.success) {
+                tg.showAlert('Покупка успешно выполнена!');
+                await loadUserData();
+                closeModal();
+            }
+        }
+
+        function showProfile(game) {
+            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
+            const nick = game === 'cod' ? userData.cod_nick : userData.so_nick;
+            const uid = game === 'cod' ? userData.cod_uid : userData.so_uid;
+            
+            const content = `
+                <div class="form-group">
+                    <label class="form-label">Никнейм в игре</label>
+                    <input type="text" class="form-input" id="gameNick" placeholder="Ваш ник" value="${nick || ''}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">UID игрока</label>
+                    <input type="text" class="form-input" id="gameUid" placeholder="Ваш UID" value="${uid || ''}">
+                </div>
+                <button class="btn btn-primary" onclick="saveGameProfile('${game}')">
+                    Сохранить профиль
+                </button>
+            `;
+            showModal(gameName, 'Настройка профиля', content);
+        }
+
+        async function saveGameProfile(game) {
+            const nick = document.getElementById('gameNick').value;
+            const uid = document.getElementById('gameUid').value;
+            
+            if (!nick || !uid) {
+                tg.showAlert('Заполните все поля');
+                return;
+            }
+
+            const field = game === 'cod' ? 'cod' : 'so';
+            const result = await apiCall('/user/update', 'POST', {
+                [`${field}_nick`]: nick,
+                [`${field}_uid`]: uid
+            });
+            
+            if (result && result.success) {
+                tg.showAlert('Профиль сохранен!');
+                await loadUserData();
+                closeModal();
+            }
+        }
+
+        function showBonus() {
+            const content = `
+                <div class="list-items">
+                    <div class="list-item" onclick="showDaily()">
+                        <div class="list-item-header">
+                            <div class="list-item-title">🎁 Ежедневный бонус</div>
+                            <div style="color: var(--text-secondary);">→</div>
+                        </div>
+                        <div class="list-item-description">Получайте бонусы каждый день</div>
+                    </div>
+                    <div class="list-item" onclick="showPremium()">
+                        <div class="list-item-header">
+                            <div class="list-item-title">⭐ Premium подписки</div>
+                            <div style="color: var(--text-secondary);">→</div>
+                        </div>
+                        <div class="list-item-description">Увеличьте свои бонусы</div>
+                    </div>
+                    <div class="list-item" onclick="showPromo()">
+                        <div class="list-item-header">
+                            <div class="list-item-title">🎟️ Промокоды</div>
+                            <div style="color: var(--text-secondary);">→</div>
+                        </div>
+                        <div class="list-item-description">Активируйте промокод</div>
+                    </div>
+                </div>
+            `;
+            showModal('Бонусы', 'Получайте дополнительные награды', content);
+        }
+
         function showPremium() {
             const plans = [
-                { id: 'player', name: 'Premium Player', price: 2.0, daily: 0.10, features: ['$0.10 kunlik bonus', 'Asosiy imkoniyatlar'] },
-                { id: 'pro', name: 'Premium Pro', price: 4.0, daily: 0.15, features: ['$0.15 kunlik bonus', '+10% yutuq bonusi', 'Tezkor yordam'] },
-                { id: 'boss', name: 'Premium Boss', price: 6.0, daily: 0.25, features: ['$0.25 kunlik bonus', '+20% yutuq bonusi', '1 bepul turnir', 'VIP belgi'] }
+                { id: 'player', name: 'Premium Player', price: 2.0, daily: 0.10, features: ['$0.10 ежедневно', 'Базовые привилегии'] },
+                { id: 'pro', name: 'Premium Pro', price: 4.0, daily: 0.15, features: ['$0.15 ежедневно', '+10% к выигрышу', 'Приоритетная поддержка'] },
+                { id: 'boss', name: 'Premium Boss', price: 6.0, daily: 0.25, features: ['$0.25 ежедневно', '+20% к выигрышу', '1 бесплатный турнир', 'VIP значок'] }
             ];
 
             const content = `
@@ -498,118 +1298,16 @@
                     `).join('')}
                 </div>
             `;
-            showModal('Premium Rejalar', 'Obunani tanlang', content);
+            showModal('Premium подписки', 'Выберите план', content);
         }
 
-        function buyPremium(plan) {
-            if (userData.balance < 2.0 && plan === 'player') { // Oddiy tekshiruv
-                 tg.showAlert('Balans yetarli emas! Iltimos hisobni to\'ldiring.');
-                 return;
+        async function buyPremium(plan) {
+            const result = await apiCall('/premium/buy', 'POST', { plan });
+            if (result && result.success) {
+                tg.showAlert('Premium подписка активирована!');
+                await loadUserData();
+                closeModal();
             }
-            sendToBot('buy_premium', { plan });
-            closeModal();
-        }
-
-        function showShop() {
-            const games = [
-                { id: 'cod', name: 'Call of Duty', icon: '🎮', items: 2 },
-                { id: 'so2', name: 'Standoff 2', icon: '🎯', items: 2 }
-            ];
-
-            const content = `
-                <div class="list-items">
-                    ${games.map(g => `
-                        <div class="list-item" onclick="showGameShop('${g.id}')">
-                            <div class="list-item-header">
-                                <div class="list-item-title">${g.icon} ${g.name}</div>
-                                <div style="color: var(--text-secondary);">→</div>
-                            </div>
-                            <div class="list-item-description">${g.items} mahsulot</div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            showModal('Do\'kon', 'O\'yin ichi valyutalari', content);
-        }
-
-        function showGameShop(game) {
-            const items = {
-                cod: [
-                    { name: 'Battle Pass', price: 3.00, desc: 'Mavsumiy o\'tish va mukofotlar' },
-                    { name: 'CP', price: 1.50, desc: 'Call of Duty Points' }
-                ],
-                so2: [
-                    { name: 'Battle Pass', price: 2.00, desc: 'Mavsumiy o\'tish' },
-                    { name: 'Gold', price: 1.00, desc: 'Standoff 2 Gold' }
-                ]
-            };
-
-            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-            // Eslatma: item.name botdagi bazadagi nom bilan bir xil bo'lishi kerak!
-            
-            const content = `
-                <div class="list-items">
-                    ${items[game].map(item => `
-                        <div class="list-item" onclick="buyItem('${game}', '${item.name}')">
-                            <div class="list-item-header">
-                                <div class="list-item-title">${item.name}</div>
-                                <div class="list-item-price">$${item.price.toFixed(2)}</div>
-                            </div>
-                            <div class="list-item-description">${item.desc}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            showModal(gameName, 'Mavjud tovarlar', content);
-        }
-
-        function buyItem(game, item) {
-            sendToBot('buy_item', { game, item });
-            closeModal();
-        }
-
-        function showTournaments(game) {
-            const tournaments = {
-                cod: [
-                    { mode: 'Battle Royale', fee: 2.0, prize: 10.0, players: '8/16', info: 'Solo mode' },
-                    { mode: 'Team Deathmatch', fee: 1.5, prize: 7.5, players: '12/20', info: '5v5 format' },
-                    { mode: 'Search & Destroy', fee: 3.0, prize: 15.0, players: '6/10', info: 'Premium tournament' }
-                ],
-                so2: [
-                    { mode: 'Competitive 5v5', fee: 2.5, prize: 12.5, players: '9/16', info: 'Ranked match' },
-                    { mode: 'Arms Race', fee: 1.0, prize: 5.0, players: '14/20', info: 'Quick game' }
-                ]
-            };
-
-            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-            
-            const content = `
-                <div class="list-items">
-                    ${tournaments[game].map((t, i) => `
-                        <div class="list-item" onclick="joinTournament('${game}', ${i})">
-                            <div class="list-item-header">
-                                <div class="list-item-title">${t.mode}</div>
-                                <div class="list-item-price">$${t.prize.toFixed(2)}</div>
-                            </div>
-                            <div class="list-item-description">${t.info}</div>
-                            <div class="list-item-stats">
-                                <div class="stat">👥 ${t.players}</div>
-                                <div class="stat">💰 $${t.fee.toFixed(2)} kirish</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            showModal(gameName, 'Faol turnirlar', content);
-        }
-
-        function joinTournament(game, index) {
-            if (userData.balance < 1.0) { // Minimal tekshiruv
-                 tg.showAlert('Balans yetarli emas!');
-                 return;
-            }
-            sendToBot('join_tournament', { game, index });
-            closeModal();
         }
 
         // Navigation
@@ -621,55 +1319,99 @@
             tg.HapticFeedback.impactOccurred('light');
 
             if (tab === 'tournaments') {
-                showModal('Barcha Turnirlar', '', '<div class="loading"><div class="loading-spinner"></div>Yuklanmoqda...</div>');
-                setTimeout(() => showTournaments('cod'), 500);
+                showAllTournaments();
             } else if (tab === 'bonus') {
                 showBonus();
             } else if (tab === 'profile') {
-                const content = `
-                    <div class="empty-state">
-                        <div class="avatar" style="width: 80px; height: 80px; font-size: 36px; margin: 0 auto 20px; border: 2px solid var(--border);">
-                            ${userData.full_name ? userData.full_name[0].toUpperCase() : '?'}
-                        </div>
-                        <h3 class="empty-title">${userData.full_name}</h3>
-                        <p class="empty-text" style="margin-bottom: 24px;">@${userData.username}</p>
-                        
-                        <div class="list-items">
-                            <div class="list-item">
-                                <div class="list-item-header">
-                                    <div class="list-item-title">Balans</div>
-                                    <div class="list-item-price">$${userData.balance.toFixed(2)}</div>
-                                </div>
-                            </div>
-                            <div class="list-item">
-                                <div class="list-item-header">
-                                    <div class="list-item-title">Obuna</div>
-                                    <div style="color: var(--text-secondary);">${userData.subscription || "Yo'q"}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                showModal('Profil', 'Sizning ma\'lumotlaringiz', content);
+                showUserProfile();
             }
         }
 
-        // Send data to bot (TUZATILDI)
-        function sendToBot(action, data = {}) {
-            const payload = {
-                action,
-                user_id: userData.user_id,
-                ...data
-            };
+        async function showAllTournaments() {
+            showModal('Все турниры', 'Загрузка...', '<div class="loading"><div class="loading-spinner"></div></div>');
             
-            console.log('Botga yuborilmoqda:', payload);
+            const codTournaments = await apiCall('/tournaments?game=cod');
+            const so2Tournaments = await apiCall('/tournaments?game=standoff');
             
-            // Mana shu qator avval kommentda edi, endi ishlaydi
-            try {
-                tg.sendData(JSON.stringify(payload));
-            } catch (e) {
-                alert("Botga yuborishda xatolik (Telegram ichida oching): " + e.message);
+            const allTournaments = [
+                ...(codTournaments || []).map(t => ({ ...t, game: 'COD' })),
+                ...(so2Tournaments || []).map(t => ({ ...t, game: 'SO2' }))
+            ];
+
+            if (allTournaments.length === 0) {
+                const content = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🏆</div>
+                        <h3 class="empty-title">Нет активных турниров</h3>
+                        <p class="empty-text">Турниры скоро появятся!</p>
+                    </div>
+                `;
+                showModal('Все турниры', '', content);
+                return;
             }
+
+            const content = `
+                <div class="list-items">
+                    ${allTournaments.map(t => `
+                        <div class="list-item" onclick="joinTournament(${t.id})">
+                            <div class="list-item-header">
+                                <div class="list-item-title">${t.game} - ${t.mode}</div>
+                                <div class="list-item-price">$${t.prize.toFixed(2)}</div>
+                            </div>
+                            <div class="list-item-description">${t.info}</div>
+                            <div class="list-item-stats">
+                                <div class="stat">👥 ${t.participants_count}/${t.max_participants}</div>
+                                <div class="stat">💰 $${t.fee.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal('Все турниры', 'Доступные турниры', content);
+        }
+
+        async function showUserProfile() {
+            const topUsers = await apiCall('/top-10');
+            
+            let userRank = 'N/A';
+            if (topUsers) {
+                const rankIndex = topUsers.findIndex(u => u.user_id === userData.user_id);
+                if (rankIndex !== -1) {
+                    userRank = `#${rankIndex + 1}`;
+                }
+            }
+
+            const content = `
+                <div class="empty-state">
+                    <div class="avatar" style="width: 80px; height: 80px; font-size: 36px; margin: 0 auto 20px; border: 2px solid var(--border);">
+                        ${userData.full_name[0].toUpperCase()}
+                    </div>
+                    <h3 class="empty-title">${userData.full_name}</h3>
+                    <p class="empty-text" style="margin-bottom: 24px;">@${userData.username}</p>
+                    
+                    <div class="list-items">
+                        <div class="list-item">
+                            <div class="list-item-header">
+                                <div class="list-item-title">Баланс</div>
+                                <div class="list-item-price">$${userData.balance.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div class="list-item">
+                            <div class="list-item-header">
+                                <div class="list-item-title">Подписка</div>
+                                <div style="color: var(--text-secondary);">${userData.subscription}</div>
+                            </div>
+                        </div>
+                        <div class="list-item">
+                            <div class="list-item-header">
+                                <div class="list-item-title">Рейтинг</div>
+                                <div style="color: var(--text-secondary);">${userRank}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showModal('Профиль', 'Ваша информация', content);
         }
 
         // Initialize app
