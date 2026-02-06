@@ -2,952 +2,256 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Game Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Bot Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-color: #000000;
+            --card-bg: #1a1a1a;
+            --text-color: #ffffff;
+            --accent-gold: #ffcc00;
+            --btn-bg: #121212;
+            --border-color: #333333;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #000000;
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        /* Header Section */
+        /* Header section */
         .header {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
+            width: 100%;
+            margin-bottom: 25px;
         }
 
         .avatar {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #333, #666);
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: bold;
+            margin-right: 15px;
         }
 
-        .user-info {
-            flex: 1;
-        }
-
-        .user-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .user-id {
-            font-size: 16px;
-            color: #888;
-            letter-spacing: 1px;
-        }
-
-        /* Balance Card */
-        .balance-card {
-            background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 1px solid #333;
-        }
-
-        .currency-switch {
-            display: flex;
-            justify-content: flex-end;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .currency-btn {
-            padding: 8px 15px;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .currency-btn.active {
-            background: #4a4a4a;
-            border-color: #888;
-        }
-
-        .balance-amount {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .balance-actions {
-            display: flex;
-            gap: 15px;
-        }
-
-        .balance-btn {
-            flex: 1;
-            padding: 15px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 15px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .balance-btn:active {
-            transform: scale(0.95);
-            background: #333;
-        }
-
-        /* Menu Grid */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .menu-item {
-            background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 30px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .menu-item:active {
-            transform: scale(0.95);
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .menu-item:hover::before {
-            opacity: 1;
-        }
-
-        .menu-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .menu-label {
-            font-size: 18px;
-            font-weight: 600;
-            color: #bbb;
+        .user-info h2 {
+            margin: 0;
+            font-size: 22px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        /* Loading */
-        .loading {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 18px;
+        .user-info p {
+            margin: 0;
             color: #888;
+            font-size: 14px;
         }
 
-        .loading.active {
-            display: block;
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: #1e1e1e;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 500px;
-            width: 100%;
-            border: 1px solid #333;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Balance Card */
+        .balance-card {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            position: relative;
+            border: 1px solid var(--border-color);
             margin-bottom: 20px;
         }
 
-        .modal-title {
-            font-size: 24px;
-            font-weight: bold;
+        .currency-switch {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #000;
+            border-radius: 8px;
+            display: flex;
+            padding: 2px;
+            border: 1px solid var(--border-color);
         }
 
-        .modal-close {
+        .currency-switch span {
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .currency-switch .active {
             background: #333;
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s;
+            border-radius: 6px;
         }
 
-        .modal-close:active {
-            transform: scale(0.9);
-        }
-
-        .tournament-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .tournament-item {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .tournament-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .tournament-mode {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .tournament-fee {
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        .tournament-info {
-            color: #888;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .tournament-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .join-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .join-btn:active {
-            transform: scale(0.95);
-        }
-
-        .join-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Top users list */
-        .top-users-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .top-user-item {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 15px;
-            padding: 15px;
+        .balance-amount {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 10px 0 25px 0;
             display: flex;
             align-items: center;
-            gap: 15px;
         }
 
-        .rank {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffd700;
-            min-width: 40px;
+        .balance-buttons {
+            display: flex;
+            gap: 12px;
         }
 
-        .top-user-info {
+        .btn {
             flex: 1;
-        }
-
-        .top-user-name {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .top-user-balance {
-            color: #888;
-            font-size: 14px;
-        }
-
-        /* Code input section */
-        .code-section {
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-label {
-            display: block;
-            margin-bottom: 8px;
-            color: #888;
-            font-size: 14px;
-        }
-
-        .input-field {
-            width: 100%;
             padding: 12px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .save-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--btn-bg);
+            color: white;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 10px;
+            font-size: 14px;
         }
 
-        .save-btn:active {
-            transform: scale(0.95);
+        /* Grid Menu */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
         }
 
-        /* Boss section */
-        .subscription-list {
+        .menu-item {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            height: 100px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            justify-content: flex-end;
+            border: 1px solid var(--border-color);
+            position: relative;
+            text-decoration: none;
+            color: white;
         }
 
-        .subscription-item {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 15px;
-            padding: 20px;
+        .menu-item i {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: var(--accent-gold);
         }
 
-        .subscription-name {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .subscription-price {
-            color: #ffd700;
+        .menu-item span {
+            font-weight: 800;
+            text-transform: uppercase;
             font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            letter-spacing: 1px;
         }
 
-        .subscription-features {
-            list-style: none;
-            margin-bottom: 15px;
-        }
-
-        .subscription-features li {
-            padding: 5px 0;
-            color: #bbb;
-            font-size: 14px;
-        }
-
-        .subscription-features li::before {
-            content: "✓ ";
-            color: #4caf50;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        .subscribe-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
-            border: none;
-            border-radius: 10px;
-            color: #000;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .subscribe-btn:active {
-            transform: scale(0.95);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .menu-item, .balance-card, .header {
-            animation: fadeIn 0.5s ease-out;
+        /* Loader */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <div class="loading" id="loading">Yuklanmoqda...</div>
-    
-    <div class="container" id="mainContent" style="display: none;">
-        <!-- Header -->
-        <div class="header">
-            <div class="avatar" id="avatar">?</div>
-            <div class="user-info">
-                <div class="user-name" id="userName">NAME</div>
-                <div class="user-id" id="userId">12345678</div>
-            </div>
-        </div>
 
-        <!-- Balance Card -->
-        <div class="balance-card">
-            <div class="currency-switch">
-                <button class="currency-btn active" data-currency="USD" id="btnUSD">USD</button>
-                <button class="currency-btn" data-currency="UZS" id="btnUZS">UZS</button>
-            </div>
-            <div class="balance-amount" id="balanceAmount">$ 0.00</div>
-            <div class="balance-actions">
-                <button class="balance-btn" id="btnDeposit">Пополнить</button>
-                <button class="balance-btn" id="btnWithdraw">Вывести</button>
-            </div>
-        </div>
+    <div id="loader">Yuklanmoqda...</div>
 
-        <!-- Menu Grid -->
-        <div class="menu-grid">
-            <div class="menu-item" data-action="game">
-                <span class="menu-icon">🧩</span>
-                <div class="menu-label">GAME</div>
-            </div>
-            <div class="menu-item" data-action="tour">
-                <span class="menu-icon">🏆</span>
-                <div class="menu-label">TOUR</div>
-            </div>
-            <div class="menu-item" data-action="code">
-                <span class="menu-icon">🔑</span>
-                <div class="menu-label">CODE</div>
-            </div>
-            <div class="menu-item" data-action="boss">
-                <span class="menu-icon">👑</span>
-                <div class="menu-label">BOSS</div>
-            </div>
+    <div class="header">
+        <div class="avatar" id="user-photo"></div>
+        <div class="user-info">
+            <h2 id="user-name">NAME</h2>
+            <p id="user-id">12345678</p>
         </div>
     </div>
 
-    <!-- Modals -->
-    <!-- Game Modal -->
-    <div class="modal" id="gameModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">O'yin tanlang</h2>
-                <button class="modal-close" onclick="closeModal('gameModal')">&times;</button>
-            </div>
-            <div class="menu-grid">
-                <div class="menu-item" data-game="cod">
-                    <span class="menu-icon">🎮</span>
-                    <div class="menu-label">COD Mobile</div>
-                </div>
-                <div class="menu-item" data-game="standoff">
-                    <span class="menu-icon">🔫</span>
-                    <div class="menu-label">Standoff 2</div>
-                </div>
-            </div>
+    <div class="balance-card">
+        <div class="currency-switch">
+            <span class="active">USD</span>
+            <span>UZS</span>
+        </div>
+        <div class="balance-amount">
+            $ <span id="balance">0.00</span>
+        </div>
+        <div class="balance-buttons">
+            <button class="btn" onclick="tg.showAlert('Tez orada...')">Пополнить</button>
+            <button class="btn" onclick="tg.showAlert('Tez orada...')">Вывести</button>
         </div>
     </div>
 
-    <!-- Tournament Modal -->
-    <div class="modal" id="tourModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Turnirlar</h2>
-                <button class="modal-close" onclick="closeModal('tourModal')">&times;</button>
-            </div>
-            <div class="tournament-list" id="tournamentList">
-                <p style="text-align: center; color: #888;">Turnirlar yuklanmoqda...</p>
-            </div>
+    <div class="menu-grid">
+        <div class="menu-item" onclick="openSection('game')">
+            <i class="fas fa-puzzle-piece"></i>
+            <span>Game</span>
         </div>
-    </div>
-
-    <!-- Top Users Modal -->
-    <div class="modal" id="topModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Top 10 Foydalanuvchilar</h2>
-                <button class="modal-close" onclick="closeModal('topModal')">&times;</button>
-            </div>
-            <div class="top-users-list" id="topUsersList">
-                <p style="text-align: center; color: #888;">Yuklanmoqda...</p>
-            </div>
+        <div class="menu-item" onclick="openSection('tour')">
+            <i class="fas fa-trophy"></i>
+            <span>Tour</span>
         </div>
-    </div>
-
-    <!-- Code Modal -->
-    <div class="modal" id="codeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Profil Ma'lumotlari</h2>
-                <button class="modal-close" onclick="closeModal('codeModal')">&times;</button>
-            </div>
-            <div class="code-section">
-                <h3 style="margin-bottom: 20px; color: #ffd700;">COD Mobile</h3>
-                <div class="input-group">
-                    <label class="input-label">Nickname</label>
-                    <input type="text" class="input-field" id="codNick" placeholder="Nickname kiriting">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">UID</label>
-                    <input type="text" class="input-field" id="codUid" placeholder="UID kiriting">
-                </div>
-                <button class="save-btn" onclick="saveCodeData()">Saqlash</button>
-
-                <h3 style="margin: 30px 0 20px; color: #ffd700;">Standoff 2</h3>
-                <div class="input-group">
-                    <label class="input-label">Nickname</label>
-                    <input type="text" class="input-field" id="soNick" placeholder="Nickname kiriting">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">UID</label>
-                    <input type="text" class="input-field" id="soUid" placeholder="UID kiriting">
-                </div>
-                <button class="save-btn" onclick="saveCodeData()">Saqlash</button>
-            </div>
+        <div class="menu-item" onclick="openSection('code')">
+            <i class="fas fa-key"></i>
+            <span>Code</span>
         </div>
-    </div>
-
-    <!-- Boss (Premium) Modal -->
-    <div class="modal" id="bossModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Premium Obuna</h2>
-                <button class="modal-close" onclick="closeModal('bossModal')">&times;</button>
-            </div>
-            <div class="subscription-list">
-                <div class="subscription-item">
-                    <div class="subscription-name">Premium Player</div>
-                    <div class="subscription-price">$2.00</div>
-                    <ul class="subscription-features">
-                        <li>Kunlik $0.10 bonus</li>
-                        <li>Asosiy funksiyalar</li>
-                    </ul>
-                    <button class="subscribe-btn" onclick="subscribe('player')">Sotib olish</button>
-                </div>
-                <div class="subscription-item">
-                    <div class="subscription-name">Premium Pro</div>
-                    <div class="subscription-price">$4.00</div>
-                    <ul class="subscription-features">
-                        <li>Kunlik $0.15 bonus</li>
-                        <li>G'alabada +10% bonus</li>
-                        <li>Pro funksiyalar</li>
-                    </ul>
-                    <button class="subscribe-btn" onclick="subscribe('pro')">Sotib olish</button>
-                </div>
-                <div class="subscription-item">
-                    <div class="subscription-name">Premium Boss</div>
-                    <div class="subscription-price">$6.00</div>
-                    <ul class="subscription-features">
-                        <li>Kunlik $0.25 bonus</li>
-                        <li>G'alabada +20% bonus</li>
-                        <li>1 bepul turnir</li>
-                        <li>Barcha Boss funksiyalar</li>
-                    </ul>
-                    <button class="subscribe-btn" onclick="subscribe('boss')">Sotib olish</button>
-                </div>
-            </div>
+        <div class="menu-item" onclick="openSection('boss')">
+            <i class="fas fa-crown"></i>
+            <span>Boss</span>
         </div>
     </div>
 
     <script>
-        // Telegram Web App initialization
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.enableClosingConfirmation();
+        tg.ready();
 
-        // API Configuration
-        const API_BASE = 'https://your-api-url.com/api'; // Bu yerga o'z API URL ni qo'ying
-        const USD_TO_UZS = 12000;
-        let currentCurrency = 'USD';
-        let userData = null;
+        // API URL (O'zingizning serveringiz manzilini yozing)
+        const API_BASE_URL = "https://serveringiz.com"; // Flask ishlayotgan URL
 
-        // Get Telegram user data
-        function getTelegramUser() {
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                return {
-                    id: user.id,
-                    firstName: user.first_name || '',
-                    lastName: user.last_name || '',
-                    username: user.username || '',
-                    languageCode: user.language_code || 'en'
-                };
-            }
-            // Fallback for testing
-            return {
-                id: 12345678,
-                firstName: 'Test',
-                lastName: 'User',
-                username: 'testuser',
-                languageCode: 'uz'
-            };
-        }
-
-        // Format currency
-        function formatCurrency(amount, currency) {
-            if (currency === 'UZS') {
-                const uzsAmount = amount * USD_TO_UZS;
-                return `${uzsAmount.toLocaleString('uz-UZ')} so'm`;
-            }
-            return `$ ${amount.toFixed(2)}`;
-        }
-
-        // Update balance display
-        function updateBalanceDisplay() {
-            if (!userData) return;
-            const balanceEl = document.getElementById('balanceAmount');
-            balanceEl.textContent = formatCurrency(userData.balance, currentCurrency);
-        }
-
-        // Load user data
         async function loadUserData() {
             try {
-                const telegramUser = getTelegramUser();
-                
-                // For demo purposes, using mock data
-                userData = {
-                    user_id: telegramUser.id,
-                    username: telegramUser.username,
-                    full_name: `${telegramUser.firstName} ${telegramUser.lastName}`.trim(),
-                    balance: 0.00,
-                    subscription: null,
-                    currency: 'USD',
-                    cod_nick: '',
-                    cod_uid: '',
-                    so_nick: '',
-                    so_uid: ''
-                };
+                // Telegramdan foydalanuvchi ma'lumotlarini olish
+                const user = tg.initDataUnsafe.user;
+                if (user) {
+                    document.getElementById('user-name').innerText = user.first_name.toUpperCase();
+                    document.getElementById('user-id').innerText = user.id;
+                }
 
-                // Update UI
-                document.getElementById('userName').textContent = userData.full_name || 'NAME';
-                document.getElementById('userId').textContent = userData.user_id;
-                document.getElementById('avatar').textContent = userData.full_name.charAt(0) || '?';
-                updateBalanceDisplay();
-
-                // Populate code inputs
-                document.getElementById('codNick').value = userData.cod_nick || '';
-                document.getElementById('codUid').value = userData.cod_uid || '';
-                document.getElementById('soNick').value = userData.so_nick || '';
-                document.getElementById('soUid').value = userData.so_uid || '';
-
-                // Show main content
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('mainContent').style.display = 'block';
-
-                // If you have real API, uncomment this:
-                /*
-                const response = await fetch(`${API_BASE}/user`, {
+                // Serverdan haqiqiy balansni olish
+                const response = await fetch(`${API_BASE_URL}/api/user`, {
                     headers: {
                         'X-Telegram-Init-Data': tg.initData
                     }
                 });
+                const data = await response.json();
                 
-                if (response.ok) {
-                    userData = await response.json();
-                    // Update UI with real data
-                    ...
+                if (data.balance !== undefined) {
+                    document.getElementById('balance').innerText = data.balance.toFixed(2);
                 }
-                */
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                tg.showAlert('Ma\'lumotlarni yuklashda xatolik yuz berdi');
+            } catch (e) {
+                console.error("Xatolik:", e);
+                // Test uchun xatolik bo'lsa ham loaderni yopamiz
+            } finally {
+                document.getElementById('loader').style.display = 'none';
             }
         }
 
-        // Currency switch
-        document.getElementById('btnUSD').addEventListener('click', () => {
-            currentCurrency = 'USD';
-            document.getElementById('btnUSD').classList.add('active');
-            document.getElementById('btnUZS').classList.remove('active');
-            updateBalanceDisplay();
-        });
-
-        document.getElementById('btnUZS').addEventListener('click', () => {
-            currentCurrency = 'UZS';
-            document.getElementById('btnUZS').classList.add('active');
-            document.getElementById('btnUSD').classList.remove('active');
-            updateBalanceDisplay();
-        });
-
-        // Menu actions
-        document.querySelectorAll('.menu-item[data-action]').forEach(item => {
-            item.addEventListener('click', () => {
-                const action = item.dataset.action;
-                
-                switch(action) {
-                    case 'game':
-                        openModal('gameModal');
-                        break;
-                    case 'tour':
-                        openModal('tourModal');
-                        loadTournaments();
-                        break;
-                    case 'code':
-                        openModal('codeModal');
-                        break;
-                    case 'boss':
-                        openModal('bossModal');
-                        break;
-                }
-            });
-        });
-
-        // Deposit button
-        document.getElementById('btnDeposit').addEventListener('click', () => {
-            tg.showAlert('To\'lov tizimi tez orada qo\'shiladi!');
-        });
-
-        // Withdraw button
-        document.getElementById('btnWithdraw').addEventListener('click', () => {
-            if (userData.balance < 5) {
-                tg.showAlert('Minimal yechib olish summasi: $5.00');
-                return;
-            }
-            tg.showAlert('Yechib olish funksiyasi tez orada qo\'shiladi!');
-        });
-
-        // Modal functions
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
+        function openSection(name) {
+            tg.HapticFeedback.impactOccurred('medium');
+            tg.showAlert(name.toUpperCase() + " bo'limi tez orada ishga tushadi!");
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // Load tournaments
-        async function loadTournaments() {
-            const listEl = document.getElementById('tournamentList');
-            listEl.innerHTML = '<p style="text-align: center; color: #888;">Turnirlar yuklanmoqda...</p>';
-            
-            // Mock tournament data
-            const tournaments = [
-                {
-                    id: 1,
-                    game: 'cod',
-                    mode: 'Battle Royale',
-                    info: '5v5 - Squad',
-                    fee: 2.00,
-                    prize: 10.00,
-                    max_participants: 10,
-                    participants_count: 6
-                },
-                {
-                    id: 2,
-                    game: 'standoff',
-                    mode: 'Deathmatch',
-                    info: '1v1',
-                    fee: 1.00,
-                    prize: 1.80,
-                    max_participants: 2,
-                    participants_count: 1
-                }
-            ];
-
-            listEl.innerHTML = '';
-            tournaments.forEach(t => {
-                const item = document.createElement('div');
-                item.className = 'tournament-item';
-                item.innerHTML = `
-                    <div class="tournament-header">
-                        <div class="tournament-mode">${t.mode}</div>
-                        <div class="tournament-fee">$${t.fee.toFixed(2)}</div>
-                    </div>
-                    <div class="tournament-info">${t.info}</div>
-                    <div class="tournament-stats">
-                        <span>Ishtirokchilar: ${t.participants_count}/${t.max_participants}</span>
-                        <span style="color: #ffd700;">Mukofot: $${t.prize.toFixed(2)}</span>
-                    </div>
-                    <button class="join-btn" onclick="joinTournament(${t.id})" 
-                            ${t.participants_count >= t.max_participants ? 'disabled' : ''}>
-                        Qatnashish
-                    </button>
-                `;
-                listEl.appendChild(item);
-            });
-        }
-
-        // Join tournament
-        function joinTournament(tournamentId) {
-            if (userData.balance < 1.0) {
-                tg.showAlert('Balans yetarli emas! Hisobni to\'ldiring.');
-                return;
-            }
-            tg.showConfirm('Ushbu turnirga qo\'shilishni xohlaysizmi?', (confirmed) => {
-                if (confirmed) {
-                    tg.showAlert('Siz turnirga qo\'shildingiz!');
-                    closeModal('tourModal');
-                }
-            });
-        }
-
-        // Save code data
-        function saveCodeData() {
-            const codNick = document.getElementById('codNick').value.trim();
-            const codUid = document.getElementById('codUid').value.trim();
-            const soNick = document.getElementById('soNick').value.trim();
-            const soUid = document.getElementById('soUid').value.trim();
-
-            userData.cod_nick = codNick;
-            userData.cod_uid = codUid;
-            userData.so_nick = soNick;
-            userData.so_uid = soUid;
-
-            tg.showAlert('Ma\'lumotlar saqlandi!');
-            closeModal('codeModal');
-        }
-
-        // Subscribe
-        function subscribe(plan) {
-            const plans = {
-                player: { name: 'Premium Player', price: 2.00 },
-                pro: { name: 'Premium Pro', price: 4.00 },
-                boss: { name: 'Premium Boss', price: 6.00 }
-            };
-
-            const selectedPlan = plans[plan];
-            
-            if (userData.balance < selectedPlan.price) {
-                tg.showAlert(`Balans yetarli emas! Kerakli summa: $${selectedPlan.price.toFixed(2)}`);
-                return;
-            }
-
-            tg.showConfirm(`${selectedPlan.name} ($${selectedPlan.price.toFixed(2)}) sotib olishni tasdiqlaysizmi?`, (confirmed) => {
-                if (confirmed) {
-                    userData.balance -= selectedPlan.price;
-                    userData.subscription = plan;
-                    updateBalanceDisplay();
-                    tg.showAlert('Obuna muvaffaqiyatli faollashtirildi!');
-                    closeModal('bossModal');
-                }
-            });
-        }
-
-        // Game selection
-        document.querySelectorAll('.menu-item[data-game]').forEach(item => {
-            item.addEventListener('click', () => {
-                const game = item.dataset.game;
-                const gameName = game === 'cod' ? 'COD Mobile' : 'Standoff 2';
-                
-                tg.showAlert(`${gameName} bo'limi tez orada qo'shiladi!`);
-                closeModal('gameModal');
-            });
-        });
-
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('loading').classList.add('active');
-            setTimeout(() => {
-                loadUserData();
-            }, 500);
-        });
-
-        // Close modals on background click
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
-                }
-            });
-        });
+        // Sahifa yuklanganda ishga tushadi
+        window.onload = loadUserData;
     </script>
 </body>
 </html>
