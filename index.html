@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Game Tournament Elite</title>
+    <title>Game Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -12,1410 +12,942 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --bg-primary: #000000;
-            --bg-secondary: #0a0a0a;
-            --bg-tertiary: #141414;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-tertiary: #808080;
-            --accent: #ffffff;
-            --border: rgba(255, 255, 255, 0.1);
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --shadow: rgba(0, 0, 0, 0.5);
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
             overflow-x: hidden;
-            padding-bottom: 80px;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
         }
 
         .container {
-            max-width: 100%;
-            padding: 0;
-            position: relative;
-            z-index: 1;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
-        .glass {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-        }
-
+        /* Header Section */
         .header {
-            padding: 24px 20px;
-            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
-        }
-
-        .profile-section {
             display: flex;
             align-items: center;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .avatar-container {
-            position: relative;
+            gap: 15px;
+            margin-bottom: 30px;
         }
 
         .avatar {
-            width: 64px;
-            height: 64px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-            border: 2px solid var(--border);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            font-weight: 700;
-            position: relative;
-            overflow: hidden;
+            font-size: 32px;
+            font-weight: bold;
         }
 
-        .avatar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        .user-info {
+            flex: 1;
         }
 
-        .status-dot {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 14px;
-            height: 14px;
-            background: #ffffff;
-            border: 2px solid var(--bg-primary);
-            border-radius: 50%;
-            animation: pulse-dot 2s ease-in-out infinite;
+        .user-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(0.9); }
-        }
-
-        .user-info h2 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: -0.5px;
-        }
-
-        .user-info p {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        .balance-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .balance-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-            animation: rotate-gradient 10s linear infinite;
-        }
-
-        @keyframes rotate-gradient {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .balance-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .balance-label {
-            font-size: 13px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
+        .user-id {
+            font-size: 16px;
+            color: #888;
             letter-spacing: 1px;
-            margin-bottom: 8px;
-            font-weight: 600;
         }
 
-        .balance-amount {
-            font-size: 42px;
-            font-weight: 800;
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .currency-switch {
             display: flex;
-            align-items: baseline;
-            gap: 8px;
-            margin-bottom: 16px;
-            letter-spacing: -1px;
-        }
-
-        .currency-symbol {
-            font-size: 28px;
-            color: var(--text-secondary);
-        }
-
-        .currency-toggle {
-            display: flex;
-            gap: 8px;
-            padding: 4px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            border: 1px solid var(--border);
+            justify-content: flex-end;
+            gap: 5px;
+            margin-bottom: 15px;
         }
 
         .currency-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 600;
+            padding: 8px 15px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
         .currency-btn.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
+            background: #4a4a4a;
+            border-color: #888;
         }
 
-        .quick-actions {
-            padding: 0 20px 24px;
+        .balance-amount {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: left;
         }
 
-        .actions-grid {
+        .balance-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .balance-btn {
+            flex: 1;
+            padding: 15px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .balance-btn:active {
+            transform: scale(0.95);
+            background: #333;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 15px;
+            margin-bottom: 30px;
         }
 
-        .action-btn {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
+        .menu-item {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             position: relative;
             overflow: hidden;
         }
 
-        .action-btn::before {
+        .menu-item:active {
+            transform: scale(0.95);
+        }
+
+        .menu-item::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
         }
 
-        .action-btn:active::before {
+        .menu-item:hover::before {
             opacity: 1;
         }
 
-        .action-icon {
-            font-size: 28px;
-            line-height: 1;
+        .menu-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
         }
 
-        .action-text {
-            font-size: 15px;
+        .menu-label {
+            font-size: 18px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .games-section {
-            padding: 24px 20px;
+        /* Loading */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #888;
         }
 
-        .section-header {
+        .loading.active {
+            display: block;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1e1e1e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #333;
+        }
+
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .game-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .game-card:active::before {
-            opacity: 1;
-        }
-
-        .game-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .game-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-        }
-
-        .game-info h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: -0.3px;
-        }
-
-        .game-info p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .game-stats {
-            display: flex;
-            gap: 20px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-        }
-
-        .stat {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--glass-border);
-            padding: 12px 20px 20px;
-            z-index: 100;
-        }
-
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 8px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: transparent;
-        }
-
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-icon {
-            font-size: 24px;
-            line-height: 1;
-        }
-
-        .nav-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .nav-item.active .nav-label {
-            color: var(--text-primary);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: none;
-            align-items: flex-end;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal {
-            background: var(--bg-secondary);
-            border-radius: 24px 24px 0 0;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-            position: relative;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-header {
-            position: sticky;
-            top: 0;
-            background: var(--bg-secondary);
-            padding: 24px 20px 16px;
-            border-bottom: 1px solid var(--border);
-            z-index: 10;
-        }
-
-        .modal-handle {
-            width: 40px;
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
-            margin: 0 auto 16px;
         }
 
         .modal-title {
             font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: -0.5px;
+            font-weight: bold;
         }
 
-        .modal-subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
+        .modal-close {
+            background: #333;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .modal-body {
+        .modal-close:active {
+            transform: scale(0.9);
+        }
+
+        .tournament-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tournament-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 15px;
             padding: 20px;
         }
 
-        .list-items {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .list-item {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .list-item:active {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .list-item-header {
+        .tournament-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
-        .list-item-title {
-            font-size: 16px;
-            font-weight: 600;
+        .tournament-mode {
+            font-size: 18px;
+            font-weight: bold;
         }
 
-        .list-item-price {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-primary);
+        .tournament-fee {
+            color: #ffd700;
+            font-weight: bold;
         }
 
-        .list-item-description {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .list-item-stats {
-            display: flex;
-            gap: 16px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-primary:active {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
+        .tournament-info {
+            color: #888;
+            margin-bottom: 10px;
             font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
         }
 
-        .form-input {
+        .tournament-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .join-btn {
             width: 100%;
-            padding: 14px 16px;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: var(--text-primary);
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
             font-size: 16px;
-            transition: all 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .form-input:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.08);
+        .join-btn:active {
+            transform: scale(0.95);
         }
 
-        .loading {
+        .join-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Top users list */
+        .top-users-list {
             display: flex;
             flex-direction: column;
+            gap: 10px;
+        }
+
+        .top-user-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            gap: 20px;
+            gap: 15px;
         }
 
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--text-primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            min-width: 40px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .top-user-info {
+            flex: 1;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
+        .top-user-name {
+            font-weight: bold;
+            margin-bottom: 3px;
         }
 
-        .empty-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .empty-text {
+        .top-user-balance {
+            color: #888;
             font-size: 14px;
-            color: var(--text-secondary);
+        }
+
+        /* Code input section */
+        .code-section {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .save-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Boss section */
+        .subscription-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .subscription-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .subscription-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subscription-price {
+            color: #ffd700;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subscription-features {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+
+        .subscription-features li {
+            padding: 5px 0;
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .subscription-features li::before {
+            content: "✓ ";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .subscribe-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .subscribe-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-item, .balance-card, .header {
+            animation: fadeIn 0.5s ease-out;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="loading" id="loading">Yuklanmoqda...</div>
+    
+    <div class="container" id="mainContent" style="display: none;">
         <!-- Header -->
         <div class="header">
-            <div class="profile-section">
-                <div class="avatar-container">
-                    <div class="avatar" id="userAvatar">?</div>
-                    <div class="status-dot"></div>
-                </div>
-                <div class="user-info">
-                    <h2 id="userName">Loading...</h2>
-                    <p id="userHandle">@username</p>
-                </div>
-            </div>
-
-            <div class="balance-card">
-                <div class="balance-content">
-                    <div class="balance-label">Ваш баланс</div>
-                    <div class="balance-amount">
-                        <span class="currency-symbol" id="currencySymbol">$</span>
-                        <span id="balanceAmount">0.00</span>
-                    </div>
-                    <div class="currency-toggle">
-                        <button class="currency-btn active" onclick="switchCurrency('USD')">USD</button>
-                        <button class="currency-btn" onclick="switchCurrency('UZS')">UZS</button>
-                    </div>
-                </div>
+            <div class="avatar" id="avatar">?</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">NAME</div>
+                <div class="user-id" id="userId">12345678</div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <div class="actions-grid">
-                <div class="action-btn" onclick="showDeposit()">
-                    <div class="action-icon">💳</div>
-                    <div class="action-text">Пополнить</div>
-                </div>
-                <div class="action-btn" onclick="showWithdraw()">
-                    <div class="action-icon">💸</div>
-                    <div class="action-text">Вывести</div>
-                </div>
-                <div class="action-btn" onclick="showDaily()">
-                    <div class="action-icon">🎁</div>
-                    <div class="action-text">Ежедневный</div>
-                </div>
-                <div class="action-btn" onclick="showPromo()">
-                    <div class="action-icon">🎟️</div>
-                    <div class="action-text">Промокод</div>
-                </div>
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="currency-switch">
+                <button class="currency-btn active" data-currency="USD" id="btnUSD">USD</button>
+                <button class="currency-btn" data-currency="UZS" id="btnUZS">UZS</button>
+            </div>
+            <div class="balance-amount" id="balanceAmount">$ 0.00</div>
+            <div class="balance-actions">
+                <button class="balance-btn" id="btnDeposit">Пополнить</button>
+                <button class="balance-btn" id="btnWithdraw">Вывести</button>
             </div>
         </div>
 
-        <!-- Games Section -->
-        <div class="games-section">
-            <div class="section-header">
-                <h2 class="section-title">Игры</h2>
+        <!-- Menu Grid -->
+        <div class="menu-grid">
+            <div class="menu-item" data-action="game">
+                <span class="menu-icon">🧩</span>
+                <div class="menu-label">GAME</div>
             </div>
-
-            <div class="game-card" onclick="showGameMenu('cod')">
-                <div class="game-header">
-                    <div class="game-icon">🎮</div>
-                    <div class="game-info">
-                        <h3>Call of Duty</h3>
-                        <p>Mobile tournaments</p>
-                    </div>
-                </div>
-                <div class="game-stats">
-                    <div class="stat">
-                        <div class="stat-label">Турниры</div>
-                        <div class="stat-value" id="codTournaments">0</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Игроки</div>
-                        <div class="stat-value" id="codPlayers">0</div>
-                    </div>
-                </div>
+            <div class="menu-item" data-action="tour">
+                <span class="menu-icon">🏆</span>
+                <div class="menu-label">TOUR</div>
             </div>
-
-            <div class="game-card" onclick="showGameMenu('so2')">
-                <div class="game-header">
-                    <div class="game-icon">🎯</div>
-                    <div class="game-info">
-                        <h3>Standoff 2</h3>
-                        <p>Competitive matches</p>
-                    </div>
-                </div>
-                <div class="game-stats">
-                    <div class="stat">
-                        <div class="stat-label">Турниры</div>
-                        <div class="stat-value" id="so2Tournaments">0</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Игроки</div>
-                        <div class="stat-value" id="so2Players">0</div>
-                    </div>
-                </div>
+            <div class="menu-item" data-action="code">
+                <span class="menu-icon">🔑</span>
+                <div class="menu-label">CODE</div>
+            </div>
+            <div class="menu-item" data-action="boss">
+                <span class="menu-icon">👑</span>
+                <div class="menu-label">BOSS</div>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <div class="nav-grid">
-            <div class="nav-item active" onclick="switchTab('home')">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-label">Главная</div>
-            </div>
-            <div class="nav-item" onclick="switchTab('tournaments')">
-                <div class="nav-icon">🏆</div>
-                <div class="nav-label">Турниры</div>
-            </div>
-            <div class="nav-item" onclick="switchTab('bonus')">
-                <div class="nav-icon">🎁</div>
-                <div class="nav-label">Бонусы</div>
-            </div>
-            <div class="nav-item" onclick="switchTab('profile')">
-                <div class="nav-icon">👤</div>
-                <div class="nav-label">Профиль</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
-        <div class="modal" onclick="event.stopPropagation()">
+    <!-- Modals -->
+    <!-- Game Modal -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-handle"></div>
-                <div class="modal-title" id="modalTitle">Title</div>
-                <div class="modal-subtitle" id="modalSubtitle"></div>
+                <h2 class="modal-title">O'yin tanlang</h2>
+                <button class="modal-close" onclick="closeModal('gameModal')">&times;</button>
             </div>
-            <div class="modal-body" id="modalBody"></div>
+            <div class="menu-grid">
+                <div class="menu-item" data-game="cod">
+                    <span class="menu-icon">🎮</span>
+                    <div class="menu-label">COD Mobile</div>
+                </div>
+                <div class="menu-item" data-game="standoff">
+                    <span class="menu-icon">🔫</span>
+                    <div class="menu-label">Standoff 2</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Modal -->
+    <div class="modal" id="tourModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Turnirlar</h2>
+                <button class="modal-close" onclick="closeModal('tourModal')">&times;</button>
+            </div>
+            <div class="tournament-list" id="tournamentList">
+                <p style="text-align: center; color: #888;">Turnirlar yuklanmoqda...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Users Modal -->
+    <div class="modal" id="topModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Top 10 Foydalanuvchilar</h2>
+                <button class="modal-close" onclick="closeModal('topModal')">&times;</button>
+            </div>
+            <div class="top-users-list" id="topUsersList">
+                <p style="text-align: center; color: #888;">Yuklanmoqda...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Modal -->
+    <div class="modal" id="codeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Profil Ma'lumotlari</h2>
+                <button class="modal-close" onclick="closeModal('codeModal')">&times;</button>
+            </div>
+            <div class="code-section">
+                <h3 style="margin-bottom: 20px; color: #ffd700;">COD Mobile</h3>
+                <div class="input-group">
+                    <label class="input-label">Nickname</label>
+                    <input type="text" class="input-field" id="codNick" placeholder="Nickname kiriting">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">UID</label>
+                    <input type="text" class="input-field" id="codUid" placeholder="UID kiriting">
+                </div>
+                <button class="save-btn" onclick="saveCodeData()">Saqlash</button>
+
+                <h3 style="margin: 30px 0 20px; color: #ffd700;">Standoff 2</h3>
+                <div class="input-group">
+                    <label class="input-label">Nickname</label>
+                    <input type="text" class="input-field" id="soNick" placeholder="Nickname kiriting">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">UID</label>
+                    <input type="text" class="input-field" id="soUid" placeholder="UID kiriting">
+                </div>
+                <button class="save-btn" onclick="saveCodeData()">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boss (Premium) Modal -->
+    <div class="modal" id="bossModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Premium Obuna</h2>
+                <button class="modal-close" onclick="closeModal('bossModal')">&times;</button>
+            </div>
+            <div class="subscription-list">
+                <div class="subscription-item">
+                    <div class="subscription-name">Premium Player</div>
+                    <div class="subscription-price">$2.00</div>
+                    <ul class="subscription-features">
+                        <li>Kunlik $0.10 bonus</li>
+                        <li>Asosiy funksiyalar</li>
+                    </ul>
+                    <button class="subscribe-btn" onclick="subscribe('player')">Sotib olish</button>
+                </div>
+                <div class="subscription-item">
+                    <div class="subscription-name">Premium Pro</div>
+                    <div class="subscription-price">$4.00</div>
+                    <ul class="subscription-features">
+                        <li>Kunlik $0.15 bonus</li>
+                        <li>G'alabada +10% bonus</li>
+                        <li>Pro funksiyalar</li>
+                    </ul>
+                    <button class="subscribe-btn" onclick="subscribe('pro')">Sotib olish</button>
+                </div>
+                <div class="subscription-item">
+                    <div class="subscription-name">Premium Boss</div>
+                    <div class="subscription-price">$6.00</div>
+                    <ul class="subscription-features">
+                        <li>Kunlik $0.25 bonus</li>
+                        <li>G'alabada +20% bonus</li>
+                        <li>1 bepul turnir</li>
+                        <li>Barcha Boss funksiyalar</li>
+                    </ul>
+                    <button class="subscribe-btn" onclick="subscribe('boss')">Sotib olish</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Telegram Web App initialization
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.enableClosingConfirmation();
 
         // API Configuration
-        const API_BASE = 'http://localhost:5000/api';
-        
-        // User data
-        let userData = {
-            user_id: null,
-            username: 'user',
-            full_name: 'User',
-            balance: 0,
-            subscription: 'none',
-            currency: 'USD',
-            cod_nick: '',
-            cod_uid: '',
-            so_nick: '',
-            so_uid: '',
-            last_daily: null,
-            free_tournaments: 0
-        };
-
+        const API_BASE = 'https://your-api-url.com/api'; // Bu yerga o'z API URL ni qo'ying
+        const USD_TO_UZS = 12000;
         let currentCurrency = 'USD';
-        const USD_TO_UZS_RATE = 12000;
+        let userData = null;
 
-        // Initialize
-        async function init() {
-            console.log('Initializing app...');
-            
-            // Get Telegram user data
-            const telegramUser = tg.initDataUnsafe?.user;
-            if (telegramUser) {
-                userData.user_id = telegramUser.id;
-                userData.username = telegramUser.username || 'user';
-                userData.full_name = telegramUser.first_name || 'User';
-                
-                // Update UI with Telegram data
-                document.getElementById('userName').textContent = userData.full_name;
-                document.getElementById('userHandle').textContent = `@${userData.username}`;
-                document.getElementById('userAvatar').textContent = userData.full_name[0].toUpperCase();
+        // Get Telegram user data
+        function getTelegramUser() {
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                return {
+                    id: user.id,
+                    firstName: user.first_name || '',
+                    lastName: user.last_name || '',
+                    username: user.username || '',
+                    languageCode: user.language_code || 'en'
+                };
             }
-
-            // Load user data from API
-            await loadUserData();
-            
-            // Load tournaments
-            await loadTournaments();
-            
-            console.log('App initialized:', userData);
+            // Fallback for testing
+            return {
+                id: 12345678,
+                firstName: 'Test',
+                lastName: 'User',
+                username: 'testuser',
+                languageCode: 'uz'
+            };
         }
 
-        // API Functions
-        async function apiCall(endpoint, method = 'GET', data = null) {
-            const headers = {
-                'Content-Type': 'application/json',
-                'X-Telegram-Init-Data': tg.initData
-            };
-
-            const options = {
-                method,
-                headers
-            };
-
-            if (data && method !== 'GET') {
-                options.body = JSON.stringify(data);
+        // Format currency
+        function formatCurrency(amount, currency) {
+            if (currency === 'UZS') {
+                const uzsAmount = amount * USD_TO_UZS;
+                return `${uzsAmount.toLocaleString('uz-UZ')} so'm`;
             }
-
-            try {
-                const response = await fetch(`${API_BASE}${endpoint}`, options);
-                
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('API call failed:', error);
-                tg.showAlert('Ошибка подключения к серверу');
-                return null;
-            }
+            return `$ ${amount.toFixed(2)}`;
         }
 
+        // Update balance display
+        function updateBalanceDisplay() {
+            if (!userData) return;
+            const balanceEl = document.getElementById('balanceAmount');
+            balanceEl.textContent = formatCurrency(userData.balance, currentCurrency);
+        }
+
+        // Load user data
         async function loadUserData() {
-            const data = await apiCall('/user');
-            if (data) {
-                userData = { ...userData, ...data };
-                updateBalance();
-                console.log('User data loaded:', userData);
+            try {
+                const telegramUser = getTelegramUser();
+                
+                // For demo purposes, using mock data
+                userData = {
+                    user_id: telegramUser.id,
+                    username: telegramUser.username,
+                    full_name: `${telegramUser.firstName} ${telegramUser.lastName}`.trim(),
+                    balance: 0.00,
+                    subscription: null,
+                    currency: 'USD',
+                    cod_nick: '',
+                    cod_uid: '',
+                    so_nick: '',
+                    so_uid: ''
+                };
+
+                // Update UI
+                document.getElementById('userName').textContent = userData.full_name || 'NAME';
+                document.getElementById('userId').textContent = userData.user_id;
+                document.getElementById('avatar').textContent = userData.full_name.charAt(0) || '?';
+                updateBalanceDisplay();
+
+                // Populate code inputs
+                document.getElementById('codNick').value = userData.cod_nick || '';
+                document.getElementById('codUid').value = userData.cod_uid || '';
+                document.getElementById('soNick').value = userData.so_nick || '';
+                document.getElementById('soUid').value = userData.so_uid || '';
+
+                // Show main content
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('mainContent').style.display = 'block';
+
+                // If you have real API, uncomment this:
+                /*
+                const response = await fetch(`${API_BASE}/user`, {
+                    headers: {
+                        'X-Telegram-Init-Data': tg.initData
+                    }
+                });
+                
+                if (response.ok) {
+                    userData = await response.json();
+                    // Update UI with real data
+                    ...
+                }
+                */
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                tg.showAlert('Ma\'lumotlarni yuklashda xatolik yuz berdi');
             }
         }
 
-        async function loadTournaments() {
-            // Load COD tournaments
-            const codTournaments = await apiCall('/tournaments?game=cod');
-            if (codTournaments) {
-                document.getElementById('codTournaments').textContent = codTournaments.length;
-                let totalPlayers = 0;
-                codTournaments.forEach(t => totalPlayers += t.participants_count);
-                document.getElementById('codPlayers').textContent = totalPlayers;
-            }
+        // Currency switch
+        document.getElementById('btnUSD').addEventListener('click', () => {
+            currentCurrency = 'USD';
+            document.getElementById('btnUSD').classList.add('active');
+            document.getElementById('btnUZS').classList.remove('active');
+            updateBalanceDisplay();
+        });
 
-            // Load Standoff 2 tournaments
-            const so2Tournaments = await apiCall('/tournaments?game=standoff');
-            if (so2Tournaments) {
-                document.getElementById('so2Tournaments').textContent = so2Tournaments.length;
-                let totalPlayers = 0;
-                so2Tournaments.forEach(t => totalPlayers += t.participants_count);
-                document.getElementById('so2Players').textContent = totalPlayers;
-            }
-        }
+        document.getElementById('btnUZS').addEventListener('click', () => {
+            currentCurrency = 'UZS';
+            document.getElementById('btnUZS').classList.add('active');
+            document.getElementById('btnUSD').classList.remove('active');
+            updateBalanceDisplay();
+        });
 
-        function updateBalance() {
-            const balance = currentCurrency === 'USD' 
-                ? userData.balance 
-                : userData.balance * USD_TO_UZS_RATE;
-            
-            document.getElementById('balanceAmount').textContent = balance.toFixed(currentCurrency === 'USD' ? 2 : 0);
-            document.getElementById('currencySymbol').textContent = currentCurrency === 'USD' ? '$' : 'сўм';
-        }
-
-        function switchCurrency(currency) {
-            currentCurrency = currency;
-            
-            document.querySelectorAll('.currency-btn').forEach(btn => {
-                btn.classList.remove('active');
+        // Menu actions
+        document.querySelectorAll('.menu-item[data-action]').forEach(item => {
+            item.addEventListener('click', () => {
+                const action = item.dataset.action;
+                
+                switch(action) {
+                    case 'game':
+                        openModal('gameModal');
+                        break;
+                    case 'tour':
+                        openModal('tourModal');
+                        loadTournaments();
+                        break;
+                    case 'code':
+                        openModal('codeModal');
+                        break;
+                    case 'boss':
+                        openModal('bossModal');
+                        break;
+                }
             });
-            event.currentTarget.classList.add('active');
-            
-            updateBalance();
-            tg.HapticFeedback.impactOccurred('light');
-        }
+        });
+
+        // Deposit button
+        document.getElementById('btnDeposit').addEventListener('click', () => {
+            tg.showAlert('To\'lov tizimi tez orada qo\'shiladi!');
+        });
+
+        // Withdraw button
+        document.getElementById('btnWithdraw').addEventListener('click', () => {
+            if (userData.balance < 5) {
+                tg.showAlert('Minimal yechib olish summasi: $5.00');
+                return;
+            }
+            tg.showAlert('Yechib olish funksiyasi tez orada qo\'shiladi!');
+        });
 
         // Modal functions
-        function showModal(title, subtitle, content) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalSubtitle').textContent = subtitle;
-            document.getElementById('modalBody').innerHTML = content;
-            document.getElementById('modalOverlay').classList.add('active');
-            tg.HapticFeedback.impactOccurred('medium');
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
         }
 
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
         }
 
-        function closeModalOnOverlay(event) {
-            if (event.target === event.currentTarget) {
-                closeModal();
-            }
-        }
-
-        // Action functions
-        function showDeposit() {
-            const content = `
-                <div class="form-group">
-                    <label class="form-label">Сумма пополнения (USD)</label>
-                    <input type="number" class="form-input" id="depositAmount" placeholder="10.00" min="1" step="0.01">
-                </div>
-                <button class="btn btn-primary" onclick="processDeposit()">
-                    Пополнить через SmartGlocal
-                </button>
-            `;
-            showModal('Пополнение баланса', 'Введите сумму для пополнения', content);
-        }
-
-        async function processDeposit() {
-            const amount = parseFloat(document.getElementById('depositAmount').value);
-            if (!amount || amount < 1) {
-                tg.showAlert('Введите корректную сумму');
-                return;
-            }
-
-            const result = await apiCall('/deposit', 'POST', { amount });
-            if (result && result.payment_url) {
-                tg.openLink(result.payment_url);
-                closeModal();
-            }
-        }
-
-        function showWithdraw() {
-            const content = `
-                <div class="form-group">
-                    <label class="form-label">Номер карты</label>
-                    <input type="text" class="form-input" id="cardNumber" placeholder="8600 1234 5678 9012" maxlength="19">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Сумма вывода (USD)</label>
-                    <input type="number" class="form-input" id="withdrawAmount" placeholder="10.00" min="1" step="0.01">
-                </div>
-                <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">
-                    Доступно: $${userData.balance.toFixed(2)}
-                </p>
-                <button class="btn btn-primary" onclick="processWithdraw()">
-                    Вывести средства
-                </button>
-            `;
-            showModal('Вывод средств', 'Введите данные для вывода', content);
-        }
-
-        async function processWithdraw() {
-            const card = document.getElementById('cardNumber').value.replace(/\s/g, '');
-            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+        // Load tournaments
+        async function loadTournaments() {
+            const listEl = document.getElementById('tournamentList');
+            listEl.innerHTML = '<p style="text-align: center; color: #888;">Turnirlar yuklanmoqda...</p>';
             
-            if (!card || card.length < 16) {
-                tg.showAlert('Введите корректный номер карты');
-                return;
-            }
-            
-            if (!amount || amount < 1) {
-                tg.showAlert('Введите корректную сумму');
-                return;
-            }
-            
-            if (amount > userData.balance) {
-                tg.showAlert('Недостаточно средств');
-                return;
-            }
-
-            const result = await apiCall('/withdraw', 'POST', { card_number: card, amount });
-            if (result && result.success) {
-                tg.showAlert('Заявка на вывод создана!');
-                await loadUserData();
-                closeModal();
-            }
-        }
-
-        function showDaily() {
-            const canClaim = !userData.last_daily || 
-                new Date().toDateString() !== new Date(userData.last_daily).toDateString();
-            
-            const dailyAmount = userData.subscription === 'player' ? 0.10 :
-                               userData.subscription === 'pro' ? 0.15 :
-                               userData.subscription === 'boss' ? 0.25 : 0.05;
-
-            const content = `
-                <div class="empty-state">
-                    <div class="empty-icon">🎁</div>
-                    <h3 class="empty-title">Ежедневный бонус</h3>
-                    <p class="empty-text" style="margin-bottom: 24px;">
-                        ${canClaim ? 
-                            `Получите $${dailyAmount.toFixed(2)} прямо сейчас!` : 
-                            'Возвращайтесь завтра за новым бонусом!'
-                        }
-                    </p>
-                    ${canClaim ? 
-                        `<button class="btn btn-primary" onclick="claimDaily()">Получить бонус</button>` : 
-                        '<p style="color: var(--text-secondary);">Уже получено сегодня</p>'
-                    }
-                </div>
-            `;
-            showModal('Ежедневный бонус', '', content);
-        }
-
-        async function claimDaily() {
-            const result = await apiCall('/daily', 'POST');
-            if (result && result.success) {
-                tg.showAlert(`Получено $${result.amount.toFixed(2)}!`);
-                await loadUserData();
-                closeModal();
-            }
-        }
-
-        function showPromo() {
-            const content = `
-                <div class="form-group">
-                    <label class="form-label">Промокод</label>
-                    <input type="text" class="form-input" id="promoCode" placeholder="PROMO2024" style="text-transform: uppercase;">
-                </div>
-                <button class="btn btn-primary" onclick="applyPromo()">
-                    Активировать
-                </button>
-            `;
-            showModal('Промокод', 'Введите промокод', content);
-        }
-
-        async function applyPromo() {
-            const code = document.getElementById('promoCode').value.toUpperCase();
-            if (!code) {
-                tg.showAlert('Введите промокод');
-                return;
-            }
-
-            const result = await apiCall('/promo', 'POST', { code });
-            if (result && result.success) {
-                tg.showAlert(`Промокод активирован! +$${result.amount.toFixed(2)}`);
-                await loadUserData();
-                closeModal();
-            } else {
-                tg.showAlert('Неверный промокод');
-            }
-        }
-
-        async function showGameMenu(game) {
-            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-            const content = `
-                <div class="list-items">
-                    <div class="list-item" onclick="showTournaments('${game}')">
-                        <div class="list-item-header">
-                            <div class="list-item-title">🏆 Турниры</div>
-                            <div style="color: var(--text-secondary);">→</div>
-                        </div>
-                        <div class="list-item-description">Участвуйте в соревнованиях</div>
-                    </div>
-                    <div class="list-item" onclick="showShop('${game}')">
-                        <div class="list-item-header">
-                            <div class="list-item-title">🛍️ Магазин</div>
-                            <div style="color: var(--text-secondary);">→</div>
-                        </div>
-                        <div class="list-item-description">Купить игровые предметы</div>
-                    </div>
-                    <div class="list-item" onclick="showProfile('${game}')">
-                        <div class="list-item-header">
-                            <div class="list-item-title">⚙️ Профиль игры</div>
-                            <div style="color: var(--text-secondary);">→</div>
-                        </div>
-                        <div class="list-item-description">Настройте ник и UID</div>
-                    </div>
-                </div>
-            `;
-            showModal(gameName, 'Выберите действие', content);
-        }
-
-        async function showTournaments(game) {
-            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-            const apiGame = game === 'cod' ? 'cod' : 'standoff';
-            
-            showModal(gameName, 'Загрузка турниров...', '<div class="loading"><div class="loading-spinner"></div></div>');
-            
-            const tournaments = await apiCall(`/tournaments?game=${apiGame}`);
-            
-            if (!tournaments || tournaments.length === 0) {
-                const content = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🏆</div>
-                        <h3 class="empty-title">Нет активных турниров</h3>
-                        <p class="empty-text">Турниры скоро появятся!</p>
-                    </div>
-                `;
-                showModal(gameName, 'Турниры', content);
-                return;
-            }
-
-            const content = `
-                <div class="list-items">
-                    ${tournaments.map(t => `
-                        <div class="list-item" onclick="joinTournament(${t.id})">
-                            <div class="list-item-header">
-                                <div class="list-item-title">${t.mode}</div>
-                                <div class="list-item-price">$${t.prize.toFixed(2)}</div>
-                            </div>
-                            <div class="list-item-description">${t.info}</div>
-                            <div class="list-item-stats">
-                                <div class="stat">👥 ${t.participants_count}/${t.max_participants}</div>
-                                <div class="stat">💰 $${t.fee.toFixed(2)}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            showModal(gameName, 'Активные турниры', content);
-        }
-
-        async function joinTournament(tournamentId) {
-            const result = await apiCall(`/tournament/${tournamentId}/join`, 'POST');
-            if (result && result.success) {
-                tg.showAlert('Вы успешно присоединились к турниру!');
-                await loadUserData();
-                await loadTournaments();
-                closeModal();
-            }
-        }
-
-        async function showShop(game) {
-            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-            const apiGame = game === 'cod' ? 'cod' : 'standoff';
-            
-            showModal(gameName, 'Загрузка магазина...', '<div class="loading"><div class="loading-spinner"></div></div>');
-            
-            const items = await apiCall(`/shop/items?game=${apiGame}`);
-            
-            if (!items || items.length === 0) {
-                const content = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🛍️</div>
-                        <h3 class="empty-title">Магазин пуст</h3>
-                        <p class="empty-text">Предметы скоро появятся!</p>
-                    </div>
-                `;
-                showModal(gameName, 'Магазин', content);
-                return;
-            }
-
-            const content = `
-                <div class="list-items">
-                    ${items.map(item => `
-                        <div class="list-item" onclick="buyItem(${item.id})">
-                            <div class="list-item-header">
-                                <div class="list-item-title">${item.name}</div>
-                                <div class="list-item-price">$${item.price.toFixed(2)}</div>
-                            </div>
-                            <div class="list-item-description">${item.description}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            showModal(gameName, 'Магазин', content);
-        }
-
-        async function buyItem(itemId) {
-            const result = await apiCall(`/shop/buy/${itemId}`, 'POST');
-            if (result && result.success) {
-                tg.showAlert('Покупка успешно выполнена!');
-                await loadUserData();
-                closeModal();
-            }
-        }
-
-        function showProfile(game) {
-            const gameName = game === 'cod' ? 'Call of Duty' : 'Standoff 2';
-            const nick = game === 'cod' ? userData.cod_nick : userData.so_nick;
-            const uid = game === 'cod' ? userData.cod_uid : userData.so_uid;
-            
-            const content = `
-                <div class="form-group">
-                    <label class="form-label">Никнейм в игре</label>
-                    <input type="text" class="form-input" id="gameNick" placeholder="Ваш ник" value="${nick || ''}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">UID игрока</label>
-                    <input type="text" class="form-input" id="gameUid" placeholder="Ваш UID" value="${uid || ''}">
-                </div>
-                <button class="btn btn-primary" onclick="saveGameProfile('${game}')">
-                    Сохранить профиль
-                </button>
-            `;
-            showModal(gameName, 'Настройка профиля', content);
-        }
-
-        async function saveGameProfile(game) {
-            const nick = document.getElementById('gameNick').value;
-            const uid = document.getElementById('gameUid').value;
-            
-            if (!nick || !uid) {
-                tg.showAlert('Заполните все поля');
-                return;
-            }
-
-            const field = game === 'cod' ? 'cod' : 'so';
-            const result = await apiCall('/user/update', 'POST', {
-                [`${field}_nick`]: nick,
-                [`${field}_uid`]: uid
-            });
-            
-            if (result && result.success) {
-                tg.showAlert('Профиль сохранен!');
-                await loadUserData();
-                closeModal();
-            }
-        }
-
-        function showBonus() {
-            const content = `
-                <div class="list-items">
-                    <div class="list-item" onclick="showDaily()">
-                        <div class="list-item-header">
-                            <div class="list-item-title">🎁 Ежедневный бонус</div>
-                            <div style="color: var(--text-secondary);">→</div>
-                        </div>
-                        <div class="list-item-description">Получайте бонусы каждый день</div>
-                    </div>
-                    <div class="list-item" onclick="showPremium()">
-                        <div class="list-item-header">
-                            <div class="list-item-title">⭐ Premium подписки</div>
-                            <div style="color: var(--text-secondary);">→</div>
-                        </div>
-                        <div class="list-item-description">Увеличьте свои бонусы</div>
-                    </div>
-                    <div class="list-item" onclick="showPromo()">
-                        <div class="list-item-header">
-                            <div class="list-item-title">🎟️ Промокоды</div>
-                            <div style="color: var(--text-secondary);">→</div>
-                        </div>
-                        <div class="list-item-description">Активируйте промокод</div>
-                    </div>
-                </div>
-            `;
-            showModal('Бонусы', 'Получайте дополнительные награды', content);
-        }
-
-        function showPremium() {
-            const plans = [
-                { id: 'player', name: 'Premium Player', price: 2.0, daily: 0.10, features: ['$0.10 ежедневно', 'Базовые привилегии'] },
-                { id: 'pro', name: 'Premium Pro', price: 4.0, daily: 0.15, features: ['$0.15 ежедневно', '+10% к выигрышу', 'Приоритетная поддержка'] },
-                { id: 'boss', name: 'Premium Boss', price: 6.0, daily: 0.25, features: ['$0.25 ежедневно', '+20% к выигрышу', '1 бесплатный турнир', 'VIP значок'] }
-            ];
-
-            const content = `
-                <div class="list-items">
-                    ${plans.map(p => `
-                        <div class="list-item" onclick="buyPremium('${p.id}')">
-                            <div class="list-item-header">
-                                <div class="list-item-title">${p.name}</div>
-                                <div class="list-item-price">$${p.price.toFixed(2)}</div>
-                            </div>
-                            <div class="list-item-description">
-                                ${p.features.map(f => `• ${f}`).join('<br>')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            showModal('Premium подписки', 'Выберите план', content);
-        }
-
-        async function buyPremium(plan) {
-            const result = await apiCall('/premium/buy', 'POST', { plan });
-            if (result && result.success) {
-                tg.showAlert('Premium подписка активирована!');
-                await loadUserData();
-                closeModal();
-            }
-        }
-
-        // Navigation
-        function switchTab(tab) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-
-            if (tab === 'tournaments') {
-                showAllTournaments();
-            } else if (tab === 'bonus') {
-                showBonus();
-            } else if (tab === 'profile') {
-                showUserProfile();
-            }
-        }
-
-        async function showAllTournaments() {
-            showModal('Все турниры', 'Загрузка...', '<div class="loading"><div class="loading-spinner"></div></div>');
-            
-            const codTournaments = await apiCall('/tournaments?game=cod');
-            const so2Tournaments = await apiCall('/tournaments?game=standoff');
-            
-            const allTournaments = [
-                ...(codTournaments || []).map(t => ({ ...t, game: 'COD' })),
-                ...(so2Tournaments || []).map(t => ({ ...t, game: 'SO2' }))
-            ];
-
-            if (allTournaments.length === 0) {
-                const content = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🏆</div>
-                        <h3 class="empty-title">Нет активных турниров</h3>
-                        <p class="empty-text">Турниры скоро появятся!</p>
-                    </div>
-                `;
-                showModal('Все турниры', '', content);
-                return;
-            }
-
-            const content = `
-                <div class="list-items">
-                    ${allTournaments.map(t => `
-                        <div class="list-item" onclick="joinTournament(${t.id})">
-                            <div class="list-item-header">
-                                <div class="list-item-title">${t.game} - ${t.mode}</div>
-                                <div class="list-item-price">$${t.prize.toFixed(2)}</div>
-                            </div>
-                            <div class="list-item-description">${t.info}</div>
-                            <div class="list-item-stats">
-                                <div class="stat">👥 ${t.participants_count}/${t.max_participants}</div>
-                                <div class="stat">💰 $${t.fee.toFixed(2)}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            showModal('Все турниры', 'Доступные турниры', content);
-        }
-
-        async function showUserProfile() {
-            const topUsers = await apiCall('/top-10');
-            
-            let userRank = 'N/A';
-            if (topUsers) {
-                const rankIndex = topUsers.findIndex(u => u.user_id === userData.user_id);
-                if (rankIndex !== -1) {
-                    userRank = `#${rankIndex + 1}`;
+            // Mock tournament data
+            const tournaments = [
+                {
+                    id: 1,
+                    game: 'cod',
+                    mode: 'Battle Royale',
+                    info: '5v5 - Squad',
+                    fee: 2.00,
+                    prize: 10.00,
+                    max_participants: 10,
+                    participants_count: 6
+                },
+                {
+                    id: 2,
+                    game: 'standoff',
+                    mode: 'Deathmatch',
+                    info: '1v1',
+                    fee: 1.00,
+                    prize: 1.80,
+                    max_participants: 2,
+                    participants_count: 1
                 }
-            }
+            ];
 
-            const content = `
-                <div class="empty-state">
-                    <div class="avatar" style="width: 80px; height: 80px; font-size: 36px; margin: 0 auto 20px; border: 2px solid var(--border);">
-                        ${userData.full_name[0].toUpperCase()}
+            listEl.innerHTML = '';
+            tournaments.forEach(t => {
+                const item = document.createElement('div');
+                item.className = 'tournament-item';
+                item.innerHTML = `
+                    <div class="tournament-header">
+                        <div class="tournament-mode">${t.mode}</div>
+                        <div class="tournament-fee">$${t.fee.toFixed(2)}</div>
                     </div>
-                    <h3 class="empty-title">${userData.full_name}</h3>
-                    <p class="empty-text" style="margin-bottom: 24px;">@${userData.username}</p>
-                    
-                    <div class="list-items">
-                        <div class="list-item">
-                            <div class="list-item-header">
-                                <div class="list-item-title">Баланс</div>
-                                <div class="list-item-price">$${userData.balance.toFixed(2)}</div>
-                            </div>
-                        </div>
-                        <div class="list-item">
-                            <div class="list-item-header">
-                                <div class="list-item-title">Подписка</div>
-                                <div style="color: var(--text-secondary);">${userData.subscription}</div>
-                            </div>
-                        </div>
-                        <div class="list-item">
-                            <div class="list-item-header">
-                                <div class="list-item-title">Рейтинг</div>
-                                <div style="color: var(--text-secondary);">${userRank}</div>
-                            </div>
-                        </div>
+                    <div class="tournament-info">${t.info}</div>
+                    <div class="tournament-stats">
+                        <span>Ishtirokchilar: ${t.participants_count}/${t.max_participants}</span>
+                        <span style="color: #ffd700;">Mukofot: $${t.prize.toFixed(2)}</span>
                     </div>
-                </div>
-            `;
-            showModal('Профиль', 'Ваша информация', content);
+                    <button class="join-btn" onclick="joinTournament(${t.id})" 
+                            ${t.participants_count >= t.max_participants ? 'disabled' : ''}>
+                        Qatnashish
+                    </button>
+                `;
+                listEl.appendChild(item);
+            });
         }
 
-        // Initialize app
-        init();
+        // Join tournament
+        function joinTournament(tournamentId) {
+            if (userData.balance < 1.0) {
+                tg.showAlert('Balans yetarli emas! Hisobni to\'ldiring.');
+                return;
+            }
+            tg.showConfirm('Ushbu turnirga qo\'shilishni xohlaysizmi?', (confirmed) => {
+                if (confirmed) {
+                    tg.showAlert('Siz turnirga qo\'shildingiz!');
+                    closeModal('tourModal');
+                }
+            });
+        }
+
+        // Save code data
+        function saveCodeData() {
+            const codNick = document.getElementById('codNick').value.trim();
+            const codUid = document.getElementById('codUid').value.trim();
+            const soNick = document.getElementById('soNick').value.trim();
+            const soUid = document.getElementById('soUid').value.trim();
+
+            userData.cod_nick = codNick;
+            userData.cod_uid = codUid;
+            userData.so_nick = soNick;
+            userData.so_uid = soUid;
+
+            tg.showAlert('Ma\'lumotlar saqlandi!');
+            closeModal('codeModal');
+        }
+
+        // Subscribe
+        function subscribe(plan) {
+            const plans = {
+                player: { name: 'Premium Player', price: 2.00 },
+                pro: { name: 'Premium Pro', price: 4.00 },
+                boss: { name: 'Premium Boss', price: 6.00 }
+            };
+
+            const selectedPlan = plans[plan];
+            
+            if (userData.balance < selectedPlan.price) {
+                tg.showAlert(`Balans yetarli emas! Kerakli summa: $${selectedPlan.price.toFixed(2)}`);
+                return;
+            }
+
+            tg.showConfirm(`${selectedPlan.name} ($${selectedPlan.price.toFixed(2)}) sotib olishni tasdiqlaysizmi?`, (confirmed) => {
+                if (confirmed) {
+                    userData.balance -= selectedPlan.price;
+                    userData.subscription = plan;
+                    updateBalanceDisplay();
+                    tg.showAlert('Obuna muvaffaqiyatli faollashtirildi!');
+                    closeModal('bossModal');
+                }
+            });
+        }
+
+        // Game selection
+        document.querySelectorAll('.menu-item[data-game]').forEach(item => {
+            item.addEventListener('click', () => {
+                const game = item.dataset.game;
+                const gameName = game === 'cod' ? 'COD Mobile' : 'Standoff 2';
+                
+                tg.showAlert(`${gameName} bo'limi tez orada qo'shiladi!`);
+                closeModal('gameModal');
+            });
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loading').classList.add('active');
+            setTimeout(() => {
+                loadUserData();
+            }, 500);
+        });
+
+        // Close modals on background click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>
