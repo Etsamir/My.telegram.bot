@@ -1,257 +1,168 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Bot Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-color: #000000;
-            --card-bg: #1a1a1a;
-            --text-color: #ffffff;
-            --accent-gold: #ffcc00;
-            --btn-bg: #121212;
-            --border-color: #333333;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini App</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(180deg, #000, #1a1a1a);
+        color: #fff;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    .container {
+        width: 90%;
+        margin: auto;
+        padding-top: 20px;
+    }
 
-        /* Header section */
-        .header {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 25px;
-        }
+    .profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
 
-        .avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #333, #666);
-            border-radius: 50%;
-            margin-right: 15px;
-        }
+    .avatar {
+        width: 70px;
+        height: 70px;
+        background: #444;
+        border-radius: 50%;
+    }
 
-        .user-info h2 {
-            margin: 0;
-            font-size: 22px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    .name {
+        font-size: 24px;
+        font-weight: bold;
+    }
 
-        .user-info p {
-            margin: 0;
-            color: #888;
-            font-size: 14px;
-        }
+    .id {
+        color: #9c9c9c;
+        margin-top: 3px;
+    }
 
-        /* Balance Card */
-        .balance-card {
-            background-color: var(--card-bg);
-            border-radius: 24px;
-            padding: 24px;
-            width: 90%;
-            position: relative;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
+    .balance-card {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.15);
+        position: relative;
+    }
 
-        .currency-switch {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #000;
-            border-radius: 8px;
-            display: flex;
-            padding: 2px;
-            border: 1px solid var(--border-color);
-        }
+    .currency-switch {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        gap: 5px;
+        background: rgba(255,255,255,0.1);
+        padding: 5px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+    }
 
-        .currency-switch span {
-            padding: 4px 8px;
-            font-size: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+    .money {
+        font-size: 42px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
 
-        .currency-switch .active {
-            background: #333;
-            border-radius: 6px;
-        }
+    .btn-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
 
-        .balance-amount {
-            font-size: 42px;
-            font-weight: 800;
-            margin: 10px 0 25px 0;
-            display: flex;
-            align-items: center;
-        }
+    .btn {
+        width: 48%;
+        padding: 12px 0;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.25);
+        background: rgba(0,0,0,0.3);
+        color: #fff;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+    }
 
-        .balance-buttons {
-            display: flex;
-            gap: 12px;
-        }
+    .grid {
+        margin-top: 25px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
 
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: var(--btn-bg);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-        }
+    .card {
+        padding: 25px 10px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.15);
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        position: relative;
+    }
 
-        /* Grid Menu */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            width: 100%;
-        }
-
-        .menu-item {
-            background-color: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            border: 1px solid var(--border-color);
-            position: relative;
-            text-decoration: none;
-            color: white;
-        }
-
-        .menu-item i {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: var(--accent-gold);
-        }
-
-        .menu-item span {
-            font-weight: 800;
-            text-transform: uppercase;
-            font-size: 18px;
-            letter-spacing: 1px;
-        }
-
-        /* Loader */
-        #loader {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-    </style>
+    .icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+</style>
 </head>
+
 <body>
+<div class="container">
 
-    <div id="loader">Yuklanmoqda...</div>
-
-    <div class="header">
-        <div class="avatar" id="user-photo"></div>
-        <div class="user-info">
-            <h2 id="user-name">NAME</h2>
-            <p id="user-id">12345678</p>
+    <div class="profile">
+        <div class="avatar"></div>
+        <div>
+            <div class="name">NAME</div>
+            <div class="id">12345678</div>
         </div>
     </div>
 
     <div class="balance-card">
         <div class="currency-switch">
-            <span class="active">USD</span>
-            <span>UZS</span>
+            <div>USD</div>
+            <div>UZS</div>
         </div>
-        <div class="balance-amount">
-            $ <span id="balance">0.00</span>
-        </div>
-        <div class="balance-buttons">
-            <button class="btn" onclick="tg.showAlert('Tez orada...')">Пополнить</button>
-            <button class="btn" onclick="tg.showAlert('Tez orada...')">Вывести</button>
-        </div>
-    </div>
+        <div class="money">$ 0.00</div>
 
-    <div class="menu-grid">
-        <div class="menu-item" onclick="openSection('game')">
-            <i class="fas fa-puzzle-piece"></i>
-            <span>Game</span>
-        </div>
-        <div class="menu-item" onclick="openSection('tour')">
-            <i class="fas fa-trophy"></i>
-            <span>Tour</span>
-        </div>
-        <div class="menu-item" onclick="openSection('code')">
-            <i class="fas fa-key"></i>
-            <span>Code</span>
-        </div>
-        <div class="menu-item" onclick="openSection('boss')">
-            <i class="fas fa-crown"></i>
-            <span>Boss</span>
+        <div class="btn-group">
+            <div class="btn" onclick="alert('Пополнить')">Пополнить</div>
+            <div class="btn" onclick="alert('Вывести')">Вывести</div>
         </div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
+    <div class="grid">
+        <div class="card">
+            <div class="icon">🧩</div>
+            GAME
+        </div>
 
-        // API URL (O'zingizning serveringiz manzilini yozing)
-        const API_BASE_URL = "https://serveringiz.com"; // Flask ishlayotgan URL
+        <div class="card">
+            <div class="icon">🏆</div>
+            TOUR
+        </div>
 
-        async function loadUserData() {
-            try {
-                // Telegramdan foydalanuvchi ma'lumotlarini olish
-                const user = tg.initDataUnsafe.user;
-                if (user) {
-                    document.getElementById('user-name').innerText = user.first_name.toUpperCase();
-                    document.getElementById('user-id').innerText = user.id;
-                }
+        <div class="card">
+            <div class="icon">🔑</div>
+            CODE
+        </div>
 
-                // Serverdan haqiqiy balansni olish
-                const response = await fetch(`${API_BASE_URL}/api/user`, {
-                    headers: {
-                        'X-Telegram-Init-Data': tg.initData
-                    }
-                });
-                const data = await response.json();
-                
-                if (data.balance !== undefined) {
-                    document.getElementById('balance').innerText = data.balance.toFixed(2);
-                }
-            } catch (e) {
-                console.error("Xatolik:", e);
-                // Test uchun xatolik bo'lsa ham loaderni yopamiz
-            } finally {
-                document.getElementById('loader').style.display = 'none';
-            }
-        }
+        <div class="card">
+            <div class="icon">👑</div>
+            BOSS
+        </div>
+    </div>
 
-        function openSection(name) {
-            tg.HapticFeedback.impactOccurred('medium');
-            tg.showAlert(name.toUpperCase() + " bo'limi tez orada ishga tushadi!");
-        }
+</div>
 
-        // Sahifa yuklanganda ishga tushadi
-        window.onload = loadUserData;
-    </script>
+<script>
+    console.log("Mini App Loaded!");
+</script>
+
 </body>
 </html>
