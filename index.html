@@ -1,168 +1,1160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini App</title>
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(180deg, #000, #1a1a1a);
-        color: #fff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraglord — дизайн как в PROFILE, GAME, HOME, PRO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
 
-    .container {
-        width: 90%;
-        margin: auto;
-        padding-top: 20px;
-    }
+        body {
+            background-color: #0a0a0a;
+            color: #fff;
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
 
-    .profile {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
+        /* LOGIN PAGE */
+        #login-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #0a0a0a;
+            z-index: 6000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .avatar {
-        width: 70px;
-        height: 70px;
-        background: #444;
-        border-radius: 50%;
-    }
+        .login-input {
+            width: 80%;
+            max-width: 350px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            outline: none;
+        }
 
-    .name {
-        font-size: 24px;
-        font-weight: bold;
-    }
+        .login-input::placeholder {
+            color: #444;
+            font-weight: 700;
+            text-transform: lowercase;
+        }
 
-    .id {
-        color: #9c9c9c;
-        margin-top: 3px;
-    }
+        .login-btn-group {
+            display: flex;
+            gap: 15px;
+            width: 80%;
+            max-width: 350px;
+        }
 
-    .balance-card {
-        margin-top: 25px;
-        padding: 20px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.15);
-        position: relative;
-    }
+        .login-btn {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 14px;
+            padding: 14px;
+            color: #666;
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-    .currency-switch {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        display: flex;
-        gap: 5px;
-        background: rgba(255,255,255,0.1);
-        padding: 5px 10px;
-        border-radius: 10px;
-        font-size: 12px;
-    }
+        .login-btn:active {
+            background: #333;
+            color: #fff;
+            border-color: #555;
+        }
 
-    .money {
-        font-size: 42px;
-        font-weight: bold;
-        margin-top: 20px;
-    }
+        /* MAIN APP (hidden until login) */
+        #app-container,
+        #bottom-nav {
+            display: none;
+        }
 
-    .btn-group {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-    }
+        .container {
+            padding: 20px 16px;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+        }
 
-    .btn {
-        width: 48%;
-        padding: 12px 0;
-        border-radius: 10px;
-        border: 1px solid rgba(255,255,255,0.25);
-        background: rgba(0,0,0,0.3);
-        color: #fff;
-        font-weight: bold;
-        text-align: center;
-        cursor: pointer;
-    }
+        .tab-content {
+            display: none;
+            animation: fade 0.2s;
+        }
 
-    .grid {
-        margin-top: 25px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-    }
+        .tab-content.active {
+            display: block;
+        }
 
-    .card {
-        padding: 25px 10px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.15);
-        text-align: center;
-        font-size: 20px;
-        font-weight: bold;
-        position: relative;
-    }
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
 
-    .icon {
-        font-size: 32px;
-        margin-bottom: 10px;
-    }
-</style>
+        /* PROFILE (1) balance card – как на дизайне */
+        .profile-balance-card {
+            background: linear-gradient(145deg, #121212, #1c1c1c);
+            border: 1px solid #2a2a2a;
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 28px;
+        }
+
+        .balance-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .balance-label {
+            color: #555;
+            font-weight: 800;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .balance-value-lg {
+            font-size: 44px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .balance-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .action-btn-outline {
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #ccc;
+            padding: 14px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .action-btn-outline:active {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        /* Информация – сетка 2x2 как на PROFILE.png */
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 30px 0 16px 0;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .grid-item {
+            background: linear-gradient(145deg, #161616, #1f1f1f);
+            border: 1px solid #2a2a2a;
+            border-radius: 24px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .grid-item i {
+            font-size: 34px;
+            color: #777;
+        }
+
+        .grid-item span {
+            font-weight: 800;
+            color: #555;
+            font-size: 20px;
+            text-transform: uppercase;
+        }
+
+        /* Кнопка выхода */
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #ccc;
+            padding: 16px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 20px;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 35px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .logout-btn:active {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        /* HOME – баланс карточка */
+        .balance-card {
+            background: linear-gradient(145deg, #121212, #1e1e1e);
+            border: 1px solid #2a2a2a;
+            border-radius: 26px;
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .balance-amount {
+            font-size: 38px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        /* Новости – news.png */
+        .news-card {
+            width: 100%;
+            height: 200px;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #333;
+            margin-bottom: 25px;
+        }
+
+        .news-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Турнирные карточки (HOME и GAME) */
+        .tournament-item {
+            background: linear-gradient(145deg, #161616, #202020);
+            border: 1px solid #2a2a2a;
+            border-radius: 26px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            cursor: pointer;
+        }
+
+        .game-info {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .game-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            object-fit: cover;
+            border: 1px solid #3a3a3a;
+        }
+
+        .game-details h3 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ddd;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .game-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .timer {
+            font-size: 18px;
+            color: #666;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .arrow-btn {
+            width: 52px;
+            height: 52px;
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+            font-size: 24px;
+        }
+
+        /* ACTION GRID (Бонус / Ключ) */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 25px;
+        }
+
+        .action-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 22px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: #aaa;
+            font-weight: 800;
+            font-size: 22px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* GAME TAB – фильтры */
+        .filter-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+
+        .filter-btn {
+            min-width: 70px;
+            height: 70px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: #666;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #252525;
+            border-color: #777;
+            color: #fff;
+        }
+
+        .filter-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            overflow: hidden;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+
+        .filter-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .game-section-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #3a3a3a;
+            text-transform: uppercase;
+            margin: 20px 0 12px 0;
+            letter-spacing: 2px;
+        }
+
+        /* PRO TAB – дизайн как на PRO.png */
+        .sub-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: #3a3a3a;
+            text-transform: uppercase;
+            margin: 30px 0 12px 8px;
+        }
+
+        .sub-card {
+            background: linear-gradient(145deg, #151515, #1e1e1e);
+            border: 1px solid #333;
+            border-radius: 30px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .sub-card.active-plan {
+            border: 1px solid #fff;
+            box-shadow: 0 0 18px rgba(255,255,255,0.08);
+        }
+
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a2a;
+            padding-bottom: 18px;
+            margin-bottom: 18px;
+        }
+
+        .sub-price {
+            font-size: 44px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .buy-button {
+            background: #0f0f0f;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 36px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 26px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .buy-button.owned {
+            background: #222;
+            color: #555;
+            border-color: #444;
+        }
+
+        .sub-features {
+            list-style: none;
+        }
+
+        .sub-features li {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #aaa;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .radio-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #666;
+            display: inline-block;
+            background: transparent;
+        }
+
+        /* Нижняя навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 440px;
+            background: #121212;
+            border: 1px solid #2a2a2a;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 22px;
+            box-shadow: 0 10px 40px #000;
+            z-index: 4000;
+        }
+
+        .nav-item {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #666;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            background: #252525;
+            border-color: #777;
+            color: #fff;
+        }
+
+        /* Оверлей и поп-апы */
+        #universal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        #universal-overlay.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .popup-card {
+            position: fixed;
+            bottom: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 440px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 36px;
+            padding: 28px;
+            z-index: 2001;
+            transition: bottom 0.4s;
+            box-shadow: 0 -10px 40px #000;
+        }
+
+        .popup-card.visible {
+            bottom: 110px;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(5,1fr);
+            gap: 10px;
+            margin: 25px 0;
+        }
+
+        .day-box {
+            aspect-ratio: 1;
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #666;
+            font-size: 20px;
+        }
+
+        .day-box.active {
+            border-color: #aaa;
+            color: #fff;
+            background: #2a2a2a;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 16px;
+            font-size: 24px;
+            font-weight: 800;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* GAME DETAILS */
+        #game-details-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #0c0c0c;
+            z-index: 3000;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .big-join-btn {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            width: calc(100% - 40px);
+            margin: 10px 20px;
+            padding: 16px;
+            border-radius: 22px;
+            color: #aaa;
+            font-size: 36px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .detail-tab-btn {
+            background: #121212;
+            border: 1px solid #333;
+            padding: 12px;
+            color: #666;
+            font-weight: 800;
+            border-radius: 18px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .detail-tab-btn.active {
+            border-color: #777;
+            color: #ddd;
+            background: #1e1e1e;
+        }
+    </style>
 </head>
-
 <body>
-<div class="container">
 
-    <div class="profile">
-        <div class="avatar"></div>
-        <div>
-            <div class="name">NAME</div>
-            <div class="id">12345678</div>
+    <!-- LOGIN PAGE -->
+    <div id="login-page">
+        <input type="text" id="reg-name" class="login-input" placeholder="name">
+        <input type="text" id="reg-login" class="login-input" placeholder="login">
+        <input type="password" id="reg-pass" class="login-input" placeholder="pasw">
+        <div class="login-btn-group">
+            <button class="login-btn" onclick="handleSignUp()">sing up</button>
+            <button class="login-btn" onclick="handleSignIn()">sing in</button>
         </div>
     </div>
 
-    <div class="balance-card">
-        <div class="currency-switch">
-            <div>USD</div>
-            <div>UZS</div>
-        </div>
-        <div class="money">$ 0.00</div>
+    <!-- MAIN APP -->
+    <div id="app-container" class="container">
+        <div id="universal-overlay" onclick="closeAllPopups()"></div>
 
-        <div class="btn-group">
-            <div class="btn" onclick="alert('Пополнить')">Пополнить</div>
-            <div class="btn" onclick="alert('Вывести')">Вывести</div>
+        <!-- POPUPS (Bonus, Payment, Promo, History, Chat, Language) -->
+        <div id="bonus-card" class="popup-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="border:1px solid #444; padding:6px 18px; border-radius:20px; background:#111; display:flex; gap:12px;">
+                    <span style="background:#222; padding:4px 12px; border-radius:10px; font-weight:800; font-size:20px;" id="bonus-val">$0.05</span>
+                    <span style="color:#666; font-weight:800; font-size:20px;" id="bonus-plan-name">free</span>
+                </div>
+                <i class="fa-solid fa-arrow-right" style="font-size:32px; color:#555; cursor:pointer;" onclick="closeAllPopups()"></i>
+            </div>
+            <div class="days-grid" id="daysGrid"></div>
+            <button class="submit-btn" id="claimBtn" onclick="claimDailyReward()">DAY</button>
         </div>
+
+        <div id="payment-card" class="popup-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <span style="font-size:28px; font-weight:800; text-transform:uppercase;" id="payment-title">Пополнить</span>
+                <i class="fa-solid fa-xmark" style="font-size:32px; color:#666; cursor:pointer;" onclick="closeAllPopups()"></i>
+            </div>
+            <input type="text" placeholder="Имя Фамилия" style="width:100%; background:#111; border:1px solid #333; padding:16px; border-radius:18px; color:#fff; font-size:20px; margin-bottom:12px;">
+            <input type="text" placeholder="Номер карты" style="width:100%; background:#111; border:1px solid #333; padding:16px; border-radius:18px; color:#fff; font-size:20px; margin-bottom:12px;">
+            <input type="number" id="pay-amt" placeholder="Сумма ($)" style="width:100%; background:#111; border:1px solid #333; padding:16px; border-radius:18px; color:#fff; font-size:20px; margin-bottom:18px;">
+            <button class="submit-btn" onclick="processPayment()">Подтвердить</button>
+        </div>
+
+        <div id="promo-card" class="popup-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <span style="font-size:28px; font-weight:800;">ACTIVATION</span>
+                <i class="fa-solid fa-xmark" style="font-size:32px; color:#666; cursor:pointer;" onclick="closeAllPopups()"></i>
+            </div>
+            <input type="text" id="promo-input" placeholder="KEY..." style="width:100%; background:#111; border:1px solid #333; padding:18px; border-radius:18px; color:#fff; font-size:24px; text-align:center; margin-bottom:18px; text-transform:uppercase;">
+            <button class="submit-btn" onclick="checkPromo()">CHECK</button>
+        </div>
+
+        <div id="history-card" class="popup-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <span style="font-size:28px; font-weight:800;">ИСТОРИЯ</span>
+                <i class="fa-solid fa-xmark" style="font-size:32px; color:#666; cursor:pointer;" onclick="closeAllPopups()"></i>
+            </div>
+            <div id="history-list" style="overflow-y:auto; height:80%;"></div>
+        </div>
+
+        <div id="chat-card" class="popup-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <span style="font-size:28px; font-weight:800;">ПОДДЕРЖКА</span>
+                <i class="fa-solid fa-xmark" style="font-size:32px; color:#666; cursor:pointer;" onclick="closeAllPopups()"></i>
+            </div>
+            <div class="chat-area" id="chat-area" style="height:70%; overflow-y:auto; background:#111; border-radius:20px; padding:18px; border:1px solid #333; display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+                <div class="chat-msg msg-admin" style="align-self:flex-start; background:#333; color:#fff; padding:12px 18px; border-radius:20px; border-bottom-left-radius:2px;">Salom! Qanday yordam bera olaman?</div>
+            </div>
+            <div style="display:flex; gap:12px;">
+                <input type="text" id="chat-input" placeholder="..." style="flex:1; background:#111; border:1px solid #333; padding:16px; border-radius:20px; color:#fff; font-size:20px;">
+                <button class="submit-btn" style="width:70px; padding:0;" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <div id="language-card" class="popup-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <span style="font-size:28px; font-weight:800;">ЯЗЫК</span>
+                <i class="fa-solid fa-xmark" style="font-size:32px; color:#666; cursor:pointer;" onclick="closeAllPopups()"></i>
+            </div>
+            <div class="lang-btn" onclick="setLang('UZ', this)" style="width:100%; background:#222; border:1px solid #333; padding:18px; border-radius:18px; color:#fff; font-size:22px; font-weight:bold; margin-bottom:12px; text-align:center; cursor:pointer;">O'zbek</div>
+            <div class="lang-btn active" onclick="setLang('RU', this)" style="width:100%; background:#222; border:1px solid #333; padding:18px; border-radius:18px; color:#fff; font-size:22px; font-weight:bold; margin-bottom:12px; text-align:center; cursor:pointer; border-color:#fff;">Русский</div>
+            <div class="lang-btn" onclick="setLang('EN', this)" style="width:100%; background:#222; border:1px solid #333; padding:18px; border-radius:18px; color:#fff; font-size:22px; font-weight:bold; margin-bottom:12px; text-align:center; cursor:pointer;">English</div>
+        </div>
+
+        <!-- GAME DETAILS PAGE (same as before) -->
+        <div id="game-details-page">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:20px; margin-top:10px;">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <img src="" id="detail-icon" style="width:70px; height:70px; border-radius:20px; border:1px solid #444; object-fit:cover;">
+                    <span id="detail-title" style="font-size:40px; font-weight:900; color:#666; text-transform:uppercase;">1v1</span>
+                </div>
+                <i class="fa-solid fa-arrow-right" style="font-size:40px; color:#666; cursor:pointer;" onclick="closeGameDetails()"></i>
+            </div>
+            <button class="big-join-btn">JOIN</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; padding:25px 20px;">
+                <div class="detail-tab-btn active" onclick="switchDetailTab('info', this)">INFO</div>
+                <div class="detail-tab-btn" onclick="switchDetailTab('player', this)">PLAYER</div>
+                <div class="detail-tab-btn" onclick="switchDetailTab('fond', this)">FOND</div>
+            </div>
+            <div style="padding:0 20px 40px;">
+                <div id="tab-content-info">
+                    <div style="font-size:26px; font-weight:800; color:#555; margin-bottom:10px;">ЗАГОЛОВОК</div>
+                    <div style="background:linear-gradient(145deg, #1a1a1a, #222); border:1px solid #333; border-radius:22px; height:150px; margin-bottom:20px;"></div>
+                    <div style="font-size:26px; font-weight:800; color:#555; margin-bottom:10px;">ОПИСАНИЕ</div>
+                    <div style="background:linear-gradient(145deg, #1a1a1a, #222); border:1px solid #333; border-radius:22px; height:200px;"></div>
+                </div>
+                <div id="tab-content-player" style="display:none;">...</div>
+                <div id="tab-content-fond" style="display:none;">...</div>
+            </div>
+        </div>
+
+        <!-- ========== HOME TAB (как на HOME.png) ========== -->
+        <div id="home-tab" class="tab-content active">
+            <div class="balance-card">
+                <i class="fa-regular fa-credit-card" style="color:#aaa; font-size:32px;"></i>
+                <span class="balance-amount" id="main-balance">$0.00</span>
+            </div>
+            <div class="section-title">Новости</div>
+            <div class="news-card">
+                <img src="news.png" alt="news" onerror="this.src='https://wallpapers.com/images/hd/purple-gaming-background-l61685k32847k47l.jpg'">
+                <div class="news-overlay" style="position:absolute; bottom:0; left:0; width:100%; padding:16px; background:linear-gradient(to top, #000, transparent);">
+                    <div style="text-align:right; color:#fff; font-weight:bold; font-size:26px;">...</div>
+                </div>
+            </div>
+            <div class="section-title">Турниры</div>
+            <!-- 2v2 STANDOFF 2 -->
+            <div class="tournament-item" onclick="openGameDetails('2v2', 'standoff2.png')">
+                <div class="game-info">
+                    <img src="standoff2.png" class="game-icon" alt="standoff2" onerror="this.src='https://play-lh.googleusercontent.com/Wd9G-t6F6y6y2b6z5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0h9g8f7d6s5a4'">
+                    <div class="game-details">
+                        <h3>STANDOFF 2</h3>
+                        <span class="game-price">2$ <span class="timer">24:23:00</span></span>
+                    </div>
+                </div>
+                <div class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <!-- 2v2 CALL OF DUTY -->
+            <div class="tournament-item" onclick="openGameDetails('2v2', 'codm.png')">
+                <div class="game-info">
+                    <img src="codm.png" class="game-icon" alt="codm" onerror="this.src='https://play-lh.googleusercontent.com/zV8QdY2kH_aOaX1aZ7u9qW7q7e8x0f3n7c8v4b5n6m9l0k1j2h3g4f5d6s7a8'">
+                    <div class="game-details">
+                        <h3>CALL OF DUTY</h3>
+                        <span class="game-price">2$ <span class="timer">34:23:00</span></span>
+                    </div>
+                </div>
+                <div class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <div class="action-grid">
+                <div class="action-btn" onclick="openBonus()"><i class="fa-solid fa-calendar"></i> Бонус</div>
+                <div class="action-btn" onclick="openPromo()"><i class="fa-solid fa-key"></i> Ключ</div>
+            </div>
+        </div>
+
+        <!-- ========== GAME TAB (как на GAME.png) ========== -->
+        <div id="game-tab" class="tab-content">
+            <div class="filter-row">
+                <div class="filter-btn active" onclick="filterGames('all', this)">All</div>
+                <div class="filter-icon" onclick="filterGames('cod', this)"><img src="codm.png" alt="cod" onerror="this.src='https://play-lh.googleusercontent.com/zV8QdY2kH_aOaX1aZ7u9qW7q7e8x0f3n7c8v4b5n6m9l0k1j2h3g4f5d6s7a8'"></div>
+                <div class="filter-icon" onclick="filterGames('standoff', this)"><img src="standoff2.png" alt="standoff" onerror="this.src='https://play-lh.googleusercontent.com/Wd9G-t6F6y6y2b6z5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0h9g8f7d6s5a4'"></div>
+            </div>
+
+            <!-- 1U1 (две карточки: COD и Standoff) -->
+            <div class="game-section-title">1U1</div>
+            <div class="tournament-item" data-category="cod" onclick="openGameDetails('1v1', 'codm.png')">
+                <div class="game-info">
+                    <img src="codm.png" class="game-icon" onerror="this.src='https://play-lh.googleusercontent.com/zV8QdY2kH_aOaX1aZ7u9qW7q7e8x0f3n7c8v4b5n6m9l0k1j2h3g4f5d6s7a8'">
+                    <div class="game-details">
+                        <h3>CALL OF DUTY</h3>
+                        <span class="game-price">2$ <span class="timer">44:23:00</span></span>
+                    </div>
+                </div>
+                <div class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <div class="tournament-item" data-category="standoff" onclick="openGameDetails('1v1', 'standoff2.png')">
+                <div class="game-info">
+                    <img src="standoff2.png" class="game-icon" onerror="this.src='https://play-lh.googleusercontent.com/Wd9G-t6F6y6y2b6z5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0h9g8f7d6s5a4'">
+                    <div class="game-details">
+                        <h3>STANDOFF 2</h3>
+                        <span class="game-price">2$ <span class="timer">44:23:00</span></span>
+                    </div>
+                </div>
+                <div class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+
+            <!-- 5U5 -->
+            <div class="game-section-title">5U5</div>
+            <div class="tournament-item" data-category="cod" onclick="openGameDetails('5v5', 'codm.png')">
+                <div class="game-info">
+                    <img src="codm.png" class="game-icon" onerror="this.src='https://play-lh.googleusercontent.com/zV8QdY2kH_aOaX1aZ7u9qW7q7e8x0f3n7c8v4b5n6m9l0k1j2h3g4f5d6s7a8'">
+                    <div class="game-details">
+                        <h3>CALL OF DUTY</h3>
+                        <span class="game-price">6$ <span class="timer">44:23:00</span></span>
+                    </div>
+                </div>
+                <div class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+
+            <!-- 2U2 – два турнира -->
+            <div class="game-section-title">2U2</div>
+            <div class="tournament-item" data-category="standoff" onclick="openGameDetails('2v2', 'standoff2.png')">
+                <div class="game-info">
+                    <img src="standoff2.png" class="game-icon" onerror="this.src='https://play-lh.googleusercontent.com/Wd9G-t6F6y6y2b6z5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0h9g8f7d6s5a4'">
+                    <div class="game-details">
+                        <h3>STANDOFF 2</h3>
+                        <span class="game-price">2$ <span class="timer">24:23:00</span></span>
+                    </div>
+                </div>
+                <div class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+            <div class="tournament-item" data-category="cod" onclick="openGameDetails('2v2', 'codm.png')">
+                <div class="game-info">
+                    <img src="codm.png" class="game-icon" onerror="this.src='https://play-lh.googleusercontent.com/zV8QdY2kH_aOaX1aZ7u9qW7q7e8x0f3n7c8v4b5n6m9l0k1j2h3g4f5d6s7a8'">
+                    <div class="game-details">
+                        <h3>CALL OF DUTY</h3>
+                        <span class="game-price">2$ <span class="timer">34:23:00</span></span>
+                    </div>
+                </div>
+                <div class="arrow-btn"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+        </div>
+
+        <!-- ========== PRO TAB (как на PRO.png) ========== -->
+        <div id="pro-tab" class="tab-content">
+            <div class="sub-title">PLAYER</div>
+            <div class="sub-card" id="plan-player">
+                <div class="sub-header">
+                    <span class="sub-price">$ 2.0</span>
+                    <button class="buy-button" id="btn-player" onclick="buyPlan('player')">bay</button>
+                </div>
+                <ul class="sub-features">
+                    <li><span class="radio-circle"></span> $0.10 dey</li>
+                    <li><span class="radio-circle"></span> </li>
+                    <li><span class="radio-circle"></span> </li>
+                </ul>
+            </div>
+            <div class="sub-title">PRO</div>
+            <div class="sub-card" id="plan-pro">
+                <div class="sub-header">
+                    <span class="sub-price">$ 5.0</span>
+                    <button class="buy-button" id="btn-pro" onclick="buyPlan('pro')">bay</button>
+                </div>
+                <ul class="sub-features">
+                    <li><span class="radio-circle"></span> $0.15 dey</li>
+                    <li><span class="radio-circle"></span> +10% win</li>
+                    <li><span class="radio-circle"></span> </li>
+                </ul>
+            </div>
+            <div class="sub-title">BOSS</div>
+            <div class="sub-card" id="plan-boss">
+                <div class="sub-header">
+                    <span class="sub-price">$ 9.0</span>
+                    <button class="buy-button" id="btn-boss" onclick="buyPlan('boss')">bay</button>
+                </div>
+                <ul class="sub-features">
+                    <li><span class="radio-circle"></span> $0.25 dey</li>
+                    <li><span class="radio-circle"></span> +20% win</li>
+                    <li><span class="radio-circle"></span> 1 free tournaments</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ========== PROFILE TAB (КАК В PROFILE (1).png) ========== -->
+        <div id="profile-tab" class="tab-content">
+            <div class="profile-header" style="display:flex; align-items:center; gap:20px; margin:20px 0 30px;">
+                <div style="width:90px; height:90px; background:#2a2a2a; border-radius:50%; border:1px solid #444;"></div>
+                <div>
+                    <h2 style="font-size:34px; font-weight:800;" id="profile-name">ИМЯ</h2>
+                    <span style="color:#777; font-weight:800; font-size:16px;" id="profile-id">ID:12345678</span>
+                </div>
+            </div>
+            <!-- Баланс как на PROFILE.png -->
+            <div class="profile-balance-card">
+                <div class="balance-top">
+                    <div>
+                        <span class="balance-label">БАЛАНС</span>
+                        <div class="balance-value-lg" id="profile-balance">$ 0.00</div>
+                    </div>
+                    <i class="fa-regular fa-credit-card" style="font-size:38px; color:#aaa;"></i>
+                </div>
+                <div class="balance-actions">
+                    <button class="action-btn-outline" onclick="openPayment('in')">Пополнить</button>
+                    <button class="action-btn-outline" onclick="openPayment('out')">Вывести</button>
+                </div>
+            </div>
+            <div class="section-title">Информация</div>
+            <div class="profile-grid">
+                <div class="grid-item" onclick="openHistory()"><i class="fa-solid fa-chart-simple"></i><span>История</span></div>
+                <div class="grid-item" onclick="openBonus()"><i class="fa-solid fa-calendar-days"></i><span>Бонус</span></div>
+                <div class="grid-item" onclick="openChat()"><i class="fa-solid fa-comment"></i><span>Помощь</span></div>
+                <div class="grid-item" onclick="openLanguage()"><i class="fa-solid fa-gear"></i><span>Язык</span></div>
+            </div>
+            <!-- ВЫХОД как на PROFILE.png -->
+            <div class="logout-btn" onclick="logout()">
+                <i class="fa-solid fa-sign-out-alt"></i> ВЫХОД
+            </div>
+        </div>
+    </div> <!-- container -->
+
+    <!-- Нижняя навигация -->
+    <div id="bottom-nav" class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home', this)"><i class="fa-solid fa-house"></i></div>
+        <div class="nav-item" onclick="switchTab('game', this)"><i class="fa-solid fa-gamepad"></i></div>
+        <div class="nav-item" onclick="switchTab('pro', this)"><i class="fa-solid fa-crown"></i></div>
+        <div class="nav-item" onclick="switchTab('profile', this)"><i class="fa-solid fa-user"></i></div>
     </div>
 
-    <div class="grid">
-        <div class="card">
-            <div class="icon">🧩</div>
-            GAME
-        </div>
+    <script>
+        // ------------------------------------------------------------
+        // ПОЛНЫЙ ФУНКЦИОНАЛ (логин, баланс, бонусы, планы, выход)
+        // ------------------------------------------------------------
+        let currentBalance = 0.00;
+        let currentPlan = 'free';
+        let hasClaimedToday = false;
+        let historyData = [];
+        let paymentType = 'in';
+        let userName = 'ИМЯ';
+        let userID = 'ID:12345678';
 
-        <div class="card">
-            <div class="icon">🏆</div>
-            TOUR
-        </div>
+        const planPrices = { player: 2.0, pro: 5.0, boss: 9.0 };
+        const rewards = { free: 0.05, player: 0.10, pro: 0.15, boss: 0.25 };
 
-        <div class="card">
-            <div class="icon">🔑</div>
-            CODE
-        </div>
+        // Генерация сетки дней
+        const grid = document.getElementById('daysGrid');
+        for (let i = 1; i <= 30; i++) {
+            let d = document.createElement('div');
+            d.className = 'day-box';
+            d.innerText = i;
+            grid.appendChild(d);
+        }
 
-        <div class="card">
-            <div class="icon">👑</div>
-            BOSS
-        </div>
-    </div>
+        // LOGIN
+        function generateID() { return 'ID:' + Math.floor(10000000 + Math.random() * 90000000); }
+        function handleSignUp() {
+            let name = document.getElementById('reg-name').value;
+            let login = document.getElementById('reg-login').value;
+            let pass = document.getElementById('reg-pass').value;
+            if (name && login && pass) {
+                userName = name.toUpperCase();
+                userID = generateID();
+                loadApp();
+            } else alert("Hamma maydonlarni to'ldiring!");
+        }
+        function handleSignIn() {
+            let login = document.getElementById('reg-login').value;
+            let pass = document.getElementById('reg-pass').value;
+            if (login && pass) {
+                userName = 'USER';
+                userID = generateID();
+                loadApp();
+            } else alert("Login va parolni kiriting!");
+        }
+        function loadApp() {
+            document.getElementById('profile-name').innerText = userName;
+            document.getElementById('profile-id').innerText = userID;
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            document.getElementById('bottom-nav').style.display = 'flex';
+            updateUI();
+        }
 
-</div>
+        // LOGOUT
+        function logout() {
+            closeAllPopups();
+            closeGameDetails();
+            // сброс переменных
+            currentBalance = 0.00;
+            currentPlan = 'free';
+            hasClaimedToday = false;
+            historyData = [];
+            userName = 'ИМЯ';
+            userID = 'ID:12345678';
+            document.getElementById('reg-name').value = '';
+            document.getElementById('reg-login').value = '';
+            document.getElementById('reg-pass').value = '';
+            document.getElementById('claimBtn').style.opacity = '1';
+            document.getElementById('claimBtn').innerText = 'DAY';
+            document.querySelectorAll('.day-box').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.sub-card').forEach(c => c.classList.remove('active-plan'));
+            document.querySelectorAll('.buy-button').forEach(b => { b.classList.remove('owned'); b.innerText = 'bay'; });
+            updateUI();
+            document.getElementById('login-page').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('bottom-nav').style.display = 'none';
+        }
 
-<script>
-    console.log("Mini App Loaded!");
-</script>
+        // НАВИГАЦИЯ
+        function switchTab(tab, el) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
 
+        // ПОПАПЫ
+        function closeAllPopups() {
+            document.querySelectorAll('.popup-card').forEach(p => p.classList.remove('visible'));
+            document.getElementById('universal-overlay').classList.remove('visible');
+        }
+        function openOverlay() { document.getElementById('universal-overlay').classList.add('visible'); }
+        function openBonus() {
+            document.getElementById('bonus-val').innerText = '$' + rewards[currentPlan].toFixed(2);
+            document.getElementById('bonus-plan-name').innerText = currentPlan;
+            openOverlay(); setTimeout(() => document.getElementById('bonus-card').classList.add('visible'), 50);
+        }
+        function openPromo() { openOverlay(); setTimeout(() => document.getElementById('promo-card').classList.add('visible'), 50); }
+        function openPayment(type) { paymentType = type; document.getElementById('payment-title').innerText = (type=='in')?'Пополнить':'Вывести'; openOverlay(); setTimeout(()=>document.getElementById('payment-card').classList.add('visible'),50); }
+        function openHistory() {
+            let list = document.getElementById('history-list');
+            list.innerHTML = historyData.length ? '' : '<div style="text-align:center;color:#666;margin-top:20px;">Пусто</div>';
+            historyData.forEach(i => { list.innerHTML += `<div style="background:#222;padding:16px;margin-bottom:12px;border-radius:18px;display:flex;justify-content:space-between;border:1px solid #333;"><div>${i.desc}<br><small style="color:#777">${i.date}</small></div><div style="font-weight:bold;color:${i.type=='in'?'#4caf50':'#f44336'}">${i.type=='in'?'+':'-'}$${i.amt.toFixed(2)}</div></div>`; });
+            openOverlay(); setTimeout(()=>document.getElementById('history-card').classList.add('visible'),50);
+        }
+        function openChat() { openOverlay(); setTimeout(()=>document.getElementById('chat-card').classList.add('visible'),50); }
+        function openLanguage() { openOverlay(); setTimeout(()=>document.getElementById('language-card').classList.add('visible'),50); }
+
+        // БОНУС
+        function claimDailyReward() {
+            if (hasClaimedToday) { alert("Bugun olib bo'ldingiz!"); return; }
+            currentBalance += rewards[currentPlan];
+            addToHist('in', rewards[currentPlan], 'Bonus');
+            updateUI();
+            hasClaimedToday = true;
+            document.getElementById('claimBtn').style.opacity = '0.5';
+            document.getElementById('claimBtn').innerText = 'TAKEN';
+            document.querySelector('.day-box').classList.add('active');
+            closeAllPopups();
+        }
+
+        // ПОКУПКА ПЛАНА
+        function buyPlan(plan) {
+            if (currentPlan === plan) return;
+            let cost = planPrices[plan];
+            if (currentBalance >= cost) {
+                currentBalance -= cost;
+                addToHist('out', cost, 'Plan ' + plan);
+                document.querySelectorAll('.sub-card').forEach(c => c.classList.remove('active-plan'));
+                document.querySelectorAll('.buy-button').forEach(b => { b.classList.remove('owned'); b.innerText = 'bay'; });
+                currentPlan = plan;
+                document.getElementById('plan-' + plan).classList.add('active-plan');
+                let btn = document.getElementById('btn-' + plan);
+                btn.classList.add('owned');
+                btn.innerText = 'owned';
+                hasClaimedToday = false;
+                document.getElementById('claimBtn').style.opacity = '1';
+                document.getElementById('claimBtn').innerText = 'DAY';
+                updateUI();
+                alert(plan.toUpperCase() + " sotib olindi!");
+            } else alert("Mablag' yetarli emas!");
+        }
+
+        // ПЛАТЕЖИ
+        function processPayment() {
+            let amt = parseFloat(document.getElementById('pay-amt').value);
+            if (amt > 0) {
+                if (paymentType === 'in') { currentBalance += amt; addToHist('in', amt, 'Пополнение'); }
+                else { if (currentBalance >= amt) { currentBalance -= amt; addToHist('out', amt, 'Вывод'); } else { alert("Yetarli mablag' yo'q!"); return; } }
+                updateUI(); closeAllPopups();
+            }
+        }
+        function checkPromo() {
+            if (document.getElementById('promo-input').value.toUpperCase() === 'FRAGLORD') {
+                currentBalance += 5; addToHist('in', 5, 'Promo'); updateUI(); closeAllPopups();
+            } else alert("Xato!");
+        }
+        function sendMessage() {
+            let input = document.getElementById('chat-input');
+            let txt = input.value; if (!txt) return;
+            let area = document.getElementById('chat-area');
+            area.innerHTML += `<div class="chat-msg msg-user" style="align-self:flex-end; background:#555; color:#fff; padding:12px 18px; border-radius:20px; border-bottom-right-radius:2px;">${txt}</div>`;
+            input.value = ''; area.scrollTop = area.scrollHeight;
+            setTimeout(() => { area.innerHTML += `<div class="chat-msg msg-admin" style="align-self:flex-start; background:#333; color:#fff; padding:12px 18px; border-radius:20px; border-bottom-left-radius:2px;">Admin hozir band.</div>`; area.scrollTop = area.scrollHeight; }, 1000);
+        }
+        function setLang(lang, btn) {
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active'); closeAllPopups();
+        }
+        function addToHist(t, a, d) { historyData.unshift({ type: t, amt: a, desc: d, date: new Date().toLocaleDateString() }); }
+        function updateUI() {
+            document.getElementById('main-balance').innerText = '$' + currentBalance.toFixed(2);
+            document.getElementById('profile-balance').innerText = '$ ' + currentBalance.toFixed(2);
+        }
+
+        // GAME DETAILS
+        function openGameDetails(title, iconSrc) {
+            document.getElementById('detail-title').innerText = title.toUpperCase();
+            document.getElementById('detail-icon').src = iconSrc;
+            document.getElementById('game-details-page').style.display = 'flex';
+        }
+        function closeGameDetails() { document.getElementById('game-details-page').style.display = 'none'; }
+        function switchDetailTab(tab, el) {
+            ['info','player','fond'].forEach(x => document.getElementById('tab-content-'+x).style.display = 'none');
+            document.getElementById('tab-content-'+tab).style.display = 'block';
+            document.querySelectorAll('.detail-tab-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // ФИЛЬТР В GAME TAB
+        function filterGames(category, el) {
+            document.querySelectorAll('.filter-btn, .filter-icon').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            let items = document.querySelectorAll('#game-tab .tournament-item');
+            items.forEach(i => {
+                if (category === 'all' || i.dataset.category === category) i.style.display = 'flex';
+                else i.style.display = 'none';
+            });
+        }
+    </script>
 </body>
 </html>
