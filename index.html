@@ -1283,6 +1283,24 @@
         let currentGameFilter = 'all';
 
         // ------------------------------------------------------------
+        // Функции для работы с localStorage
+        // ------------------------------------------------------------
+        function saveData() {
+            localStorage.setItem('fraglord_data', JSON.stringify(appData));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('fraglord_data');
+            if (saved) {
+                appData = JSON.parse(saved);
+                // Восстанавливаем ссылки на объекты, если нужно (в данном случае данные простые)
+            } else {
+                initDefaultData();
+                saveData(); // сразу сохраняем демо-данные
+            }
+        }
+
+        // ------------------------------------------------------------
         // Инициализация демо-данных
         // ------------------------------------------------------------
         function initDefaultData() {
@@ -1337,7 +1355,46 @@
                 icon: 'standoff2.png'
             });
         }
-        initDefaultData();
+
+        // Загружаем данные при старте
+        loadData();
+
+        // ------------------------------------------------------------
+        // Восстановление сессии (если был сохранён ID текущего пользователя)
+        // ------------------------------------------------------------
+        function restoreSession() {
+            const savedUserId = localStorage.getItem('fraglord_current_user');
+            if (savedUserId) {
+                const user = findUserById(savedUserId);
+                if (user) {
+                    // Выполняем вход этого пользователя
+                    currentUser = user;
+                    userName = user.name;
+                    userID = user.id;
+                    currentBalance = user.balance;
+                    currentPlan = user.plan;
+                    // Остальные переменные (hasClaimedToday, historyData) не восстанавливаем – можно сбросить
+                    hasClaimedToday = false; // при желании можно хранить отдельно
+                    historyData = []; // история не сохранялась
+                    isAdmin = false; // пользователь не админ
+
+                    // Отображаем интерфейс пользователя
+                    document.getElementById('profile-name').innerText = userName;
+                    document.getElementById('profile-id').innerText = userID;
+                    updateUI();
+                    renderHomeTournaments();
+                    document.getElementById('login-page').style.display = 'none';
+                    document.getElementById('app-container').style.display = 'block';
+                    document.getElementById('bottom-nav').style.display = 'flex';
+                } else {
+                    // Если пользователь не найден (удалили из appData), очищаем сохранённый ID
+                    localStorage.removeItem('fraglord_current_user');
+                }
+            }
+        }
+
+        // Вызываем восстановление сессии после загрузки DOM
+        window.addEventListener('DOMContentLoaded', restoreSession);
 
         // ------------------------------------------------------------
         // Работа с пользователями
@@ -1354,6 +1411,7 @@
                 plan: 'free'
             };
             appData.users.push(user);
+            saveData(); // сохраняем изменения
             return user;
         }
 
@@ -1521,6 +1579,8 @@
             document.querySelector('.admin-header').innerText = "ADMIN PANEL (" + name.toUpperCase() + ")";
             document.getElementById('login-page').style.display = 'none';
             document.getElementById('admin-panel').style.display = 'block';
+            // Админ не сохраняется в localStorage как текущий пользователь
+            localStorage.removeItem('fraglord_current_user');
         }
 
         function loadUserApp() {
@@ -1537,6 +1597,9 @@
             currentBalance = currentUser.balance;
             currentPlan = currentUser.plan;
             
+            // Сохраняем ID текущего пользователя в localStorage для восстановления сессии
+            localStorage.setItem('fraglord_current_user', userID);
+
             updateUI();
             renderHomeTournaments();
             
@@ -1558,6 +1621,9 @@
             userName = 'ИМЯ';
             userID = 'ID:12345678';
             isAdmin = false;
+
+            // Удаляем сохранённую сессию
+            localStorage.removeItem('fraglord_current_user');
             
             document.getElementById('reg-name').value = '';
             document.getElementById('reg-login').value = '';
@@ -1609,6 +1675,7 @@
                 currentBalance = user.balance;
                 updateUI();
             }
+            saveData(); // сохраняем изменения
             alert(`Balans to'ldirildi! ${user.name} yangi balans: $${user.balance.toFixed(2)}`);
             closeAdminModals();
             inputs[0].value = '';
@@ -1638,6 +1705,7 @@
                 currentBalance = user.balance;
                 updateUI();
             }
+            saveData(); // сохраняем изменения
             alert(`Balans chiqarildi! ${user.name} yangi balans: $${user.balance.toFixed(2)}`);
             closeAdminModals();
             inputs[0].value = '';
@@ -1654,6 +1722,7 @@
                 return;
             }
             appData.promoCodes.push({ code: code, value: value });
+            saveData(); // сохраняем изменения
             alert(`Promokod ${code} yaratildi, qiymati $${value}`);
             closeAdminModals();
             inputs[0].value = '';
@@ -1693,6 +1762,7 @@
                 icon: icon
             };
             appData.tournaments.push(newTourney);
+            saveData(); // сохраняем изменения
             renderHomeTournaments();
             alert('Turnir yaratildi!');
             closeAdminModals();
@@ -1739,6 +1809,7 @@
             let index = appData.tournaments.findIndex(t => t.id === id);
             if (index !== -1) {
                 appData.tournaments.splice(index, 1);
+                saveData(); // сохраняем изменения
                 renderHomeTournaments(); // Обновляем список у пользователя
                 openDeleteTourneyModal(); // Обновляем список в админке (переоткрываем модалку)
             }
@@ -1800,6 +1871,7 @@
             if (currentUser) {
                 currentUser.balance = currentBalance;
                 currentUser.plan = currentPlan;
+                saveData(); // сохраняем изменения
             }
             updateUI();
             hasClaimedToday = true;
@@ -1828,6 +1900,7 @@
                 if (currentUser) {
                     currentUser.balance = currentBalance;
                     currentUser.plan = currentPlan;
+                    saveData(); // сохраняем изменения
                 }
                 updateUI();
                 alert(plan.toUpperCase() + " sotib olindi!");
@@ -1851,6 +1924,7 @@
                 }
                 if (currentUser) {
                     currentUser.balance = currentBalance;
+                    saveData(); // сохраняем изменения
                 }
                 updateUI(); 
                 closeAllPopups();
@@ -1865,9 +1939,12 @@
                 addToHist('in', promo.value, 'Promo');
                 if (currentUser) {
                     currentUser.balance = currentBalance;
+                    saveData(); // сохраняем изменения
                 }
                 updateUI();
+                // Удаляем использованный промокод
                 appData.promoCodes = appData.promoCodes.filter(p => p.code !== code);
+                saveData(); // сохраняем изменения
                 closeAllPopups();
                 alert(`Promokod qabul qilindi! +$${promo.value}`);
             } else {
