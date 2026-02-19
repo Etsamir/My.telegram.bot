@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fraglord - Game Market</title>
+    <title>Fraglord - Game Market (Pro)</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Umumiy ranglar va sozlamalar */
         :root {
             --bg-color: #0d0d0d;
             --box-color: #d9d9d9;
@@ -22,50 +21,20 @@
             color: white;
             font-family: 'Arial Black', Impact, sans-serif; 
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent; /* Mobil bosish effektini o'chirish */
         }
 
         .hidden { display: none !important; }
 
-        /* ==============================
-           1-SAHIFA: O'YIN TANLASH 
-           ============================== */
-        #screen-selection {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 90vh;
-            gap: 30px;
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 110px);
-            grid-template-rows: repeat(2, 110px);
-            gap: 15px;
-        }
-
-        .game-box {
-            background-color: var(--box-color);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-color);
-            font-size: 16px;
-            cursor: pointer;
-            text-transform: lowercase;
-            transition: transform 0.1s;
-        }
-
+        /* 1-SAHIFA: O'YIN TANLASH */
+        #screen-selection { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; gap: 30px; }
+        .games-grid { display: grid; grid-template-columns: repeat(2, 110px); grid-template-rows: repeat(2, 110px); gap: 15px; }
+        .game-box { background-color: var(--box-color); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 16px; cursor: pointer; text-transform: lowercase; transition: transform 0.1s; }
         .game-box:active { transform: scale(0.95); }
         .title-select { font-size: 24px; letter-spacing: 1px; text-transform: lowercase; }
 
-        /* ==============================
-           2-SAHIFA: ASOSIY DO'KON 
-           ============================== */
+        /* 2-SAHIFA: ASOSIY DO'KON */
         #screen-store { display: flex; flex-direction: column; gap: 25px; }
-
         .header { display: flex; justify-content: space-between; align-items: center; height: 45px; gap: 15px; }
         .logo-box { background-color: var(--box-color); height: 100%; flex-grow: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 22px; letter-spacing: 2px; text-transform: lowercase; }
         .profile-icon { background-color: var(--box-color); height: 100%; width: 50px; border-radius: 6px; }
@@ -74,13 +43,10 @@
         .category-box { background-color: var(--box-color); height: 60px; flex: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 14px; cursor: pointer; opacity: 0.6; transition: 0.2s; }
         .category-box.active { opacity: 1; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); border: 2px solid var(--active-color); }
 
-        /* LENTA VA E'LONLAR */
         .feed { display: flex; flex-direction: column; gap: 25px; padding-bottom: 20px; }
         .empty-msg { text-align: center; color: #888; font-size: 14px; margin-top: 20px; text-transform: lowercase; }
-        
-        /* ==============================
-           SOTISH FORMASI 
-           ============================== */
+
+        /* SOTISH FORMASI */
         .sell-form { display: flex; flex-direction: column; gap: 15px; }
         .form-input, .form-textarea { background-color: var(--dark-box); border: none; padding: 15px; border-radius: 8px; color: white; font-family: inherit; font-size: 14px; outline: none; }
         .form-textarea { height: 80px; resize: none; }
@@ -89,7 +55,8 @@
         .upload-label { background-color: var(--dark-box); height: 120px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #888; border: 2px dashed #666; cursor: pointer; background-size: cover; background-position: center; }
         #image-input { display: none; }
 
-        .submit-btn { background-color: var(--box-color); color: var(--text-color); border: none; padding: 15px; border-radius: 8px; font-family: inherit; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .submit-btn { background-color: var(--box-color); color: var(--text-color); border: none; padding: 15px; border-radius: 8px; font-family: inherit; font-size: 16px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+        .submit-btn:active { background-color: #b3b3b3; }
     </style>
 </head>
 <body>
@@ -105,7 +72,6 @@
     </div>
 
     <div id="screen-store" class="hidden">
-        
         <div class="header">
             <div class="logo-box" id="logo-text">logo</div>
             <div class="profile-icon"></div>
@@ -118,30 +84,20 @@
             <div class="category-box" id="btn-sotish" onclick="switchTab('sotish')">sotish</div>
         </div>
 
-        <div id="tab-akk" class="feed tab-content">
-            <div class="empty-msg" id="akk-empty">hozircha e'lonlar yo'q</div>
-        </div>
-
-        <div id="tab-cp" class="feed tab-content hidden">
-            <div class="empty-msg">hozircha e'lonlar yo'q</div>
-        </div>
-
-        <div id="tab-boost" class="feed tab-content hidden">
-            <div class="empty-msg">hozircha e'lonlar yo'q</div>
-        </div>
+        <div id="tab-akk" class="feed tab-content"><div class="empty-msg">hozircha e'lonlar yo'q</div></div>
+        <div id="tab-cp" class="feed tab-content hidden"><div class="empty-msg">hozircha e'lonlar yo'q</div></div>
+        <div id="tab-boost" class="feed tab-content hidden"><div class="empty-msg">hozircha e'lonlar yo'q</div></div>
 
         <div id="tab-sotish" class="sell-form tab-content hidden">
             <label class="upload-label" id="upload-preview">
                 <input type="file" id="image-input" accept="image/*">
                 <span id="upload-text">+ rasm yuklash</span>
             </label>
-            
             <input type="text" id="ad-title" class="form-input" placeholder="sarlavha (masalan: 70 lvl)">
             <input type="number" id="ad-price" class="form-input" placeholder="narxi (so'm)">
             <textarea id="ad-desc" class="form-textarea" placeholder="akkaunt haqida ma'lumot"></textarea>
-            <button class="submit-btn" onclick="submitAd()">jo'natish</button>
+            <button class="submit-btn" id="btn-submit" onclick="submitAd()">jo'natish</button>
         </div>
-
     </div>
 
     <script>
@@ -151,84 +107,79 @@
 
         const screenSelection = document.getElementById('screen-selection');
         const screenStore = document.getElementById('screen-store');
-        const logoText = document.getElementById('logo-text');
         
         let currentGame = ""; 
-        let uploadedImageURL = ""; 
 
-        // Sahifalarni o'zgartirish
         function openStore(gameName) {
             currentGame = gameName;
             screenSelection.classList.add('hidden');
             screenStore.classList.remove('hidden');
-            // logoText.innerText = gameName; // Agar tepadagi "logo" yozuvi o'rniga o'yin nomi chiqishini xohlasangiz shu qatorni yoqing
             switchTab('akk');
             tg.BackButton.show();
             tg.BackButton.onClick(goBack);
         }
 
-        // Orqaga qaytish
         function goBack() {
             screenStore.classList.add('hidden');
             screenSelection.classList.remove('hidden');
             tg.BackButton.hide();
         }
 
-        // Menyularni almashtirish
         function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-            document.querySelectorAll('.category-box').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.category-box').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.remove('hidden');
             document.getElementById('btn-' + tabName).classList.add('active');
         }
 
-        // Rasm yuklashni vizual ko'rsatish
+        // Rasm yuklash ko'rinishi
         document.getElementById('image-input').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    uploadedImageURL = e.target.result;
-                    document.getElementById('upload-preview').style.backgroundImage = `url('${uploadedImageURL}')`;
+                    document.getElementById('upload-preview').style.backgroundImage = `url('${e.target.result}')`;
                     document.getElementById('upload-text').style.display = 'none';
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // E'LONNI TELEGRAM BOTGA JO'NATISH
+        // ⭐ KUCHAYTIRILGAN JO'NATISH LOGIKASI
         function submitAd() {
-            const title = document.getElementById('ad-title').value;
-            const price = document.getElementById('ad-price').value;
-            const desc = document.getElementById('ad-desc').value;
+            const title = document.getElementById('ad-title').value.trim();
+            const price = document.getElementById('ad-price').value.trim();
+            const desc = document.getElementById('ad-desc').value.trim();
 
             if (!title || !price) {
-                // Agar oddiy brauzerda ochilgan bo'lsa alert ishlaydi
-                if (tg.initDataUnsafe && Object.keys(tg.initDataUnsafe).length === 0) {
-                    alert("Iltimos, sarlavha va narxni kiriting!");
-                } else {
-                    tg.showAlert("Iltimos, sarlavha va narxni kiriting!");
-                }
+                tg.showAlert("Iltimos, sarlavha va narxni kiriting!");
                 return;
             }
 
-            // Jo'natiladigan ma'lumotlar to'plami (JSON)
             const adData = {
                 action: "new_ad",
                 game: currentGame,
                 title: title,
                 price: price,
-                description: desc
+                description: desc || "Ma'lumot berilmagan"
             };
 
-            // Ma'lumotni Telegramga jo'natish (Faqat Telegram ichida ishlaydi)
+            // Telegram ichida ekanligimizni qat'iy tekshirish
             if (tg.initDataUnsafe && Object.keys(tg.initDataUnsafe).length !== 0) {
-                tg.sendData(JSON.stringify(adData));
-                tg.close(); // Dasturni yopish va botga qaytish
+                try {
+                    // Jo'natishdan oldin tugmani o'zgartirib turamiz
+                    document.getElementById('btn-submit').innerText = "Jo'natilmoqda...";
+                    
+                    // Ma'lumotni Telegramga jo'natamiz
+                    tg.sendData(JSON.stringify(adData));
+                    
+                    // Dasturni yopish
+                    setTimeout(() => { tg.close(); }, 300);
+                } catch (err) {
+                    tg.showAlert("Xatolik: " + err.message);
+                }
             } else {
-                // Agar dastur brauzerda sinab ko'rilayotgan bo'lsa
-                console.log("Botga yuboriladigan ma'lumot:", adData);
-                alert("Bu tugma faqat Telegram ichida ishlaydi! Ma'lumot konsolga chiqdi.");
+                alert("BU FAQAT TELEGRAM ICHIDA ISHLAYDI!\nMa'lumot: " + JSON.stringify(adData));
             }
         }
     </script>
