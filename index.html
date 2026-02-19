@@ -3,60 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fraglord - Game Market (Pro)</title>
+    <title>Game Market - Vitrina</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --box-color: #d9d9d9;
-            --dark-box: #404040;
-            --text-color: #000000;
-            --active-color: #ffffff;
-        }
-
-        body {
-            margin: 0;
-            padding: 20px;
-            background-color: var(--bg-color);
-            color: white;
-            font-family: 'Arial Black', Impact, sans-serif; 
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent; /* Mobil bosish effektini o'chirish */
-        }
-
+        :root { --bg-color: #0d0d0d; --box-color: #d9d9d9; --dark-box: #404040; --text-color: #000000; --active-color: #ffffff; }
+        body { margin: 0; padding: 20px; background-color: var(--bg-color); color: white; font-family: 'Arial Black', Impact, sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .hidden { display: none !important; }
 
         /* 1-SAHIFA: O'YIN TANLASH */
         #screen-selection { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; gap: 30px; }
-        .games-grid { display: grid; grid-template-columns: repeat(2, 110px); grid-template-rows: repeat(2, 110px); gap: 15px; }
-        .game-box { background-color: var(--box-color); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 16px; cursor: pointer; text-transform: lowercase; transition: transform 0.1s; }
-        .game-box:active { transform: scale(0.95); }
-        .title-select { font-size: 24px; letter-spacing: 1px; text-transform: lowercase; }
+        .games-grid { display: grid; grid-template-columns: repeat(2, 110px); gap: 15px; }
+        .game-box { background-color: var(--box-color); height: 110px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 16px; cursor: pointer; text-transform: lowercase; }
 
-        /* 2-SAHIFA: ASOSIY DO'KON */
+        /* 2-SAHIFA: DO'KON */
         #screen-store { display: flex; flex-direction: column; gap: 25px; }
         .header { display: flex; justify-content: space-between; align-items: center; height: 45px; gap: 15px; }
-        .logo-box { background-color: var(--box-color); height: 100%; flex-grow: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 22px; letter-spacing: 2px; text-transform: lowercase; }
-        .profile-icon { background-color: var(--box-color); height: 100%; width: 50px; border-radius: 6px; }
-
+        .logo-box { background-color: var(--box-color); height: 100%; flex-grow: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 22px; text-transform: lowercase; }
+        
         .categories { display: flex; justify-content: space-between; gap: 10px; }
-        .category-box { background-color: var(--box-color); height: 60px; flex: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 14px; cursor: pointer; opacity: 0.6; transition: 0.2s; }
-        .category-box.active { opacity: 1; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); border: 2px solid var(--active-color); }
+        .category-box { background-color: var(--box-color); height: 50px; flex: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-color); font-size: 14px; cursor: pointer; opacity: 0.6; }
+        .category-box.active { opacity: 1; border: 2px solid var(--active-color); }
 
-        .feed { display: flex; flex-direction: column; gap: 25px; padding-bottom: 20px; }
-        .empty-msg { text-align: center; color: #888; font-size: 14px; margin-top: 20px; text-transform: lowercase; }
-
-        /* SOTISH FORMASI */
-        .sell-form { display: flex; flex-direction: column; gap: 15px; }
-        .form-input, .form-textarea { background-color: var(--dark-box); border: none; padding: 15px; border-radius: 8px; color: white; font-family: inherit; font-size: 14px; outline: none; }
-        .form-textarea { height: 80px; resize: none; }
-        .form-input::placeholder, .form-textarea::placeholder { color: #888; text-transform: lowercase; }
-
-        .upload-label { background-color: var(--dark-box); height: 120px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #888; border: 2px dashed #666; cursor: pointer; background-size: cover; background-position: center; }
-        #image-input { display: none; }
-
-        .submit-btn { background-color: var(--box-color); color: var(--text-color); border: none; padding: 15px; border-radius: 8px; font-family: inherit; font-size: 16px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .submit-btn:active { background-color: #b3b3b3; }
+        /* E'LONLAR KARTASI */
+        .feed { display: flex; flex-direction: column; gap: 20px; padding-bottom: 20px; }
+        .card { background-color: var(--dark-box); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+        .card-img { width: 100%; height: 180px; background-color: #222; object-fit: cover; }
+        .card-info { padding: 12px; display: flex; flex-direction: column; gap: 5px; }
+        .card-title { font-size: 16px; text-transform: lowercase; }
+        .card-price { font-size: 14px; color: #ffcc00; }
+        .card-owner { font-size: 12px; color: #aaa; text-transform: lowercase;}
+        .buy-btn { background-color: var(--box-color); border: none; padding: 8px; margin-top: 5px; border-radius: 6px; font-family: inherit; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -68,61 +44,49 @@
             <div class="game-box" onclick="openStore('standoff 2')">standoff2</div>
             <div class="game-box" onclick="openStore('ff')">ff</div>
         </div>
-        <div class="title-select">o'yin tanlang</div>
+        <div style="font-size: 24px; text-transform: lowercase;">o'yin tanlang</div>
     </div>
 
     <div id="screen-store" class="hidden">
         <div class="header">
             <div class="logo-box" id="logo-text">logo</div>
-            <div class="profile-icon"></div>
         </div>
 
         <div class="categories">
             <div class="category-box active" id="btn-akk" onclick="switchTab('akk')">akk</div>
-            <div class="category-box" id="btn-cp" onclick="switchTab('cp')">cp</div>
+            <div class="category-box" id="btn-cp" onclick="switchTab('cp')">cp/uc</div>
             <div class="category-box" id="btn-boost" onclick="switchTab('boost')">boost</div>
-            <div class="category-box" id="btn-sotish" onclick="switchTab('sotish')">sotish</div>
         </div>
 
-        <div id="tab-akk" class="feed tab-content"><div class="empty-msg">hozircha e'lonlar yo'q</div></div>
-        <div id="tab-cp" class="feed tab-content hidden"><div class="empty-msg">hozircha e'lonlar yo'q</div></div>
-        <div id="tab-boost" class="feed tab-content hidden"><div class="empty-msg">hozircha e'lonlar yo'q</div></div>
-
-        <div id="tab-sotish" class="sell-form tab-content hidden">
-            <label class="upload-label" id="upload-preview">
-                <input type="file" id="image-input" accept="image/*">
-                <span id="upload-text">+ rasm yuklash</span>
-            </label>
-            <input type="text" id="ad-title" class="form-input" placeholder="sarlavha (masalan: 70 lvl)">
-            <input type="number" id="ad-price" class="form-input" placeholder="narxi (so'm)">
-            <textarea id="ad-desc" class="form-textarea" placeholder="akkaunt haqida ma'lumot"></textarea>
-            <button class="submit-btn" id="btn-submit" onclick="submitAd()">jo'natish</button>
-        </div>
+        <div id="tab-akk" class="feed tab-content"></div>
+        <div id="tab-cp" class="feed tab-content hidden"><div style="text-align:center; color:#888;">cp paketlar</div></div>
+        <div id="tab-boost" class="feed tab-content hidden"><div style="text-align:center; color:#888;">xizmatlar</div></div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand(); 
-        tg.ready();
 
-        const screenSelection = document.getElementById('screen-selection');
-        const screenStore = document.getElementById('screen-store');
-        
-        let currentGame = ""; 
+        // Vaqtincha namunaviy bazamiz (Keyinchalik buni botdan tortib oladigan qilamiz)
+        const dummyAds = [
+            { id: 1, game: "pubg", title: "m416 lednik 5-lvl, 70 ustr", price: "450 000", owner: "@pro_gamer", img: "https://i.ytimg.com/vi/q1R22_7l6fQ/maxresdefault.jpg" },
+            { id: 2, game: "codm", title: "mythic fennec, 12 efsane", price: "800 000", owner: "@codm_seller", img: "https://zilliongamer.com/uploads/codm/news/2020/11/fennec-ascended-mythic.jpg" },
+            { id: 3, game: "standoff 2", title: "karambit gold, 50 lvl", price: "200 000", owner: "@standoff_king", img: "https://i.ytimg.com/vi/3hF_L4vX3gM/maxresdefault.jpg" }
+        ];
 
         function openStore(gameName) {
-            currentGame = gameName;
-            screenSelection.classList.add('hidden');
-            screenStore.classList.remove('hidden');
-            switchTab('akk');
+            document.getElementById('screen-selection').classList.add('hidden');
+            document.getElementById('screen-store').classList.remove('hidden');
+            document.getElementById('logo-text').innerText = gameName;
+            
             tg.BackButton.show();
-            tg.BackButton.onClick(goBack);
-        }
+            tg.BackButton.onClick(() => {
+                document.getElementById('screen-store').classList.add('hidden');
+                document.getElementById('screen-selection').classList.remove('hidden');
+                tg.BackButton.hide();
+            });
 
-        function goBack() {
-            screenStore.classList.add('hidden');
-            screenSelection.classList.remove('hidden');
-            tg.BackButton.hide();
+            loadAds(gameName);
         }
 
         function switchTab(tabName) {
@@ -132,55 +96,37 @@
             document.getElementById('btn-' + tabName).classList.add('active');
         }
 
-        // Rasm yuklash ko'rinishi
-        document.getElementById('image-input').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('upload-preview').style.backgroundImage = `url('${e.target.result}')`;
-                    document.getElementById('upload-text').style.display = 'none';
-                }
-                reader.readAsDataURL(file);
-            }
-        });
+        // HTML ga e'lonlarni chizish funksiyasi
+        function loadAds(gameName) {
+            const container = document.getElementById('tab-akk');
+            container.innerHTML = ""; // Eskinini tozalash
+            
+            // Faqat tanlangan o'yin e'lonlarini ajratib olish
+            const filteredAds = dummyAds.filter(ad => ad.game === gameName);
 
-        // ⭐ KUCHAYTIRILGAN JO'NATISH LOGIKASI
-        function submitAd() {
-            const title = document.getElementById('ad-title').value.trim();
-            const price = document.getElementById('ad-price').value.trim();
-            const desc = document.getElementById('ad-desc').value.trim();
-
-            if (!title || !price) {
-                tg.showAlert("Iltimos, sarlavha va narxni kiriting!");
+            if(filteredAds.length === 0) {
+                container.innerHTML = "<div style='text-align:center; color:#888;'>hozircha bu o'yinga e'lon yo'q</div>";
                 return;
             }
 
-            const adData = {
-                action: "new_ad",
-                game: currentGame,
-                title: title,
-                price: price,
-                description: desc || "Ma'lumot berilmagan"
-            };
+            filteredAds.forEach(ad => {
+                const card = document.createElement('div');
+                card.className = "card";
+                card.innerHTML = `
+                    <img src="${ad.img}" class="card-img" alt="rasm">
+                    <div class="card-info">
+                        <div class="card-title">${ad.title}</div>
+                        <div class="card-price">${ad.price} so'm</div>
+                        <div class="card-owner">Sotuvchi: ${ad.owner}</div>
+                        <button class="buy-btn" onclick="buyItem('${ad.owner}')">Sotib olish</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
 
-            // Telegram ichida ekanligimizni qat'iy tekshirish
-            if (tg.initDataUnsafe && Object.keys(tg.initDataUnsafe).length !== 0) {
-                try {
-                    // Jo'natishdan oldin tugmani o'zgartirib turamiz
-                    document.getElementById('btn-submit').innerText = "Jo'natilmoqda...";
-                    
-                    // Ma'lumotni Telegramga jo'natamiz
-                    tg.sendData(JSON.stringify(adData));
-                    
-                    // Dasturni yopish
-                    setTimeout(() => { tg.close(); }, 300);
-                } catch (err) {
-                    tg.showAlert("Xatolik: " + err.message);
-                }
-            } else {
-                alert("BU FAQAT TELEGRAM ICHIDA ISHLAYDI!\nMa'lumot: " + JSON.stringify(adData));
-            }
+        function buyItem(owner) {
+            tg.showAlert(`Sotib olish uchun sotuvchiga yozing: ${owner}`);
         }
     </script>
 </body>
