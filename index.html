@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Night Shift - Bodycam Horror</title>
     <style>
-        /* Защита от случайного выделения текста и жестов браузера на мобилках */
         body { margin: 0; overflow: hidden; background-color: #000; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
         
         #blocker {
@@ -14,17 +13,20 @@
             font-family: 'Courier New', Courier, monospace; cursor: default; z-index: 10;
         }
         #blocker h1 { margin-bottom: 10px; letter-spacing: 4px; text-align: center; }
-        .language-selector, .platform-selector { margin: 20px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        .language-selector label, .platform-selector label { cursor: pointer; padding: 10px 20px; border: 1px solid #555; border-radius: 4px; background: #222; transition: 0.3s; }
-        .language-selector label.selected, .platform-selector label.selected { background: #0a4; border-color: #0f0; color: #0f0; }
-        .language-selector input, .platform-selector input { display: none; }
+        
+        /* Настройки меню */
+        .settings-row { margin: 8px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .settings-row label { cursor: pointer; padding: 8px 15px; border: 1px solid #555; border-radius: 4px; background: #222; transition: 0.3s; font-size: 14px; }
+        .settings-row label.selected { background: #0a4; border-color: #0f0; color: #0f0; }
+        .settings-row input { display: none; }
+        
         #start-btn {
             padding: 15px 40px; font-size: 24px; font-family: 'Courier New', monospace;
             background: #0a4; color: white; border: none; border-radius: 8px;
-            cursor: pointer; box-shadow: 0 0 20px #0a4; transition: 0.3s; margin-top: 20px;
+            cursor: pointer; box-shadow: 0 0 20px #0a4; transition: 0.3s; margin-top: 15px;
         }
         #start-btn:hover { background: #0f6; box-shadow: 0 0 30px #0f6; }
-        #start-text { margin-top: 20px; font-size: 14px; color: #aaa; text-align: center; line-height: 1.5; padding: 0 20px; }
+        #start-text { margin-top: 15px; font-size: 14px; color: #aaa; text-align: center; line-height: 1.5; padding: 0 20px; }
         
         #crosshair {
             position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
@@ -78,7 +80,6 @@
         #sprint-btn { border-color: #ffaa00; color: #ffaa00; box-shadow: 0 0 10px #ffaa00; font-size: 22px; }
         .sprint-active { background: #ffaa00 !important; color: #000 !important; box-shadow: 0 0 20px #ffaa00 !important; }
 
-        /* Внешний вид джойстика */
         #joystick-base {
             position: absolute; width: 120px; height: 120px;
             background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(0, 255, 0, 0.3);
@@ -91,20 +92,39 @@
             top: 50%; left: 50%; transform: translate(-50%, -50%);
             pointer-events: none; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
         }
+        
+        @media (min-width: 768px) {
+            .ctrl-btn { width: 70px; height: 70px; font-size: 30px; }
+        }
     </style>
 </head>
 <body>
     <div id="blocker">
         <h1>AXON BODY 3</h1>
-        <div class="language-selector">
+        
+        <div class="settings-row language-selector">
             <label class="selected"><input type="radio" name="lang" value="ru" checked> Русский</label>
             <label><input type="radio" name="lang" value="uz"> O'zbekcha</label>
             <label><input type="radio" name="lang" value="en"> English</label>
         </div>
-        <div class="platform-selector">
+        
+        <div class="settings-row platform-selector">
             <label class="selected"><input type="radio" name="platform" value="pc" checked> ПК</label>
             <label><input type="radio" name="platform" value="mobile"> Мобильный</label>
         </div>
+
+        <div class="settings-row difficulty-selector">
+            <label><input type="radio" name="difficulty" value="easy"> <span id="diff-easy">Мирная (0%)</span></label>
+            <label class="selected"><input type="radio" name="difficulty" value="medium" checked> <span id="diff-medium">Средняя (50%)</span></label>
+            <label><input type="radio" name="difficulty" value="hard"> <span id="diff-hard">Сложная (100%)</span></label>
+        </div>
+
+        <div class="settings-row graphics-selector">
+            <label><input type="radio" name="graphics" value="low"> <span id="gfx-low">Графика: Мин</span></label>
+            <label><input type="radio" name="graphics" value="medium"> <span id="gfx-medium">Графика: Сред</span></label>
+            <label class="selected"><input type="radio" name="graphics" value="high" checked> <span id="gfx-high">Графика: Макс</span></label>
+        </div>
+
         <button id="start-btn">Начать смену</button>
         <p id="start-text">REAL TABLES LOADED.</p>
     </div>
@@ -115,10 +135,7 @@
         <div id="ui-stats" class="stats-text">HP: 100%<br>STM: 100%</div>
         <div id="ui-inventory" class="inventory-text" style="display:none;">В РУКАХ: 0 / 3</div>
         <div class="rec-text">● REC</div>
-        
-        <div id="joystick-base">
-            <div id="joystick-stick"></div>
-        </div>
+        <div id="joystick-base"><div id="joystick-stick"></div></div>
     </div>
     <div id="crosshair"></div>
 
@@ -134,6 +151,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
+        // ========== ПЕРЕВОДЫ ==========
         const translations = {
             ru: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'СБОЙ ПИТАНИЯ', backupPower: 'РЕЗЕРВНОЕ ПИТАНИЕ',
@@ -142,7 +160,9 @@
                 taskBlackout: 'СБОЙ ПИТАНИЯ!<br>НАЙДИТЕ ФОНАРИК НА СТОЛЕ АДМИНА!', taskComplete: 'СИСТЕМА СБРОШЕНА.<br>ПОКИНЬТЕ КЛУБ!', 
                 stats: 'HP: {hp}% | STM: {stm}%', inventory: 'В РУКАХ: {current} / {max}', inventoryFull: 'ИНВЕНТАРЬ ПОЛОН! НЕСИ В БАК.', 
                 startBtn: 'Начать смену', startText: 'Смена началась. Следите за порядком.<br>Shift - Бег. E - Взаимодействие.', 
-                endWin: 'СМЕНА ОКОНЧЕНА.<br>ВЫ ВЫЖИЛИ.', endLose: 'ЖИЗНЕННЫЕ ПОКАЗАТЕЛИ: 0<br>СМЕНА ПРОВАЛЕНА.' 
+                endWin: 'СМЕНА ОКОНЧЕНА.<br>ВЫ ВЫЖИЛИ.', endLose: 'ЖИЗНЕННЫЕ ПОКАЗАТЕЛИ: 0<br>СМЕНА ПРОВАЛЕНА.',
+                diffEasy: 'Мирная (0%)', diffMedium: 'Средняя (50%)', diffHard: 'Сложная (100%)',
+                gfxLow: 'Граф: Мин', gfxMedium: 'Граф: Сред', gfxHigh: 'Граф: Макс'
             },
             uz: { 
                 sysOnline: 'TIZIM: ISHLASH', powerFail: 'QUVVAT UZILDI', backupPower: 'ZAXIRA QUVVAT',
@@ -151,7 +171,9 @@
                 taskBlackout: 'QUVVAT UZILDI!<br>ADMIN STOLIDAN CHIROQNI TOPING!', taskComplete: 'TIZIM TOZALANDI.<br>KLUBDAN CHIQING!', 
                 stats: 'JON: {hp}% | QUVVAT: {stm}%', inventory: 'QO\'LDA: {current} / {max}', inventoryFull: 'INVENTAR TO\'LA! AXLAT QUTISIGA OLIB BOR.', 
                 startBtn: 'Smenani boshlash', startText: 'Smena boshlandi. Tartibni saqlang.<br>Chap tomon - Yuris. O\'ng - Qarash.', 
-                endWin: 'SMENA TUGADI.<br>SIZ OMON QOLDINGIZ.', endLose: 'HAYOTIY KO\'RSATKICHLAR: 0<br>SMENA BARBOD.' 
+                endWin: 'SMENA TUGADI.<br>SIZ OMON QOLDINGIZ.', endLose: 'HAYOTIY KO\'RSATKICHLAR: 0<br>SMENA BARBOD.',
+                diffEasy: 'Tinch (0%)', diffMedium: "O'rta (50%)", diffHard: 'Qiyin (100%)',
+                gfxLow: 'Graf: Past', gfxMedium: 'Graf: O\'rta', gfxHigh: 'Graf: Yuqori'
             },
             en: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'POWER FAILURE', backupPower: 'BACKUP POWER',
@@ -160,37 +182,55 @@
                 taskBlackout: 'POWER FAILURE!<br>FIND FLASHLIGHT ON ADMIN DESK!', taskComplete: 'SYSTEM RESET.<br>LEAVE THE CLUB!', 
                 stats: 'HP: {hp}% | STM: {stm}%', inventory: 'HOLDING: {current} / {max}', inventoryFull: 'INVENTORY FULL! TAKE TO BIN.', 
                 startBtn: 'Start Shift', startText: 'Shift started. Keep order.<br>Shift to Sprint. E to Interact.', 
-                endWin: 'SHIFT COMPLETE.<br>YOU SURVIVED.', endLose: 'VITALS: 0<br>SHIFT FAILED.' 
+                endWin: 'SHIFT COMPLETE.<br>YOU SURVIVED.', endLose: 'VITALS: 0<br>SHIFT FAILED.',
+                diffEasy: 'Peaceful (0%)', diffMedium: 'Normal (50%)', diffHard: 'Hard (100%)',
+                gfxLow: 'Gfx: Low', gfxMedium: 'Gfx: Med', gfxHigh: 'Gfx: High'
             }
         };
 
-        let currentLanguage = 'ru'; let currentPlatform = 'pc';
+        let currentLanguage = 'ru'; 
+        let currentPlatform = 'pc';
+        let currentDifficulty = 'medium';
+        let currentGraphics = 'high';
 
-        const langLabels = document.querySelectorAll('.language-selector label'); 
-        const langRadios = document.querySelectorAll('input[name="lang"]'); 
-        const platformLabels = document.querySelectorAll('.platform-selector label'); 
-        const platformRadios = document.querySelectorAll('input[name="platform"]'); 
-        const startBtn = document.getElementById('start-btn'); 
-        const startText = document.getElementById('start-text'); 
-        const blocker = document.getElementById('blocker'); 
-        const bodycamUI = document.getElementById('bodycam-ui'); 
-        const uiTask = document.getElementById('ui-task'); 
-        const uiTime = document.getElementById('ui-time'); 
-        const uiStats = document.getElementById('ui-stats'); 
-        const uiInventory = document.getElementById('ui-inventory'); 
-        const recElement = document.querySelector('.rec-text'); 
-        const mobileControls = document.getElementById('mobile-controls'); 
-        const sprintBtn = document.getElementById('sprint-btn');
-        const actionBtn = document.getElementById('action-btn');
+        const langLabels = document.querySelectorAll('.language-selector label'); const langRadios = document.querySelectorAll('input[name="lang"]'); 
+        const platformLabels = document.querySelectorAll('.platform-selector label'); const platformRadios = document.querySelectorAll('input[name="platform"]'); 
+        const diffLabels = document.querySelectorAll('.difficulty-selector label'); const diffRadios = document.querySelectorAll('input[name="difficulty"]'); 
+        const gfxLabels = document.querySelectorAll('.graphics-selector label'); const gfxRadios = document.querySelectorAll('input[name="graphics"]'); 
+        
+        const startBtn = document.getElementById('start-btn'); const startText = document.getElementById('start-text'); 
+        const blocker = document.getElementById('blocker'); const bodycamUI = document.getElementById('bodycam-ui'); 
+        const uiTask = document.getElementById('ui-task'); const uiTime = document.getElementById('ui-time'); 
+        const uiStats = document.getElementById('ui-stats'); const uiInventory = document.getElementById('ui-inventory'); 
+        const recElement = document.querySelector('.rec-text'); const mobileControls = document.getElementById('mobile-controls'); 
+        const sprintBtn = document.getElementById('sprint-btn'); const actionBtn = document.getElementById('action-btn');
 
         function updateUILanguage() { 
             const t = translations[currentLanguage]; 
             startBtn.textContent = t.startBtn; 
             startText.innerHTML = t.startText; 
+            document.getElementById('diff-easy').textContent = t.diffEasy;
+            document.getElementById('diff-medium').textContent = t.diffMedium;
+            document.getElementById('diff-hard').textContent = t.diffHard;
+            document.getElementById('gfx-low').textContent = t.gfxLow;
+            document.getElementById('gfx-medium').textContent = t.gfxMedium;
+            document.getElementById('gfx-high').textContent = t.gfxHigh;
         }
 
-        langRadios.forEach(radio => { radio.addEventListener('change', (e) => { langLabels.forEach(l => l.classList.remove('selected')); e.target.parentElement.classList.add('selected'); currentLanguage = e.target.value; updateUILanguage(); }); });
-        platformRadios.forEach(radio => { radio.addEventListener('change', (e) => { platformLabels.forEach(l => l.classList.remove('selected')); e.target.parentElement.classList.add('selected'); currentPlatform = e.target.value; }); });
+        function setupRadioButtons(radios, labels, callback) {
+            radios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    labels.forEach(l => l.classList.remove('selected'));
+                    e.target.parentElement.classList.add('selected');
+                    callback(e.target.value);
+                });
+            });
+        }
+
+        setupRadioButtons(langRadios, langLabels, (val) => { currentLanguage = val; updateUILanguage(); });
+        setupRadioButtons(platformRadios, platformLabels, (val) => { currentPlatform = val; });
+        setupRadioButtons(diffRadios, diffLabels, (val) => { currentDifficulty = val; });
+        setupRadioButtons(gfxRadios, gfxLabels, (val) => { currentGraphics = val; });
         updateUILanguage();
 
         let audioContext = null; let footstepsBuffer = null; let pickupBuffer = null; let pcOffBuffer = null; let blackoutBuffer = null; let monsterSpawnBuffer = null; let monsterFootstepBuffer = null; let doorOpenBuffer = null; let deathBuffer = null; let jumpscareBuffer = null;
@@ -204,7 +244,6 @@
 
         function createSounds() {
             footstepsBuffer = createNoiseBuffer(0.2, 0.1, 200); pickupBuffer = createToneBuffer(0.15, 600, 'sine'); pcOffBuffer = createToneBuffer(0.2, 100, 'sawtooth'); blackoutBuffer = createNoiseBuffer(1.5, 0.3, 60); monsterSpawnBuffer = createNoiseBuffer(0.8, 0.2, 80); monsterFootstepBuffer = createToneBuffer(0.3, 60, 'triangle'); doorOpenBuffer = createToneBuffer(0.5, 400, 'sine', 0.3); deathBuffer = createNoiseBuffer(1.0, 0.5, 150);
-            
             if (audioContext) {
                 const sr = audioContext.sampleRate; jumpscareBuffer = audioContext.createBuffer(1, sr * 1.5, sr); const data = jumpscareBuffer.getChannelData(0);
                 for (let i = 0; i < jumpscareBuffer.length; i++) { data[i] = (Math.random() * 2 - 1) * Math.exp(-i/(sr*0.5)); data[i] += Math.sin(i * 0.05) * 0.8 * Math.exp(-i/(sr*1.0)); }
@@ -240,12 +279,15 @@
         scene.fog = new THREE.FogExp2(0x050505, 0.08); 
 
         const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.rotation.order = 'YXZ'; // Важно для мобильной камеры, чтобы она не заваливалась
+        camera.rotation.order = 'YXZ'; 
         
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
-        renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+        renderer.shadowMap.enabled = true; 
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+        renderer.outputEncoding = THREE.sRGBEncoding; 
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+        renderer.toneMappingExposure = 1.0;
         document.body.appendChild(renderer.domElement);
 
         let controls = { isLocked: false }; 
@@ -256,8 +298,43 @@
         let isSprinting = false;
         let isSprintToggledMobile = false; 
 
+        // === ПРИМЕНЕНИЕ НАСТРОЕК ГРАФИКИ ===
+        function applyGraphicsSettings() {
+            if (currentGraphics === 'low') {
+                renderer.setPixelRatio(0.7); // Снижаем разрешение
+                renderer.shadowMap.enabled = false;
+                renderer.toneMapping = THREE.LinearToneMapping;
+                floorMat.bumpMap = null; wallMatLong.bumpMap = null; wallMatShort.bumpMap = null;
+            } else if (currentGraphics === 'medium') {
+                renderer.setPixelRatio(1.0);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.BasicShadowMap; // Жесткие тени (легче)
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                floorMat.bumpMap = null; wallMatLong.bumpMap = null; wallMatShort.bumpMap = null;
+            } else {
+                // High
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Мягкие тени
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                floorMat.bumpMap = floorTex; wallMatLong.bumpMap = wallTex; wallMatShort.bumpMap = wallTexShort;
+            }
+            
+            floorMat.needsUpdate = true;
+            wallMatLong.needsUpdate = true;
+            wallMatShort.needsUpdate = true;
+
+            scene.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    child.material.needsUpdate = true;
+                }
+            });
+        }
+
         startBtn.addEventListener('click', () => { 
             initAudio(); 
+            applyGraphicsSettings(); // Применяем графику перед запуском
+            
             if (currentPlatform === 'pc') { 
                 if (!controls.lock) {
                     controls = new THREE.PointerLockControls(camera, document.body);
@@ -276,20 +353,14 @@
             camera.position.set(-4.5, 1.7, 2); 
             setupMobileControls(); 
             updateUI(); 
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
+            if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(() => {}); }
         }
 
         const velocity = new THREE.Vector3(); const direction = new THREE.Vector3(); 
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
         
-        // Переменные для мобильного джойстика
-        let joystickVector = { x: 0, y: 0 };
-        let moveTouchId = null;
-        let lookTouchId = null;
-        let joystickCenter = { x: 0, y: 0 };
-        let lookLastPos = { x: 0, y: 0 };
+        let joystickVector = { x: 0, y: 0 }; let moveTouchId = null; let lookTouchId = null;
+        let joystickCenter = { x: 0, y: 0 }; let lookLastPos = { x: 0, y: 0 };
         let pitch = 0, yaw = 0; const PI_2 = Math.PI / 2;
 
         document.addEventListener('keydown', (e) => {
@@ -307,13 +378,7 @@
 
         function setupMobileControls() {
             if (mobileControlsInitialized) return; mobileControlsInitialized = true;
-            
-            // Изолируем нажатия на кнопки действий, чтобы они не вращали камеру
-            actionBtn.addEventListener('touchstart', (e) => { 
-                e.preventDefault(); e.stopPropagation(); 
-                if (!gameEnded) handleInteraction(); 
-            }, { passive: false });
-            
+            actionBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (!gameEnded) handleInteraction(); }, { passive: false });
             sprintBtn.addEventListener('touchstart', (e) => { 
                 e.preventDefault(); e.stopPropagation();
                 isSprintToggledMobile = !isSprintToggledMobile;
@@ -323,69 +388,40 @@
             }, { passive: false });
         }
 
-        // === НОВАЯ СИСТЕМА DUAL STICK (Джойстик слева, обзор справа) ===
         document.addEventListener('touchstart', (e) => {
             if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return;
-            if (e.target.closest('.ctrl-btn')) return; // Не трогаем кнопки
-            
+            if (e.target.closest('.ctrl-btn')) return; 
             const halfWidth = window.innerWidth / 2;
-
             for (let i = 0; i < e.changedTouches.length; i++) {
                 const touch = e.changedTouches[i];
-                
-                // Левая половина: ходьба (Джойстик)
                 if (touch.clientX < halfWidth && moveTouchId === null) {
-                    moveTouchId = touch.identifier;
-                    joystickCenter = { x: touch.clientX, y: touch.clientY };
-                    
+                    moveTouchId = touch.identifier; joystickCenter = { x: touch.clientX, y: touch.clientY };
                     const jBase = document.getElementById('joystick-base');
-                    jBase.style.display = 'block';
-                    jBase.style.left = touch.clientX + 'px';
-                    jBase.style.top = touch.clientY + 'px';
+                    jBase.style.display = 'block'; jBase.style.left = touch.clientX + 'px'; jBase.style.top = touch.clientY + 'px';
                     document.getElementById('joystick-stick').style.transform = `translate(-50%, -50%)`;
                 } 
-                // Правая половина: обзор
                 else if (touch.clientX >= halfWidth && lookTouchId === null) {
-                    lookTouchId = touch.identifier;
-                    lookLastPos = { x: touch.clientX, y: touch.clientY };
+                    lookTouchId = touch.identifier; lookLastPos = { x: touch.clientX, y: touch.clientY };
                 }
             }
         }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
             if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return;
-            e.preventDefault(); // Полный запрет скролла страницы
-
+            if (e.target.closest('.ctrl-btn')) return; 
+            e.preventDefault(); 
             for (let i = 0; i < e.changedTouches.length; i++) {
                 const touch = e.changedTouches[i];
-                
                 if (touch.identifier === moveTouchId) {
-                    let dx = touch.clientX - joystickCenter.x;
-                    let dy = touch.clientY - joystickCenter.y;
-                    const maxR = 50; // Максимальное отклонение стика
+                    let dx = touch.clientX - joystickCenter.x; let dy = touch.clientY - joystickCenter.y; const maxR = 40; 
                     let dist = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (dist > maxR) {
-                        dx = dx * maxR / dist;
-                        dy = dy * maxR / dist;
-                    }
-                    
+                    if (dist > maxR) { dx = dx * maxR / dist; dy = dy * maxR / dist; }
                     document.getElementById('joystick-stick').style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-                    // Нормализованный вектор от -1 до 1
-                    joystickVector.x = dx / maxR;
-                    joystickVector.y = dy / maxR;
-
+                    joystickVector.x = dx / maxR; joystickVector.y = dy / maxR;
                 } else if (touch.identifier === lookTouchId) {
-                    const deltaX = touch.clientX - lookLastPos.x;
-                    const deltaY = touch.clientY - lookLastPos.y;
-                    
-                    yaw -= deltaX * 0.005;
-                    pitch -= deltaY * 0.005;
-                    pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
-                    
-                    camera.rotation.y = yaw;
-                    camera.rotation.x = pitch;
-                    
+                    const deltaX = touch.clientX - lookLastPos.x; const deltaY = touch.clientY - lookLastPos.y;
+                    yaw -= deltaX * 0.005; pitch -= deltaY * 0.005; pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
+                    camera.rotation.y = yaw; camera.rotation.x = pitch;
                     lookLastPos = { x: touch.clientX, y: touch.clientY };
                 }
             }
@@ -394,44 +430,30 @@
         const handleTouchEnd = (e) => {
             for (let i = 0; i < e.changedTouches.length; i++) {
                 const touch = e.changedTouches[i];
-                if (touch.identifier === moveTouchId) {
-                    moveTouchId = null;
-                    document.getElementById('joystick-base').style.display = 'none';
-                    joystickVector = { x: 0, y: 0 };
-                } else if (touch.identifier === lookTouchId) {
-                    lookTouchId = null;
-                }
+                if (touch.identifier === moveTouchId) { moveTouchId = null; document.getElementById('joystick-base').style.display = 'none'; joystickVector = { x: 0, y: 0 }; } 
+                else if (touch.identifier === lookTouchId) { lookTouchId = null; }
             }
         };
-
-        document.addEventListener('touchend', handleTouchEnd);
-        document.addEventListener('touchcancel', handleTouchEnd);
-
+        document.addEventListener('touchend', handleTouchEnd); document.addEventListener('touchcancel', handleTouchEnd);
 
         function createTileTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#111'; ctx.fillRect(0,0,256,256); ctx.strokeStyle = '#222'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
             const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(18, 12); return tex;
         }
-
         function createWallTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 256; const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#181818'; ctx.fillRect(0,0,128,256); ctx.fillStyle = '#222'; ctx.fillRect(0,0,64,256); 
             const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; return tex;
         }
-
         function createDesktopTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 256; const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#0b1d2e'; ctx.fillRect(0,0,512,256); 
-            ctx.strokeStyle = '#1e3d59'; ctx.lineWidth = 2; 
+            ctx.fillStyle = '#0b1d2e'; ctx.fillRect(0,0,512,256); ctx.strokeStyle = '#1e3d59'; ctx.lineWidth = 2; 
             for(let i=0; i<512; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,256); ctx.stroke(); }
             for(let i=0; i<256; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(512,i); ctx.stroke(); }
-            ctx.fillStyle = '#111'; ctx.fillRect(100, 30, 312, 176);
-            ctx.fillStyle = '#556b2f'; ctx.fillRect(100, 150, 312, 56); 
-            ctx.fillStyle = '#87ceeb'; ctx.fillRect(100, 30, 312, 120); 
-            ctx.fillStyle = '#ff0000'; ctx.font = 'bold 20px Courier'; ctx.fillText("MATCH IN PROGRESS", 150, 100);
-            ctx.fillStyle = '#050505'; ctx.fillRect(0,230,512,26);
-            ctx.fillStyle = '#00a8ff'; ctx.fillRect(5,233,30,20);
+            ctx.fillStyle = '#111'; ctx.fillRect(100, 30, 312, 176); ctx.fillStyle = '#556b2f'; ctx.fillRect(100, 150, 312, 56); 
+            ctx.fillStyle = '#87ceeb'; ctx.fillRect(100, 30, 312, 120); ctx.fillStyle = '#ff0000'; ctx.font = 'bold 20px Courier'; ctx.fillText("MATCH IN PROGRESS", 150, 100);
+            ctx.fillStyle = '#050505'; ctx.fillRect(0,230,512,26); ctx.fillStyle = '#00a8ff'; ctx.fillRect(5,233,30,20);
             ctx.fillStyle = '#ffffff'; for(let i=0; i<4; i++) { ctx.fillRect(10, 10 + i*35, 20, 20); }
             return new THREE.CanvasTexture(canvas);
         }
@@ -441,8 +463,7 @@
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 128; const ctx = canvas.getContext('2d');
             for (let i = 0; i < 256; i += 2) {
                 for (let j = 0; j < 128; j += 2) {
-                    const c = Math.floor(Math.random() * 150 + 50); 
-                    ctx.fillStyle = `rgb(${c},${c},${c})`; ctx.fillRect(i, j, 2, 2);
+                    const c = Math.floor(Math.random() * 150 + 50); ctx.fillStyle = `rgb(${c},${c},${c})`; ctx.fillRect(i, j, 2, 2);
                 }
             }
             ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(128, 60, 30, 0, Math.PI*2); ctx.fill();
@@ -491,7 +512,6 @@
         const spookyLight = new THREE.PointLight(0xddddff, 0, 4); spookyLight.castShadow = true; scene.add(spookyLight);
 
         const desktopTexMat = createDesktopTexture();
-
         const pcScreenMatOn = new THREE.MeshStandardMaterial({ map: desktopTexMat, emissiveMap: desktopTexMat, emissive: 0xffffff, emissiveIntensity: 0.8, roughness: 0.2 }); 
         const pcScreenMatSpooky = new THREE.MeshStandardMaterial({ map: spookyFrames[0], emissiveMap: spookyFrames[0], emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.2 }); 
         const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 0.2, metalness: 0.8 }); 
@@ -525,9 +545,7 @@
         }
 
         let interactables = []; let monitorsTurnedOff = 0; let trashCollected = 0; let currentInventory = 0; const MAX_INVENTORY = 3; let totalTrash = 0; 
-        let isBlackout = false; let hasFlashlight = false;
-        
-        let allPCScreens = []; let spookyEventTriggered = false;
+        let isBlackout = false; let hasFlashlight = false; let allPCScreens = []; let spookyEventTriggered = false;
 
         const adminMat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8});
         const adminDeskLong = new THREE.Group(); adminDeskLong.position.set(-6, 0, -2);
@@ -560,10 +578,8 @@
 
         const doorMat = new THREE.MeshStandardMaterial({color: 0x440000, roughness: 0.8}); 
         const exitDoor = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 2), doorMat); exitDoor.position.set(-roomW/2 + 0.05, 1.25, 3.5); exitDoor.userData = { isDoor: true, isOpenable: false }; castAndReceive(exitDoor); interactables.push(exitDoor); scene.add(exitDoor);
-
         const doorHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2), new THREE.MeshStandardMaterial({color: 0x888888, metalness: 0.8}));
         doorHandle.rotation.x = Math.PI/2; doorHandle.position.set(0.06, 0, 0); castAndReceive(doorHandle); exitDoor.add(doorHandle);
-
         const exitSignMat = new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 2});
         const exitSign = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.3, 0.8), exitSignMat); exitSign.position.set(-roomW/2 + 0.05, 2.9, 3.5); scene.add(exitSign);
 
@@ -572,37 +588,26 @@
 
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
-            
             const monitorGroup = new THREE.Group();
-            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOn); 
-            screen.position.set(0, 0.22, 0.01); screen.userData = { isOn: true, isPC: true, isSpooky: false }; 
-            castAndReceive(screen); interactables.push(screen); monitorGroup.add(screen); allPCScreens.push(screen); 
-            
+            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOn); screen.position.set(0, 0.22, 0.01); screen.userData = { isOn: true, isPC: true, isSpooky: false }; castAndReceive(screen); interactables.push(screen); monitorGroup.add(screen); allPCScreens.push(screen); 
             const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); bezel.position.set(0, 0.22, -0.01); castAndReceive(bezel); monitorGroup.add(bezel);
             const standNeck = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.02), pcBodyMat); standNeck.position.set(0, 0.1, -0.03); standNeck.rotation.x = -0.15; castAndReceive(standNeck); monitorGroup.add(standNeck);
-            const standBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.15), pcBodyMat); standBase.position.set(0, 0.005, -0.02); castAndReceive(standBase); monitorGroup.add(standBase); 
-            group.add(monitorGroup);
-
+            const standBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.15), pcBodyMat); standBase.position.set(0, 0.005, -0.02); castAndReceive(standBase); monitorGroup.add(standBase); group.add(monitorGroup);
             const mousepad = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.002, 0.3), mousepadMat); mousepad.position.set(0.05, 0.001, 0.22); castAndReceive(mousepad); group.add(mousepad);
-
             const kbdGroup = new THREE.Group(); kbdGroup.position.set(-0.12, 0.01, 0.22); kbdGroup.rotation.x = 0.05; 
             const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); kbdGroup.add(kbdBase);
             const kbdRGBBase = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.016, 0.15), rgbLedStripMat); kbdRGBBase.position.y = 0.002; kbdGroup.add(kbdRGBBase);
             const kbdKeysMain = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.02, 0.13), kbdKeysMat); kbdKeysMain.position.set(-0.05, 0.005, 0); castAndReceive(kbdKeysMain); kbdGroup.add(kbdKeysMain);
             const kbdKeysNum = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.02, 0.13), kbdKeysMat); kbdKeysNum.position.set(0.15, 0.005, 0); castAndReceive(kbdKeysNum); kbdGroup.add(kbdKeysNum);
             group.add(kbdGroup);
-
             const mouseGroup = new THREE.Group(); mouseGroup.position.set(0.28, 0.005, 0.22); mouseGroup.rotation.y = -0.15;
             const mouseBody = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.1, 12), pcBodyMat); mouseBody.rotation.x = Math.PI / 2; mouseBody.scale.set(1, 0.5, 1); mouseBody.position.y = 0.015; castAndReceive(mouseBody); mouseGroup.add(mouseBody);
             const mouseRGB = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.02, 12), rgbLedStripMat); mouseRGB.rotation.x = Math.PI / 2; mouseRGB.scale.set(1, 0.5, 1); mouseRGB.position.set(0, 0.005, 0.02); mouseGroup.add(mouseRGB);
             const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 8), rgbLedStripMat); wheel.rotation.z = Math.PI / 2; wheel.position.set(0, 0.022, -0.035); mouseGroup.add(wheel);
             group.add(mouseGroup);
-            
             const chairGroup = new THREE.Group(); chairGroup.position.set(0, -0.75, 0.4); chairGroup.rotation.y = Math.PI; buildChairMesh(chairGroup); group.add(chairGroup);
-            
             if (Math.random() < 0.6) {
-                const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), canMat);
-                const sideX = Math.random() > 0.5 ? 0.45 : -0.45; const offsetZ = Math.random() * 0.2; 
+                const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), canMat); const sideX = Math.random() > 0.5 ? 0.45 : -0.45; const offsetZ = Math.random() * 0.2; 
                 can.position.set(sideX, 0.075, offsetZ); can.userData = { isTrash: true }; castAndReceive(can); interactables.push(can); group.add(can); totalTrash++; 
             }
             scene.add(group);
@@ -626,16 +631,12 @@
         const loader = new THREE.GLTFLoader();
         function loadMonster(index, fallbackColor) {
             loader.load( monsters[index].path, function (gltf) {
-                    const group = gltf.scene; group.scale.set(1.2, 1.2, 1.2); group.rotation.y = Math.PI;
-                    group.traverse(node => { if (node.isMesh) castAndReceive(node); });
+                    const group = gltf.scene; group.scale.set(1.2, 1.2, 1.2); group.rotation.y = Math.PI; group.traverse(node => { if (node.isMesh) castAndReceive(node); });
                     group.visible = false; scene.add(group); monsters[index].group = group;
-                    if (gltf.animations && gltf.animations.length > 0) {
-                        monsters[index].mixer = new THREE.AnimationMixer(group); monsters[index].mixer.clipAction(gltf.animations[0]).play();
-                    } else { monsters[index].useCustomAnimation = true; }
+                    if (gltf.animations && gltf.animations.length > 0) { monsters[index].mixer = new THREE.AnimationMixer(group); monsters[index].mixer.clipAction(gltf.animations[0]).play(); } else { monsters[index].useCustomAnimation = true; }
                 }, undefined, function () { createFallbackMonster(index, fallbackColor); }
             );
         }
-
         function createFallbackMonster(index, color) {
             const group = new THREE.Group(); const skinMat = new THREE.MeshStandardMaterial({ color: color, emissive: 0x220000 }); const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff0000, emissiveIntensity: 2 });
             const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat); torso.position.y = 0.9; castAndReceive(torso); group.add(torso);
@@ -656,14 +657,9 @@
             requestAnimationFrame(updateNoise); 
             if (!noiseCanvas) return;
             if (noiseOpacity <= 0) { noiseCanvas.style.opacity = '0'; return; }
-            
-            const w = 256; const h = 256; 
-            noiseCanvas.width = w; noiseCanvas.height = h;
-            
+            const w = 256; const h = 256; noiseCanvas.width = w; noiseCanvas.height = h;
             const imageData = noiseCtx.createImageData(w, h); const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) { 
-                const val = Math.random() * 255; data[i] = val; data[i+1] = val; data[i+2] = val; data[i+3] = 200; 
-            }
+            for (let i = 0; i < data.length; i += 4) { const val = Math.random() * 255; data[i] = val; data[i+1] = val; data[i+2] = val; data[i+3] = 200; }
             noiseCtx.putImageData(imageData, 0, 0); noiseCanvas.style.opacity = noiseOpacity; 
         }
         updateNoise(); 
@@ -705,10 +701,7 @@
 
         setInterval(() => {
             if (gameEnded) return;
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('ru-RU', { hour12: false });
-            const t = translations[currentLanguage];
-            
+            const now = new Date(); const timeStr = now.toLocaleTimeString('ru-RU', { hour12: false }); const t = translations[currentLanguage];
             if (!isBlackout) uiTime.innerHTML = `${timeStr} <br> ${t.sysOnline}`;
             else if (!hasFlashlight) uiTime.innerHTML = `${timeStr} <br> <span style="color:#ff0000">${t.powerFail}</span>`;
             else uiTime.innerHTML = `${timeStr} <br> <span style="color:#ffaa00">${t.backupPower}</span>`;
@@ -748,7 +741,6 @@
         function handleInteraction() {
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const intersects = raycaster.intersectObjects(interactables);
-            
             if (intersects.length > 0) {
                 const obj = intersects[0].object;
                 if (!isBlackout && (obj.userData.isPC || obj.userData.isTrash)) triggerBlackout();
@@ -785,10 +777,7 @@
                 }
 
                 if (obj.userData.isTrashBin) {
-                    if (currentInventory > 0) { 
-                        trashCollected += currentInventory; currentInventory = 0; 
-                        if (trashCollected >= 4 && !monsters[0].spawned) spawnMonster(0); updateUI(); 
-                    }
+                    if (currentInventory > 0) { trashCollected += currentInventory; currentInventory = 0; if (trashCollected >= 4 && !monsters[0].spawned) spawnMonster(0); updateUI(); }
                 }
 
                 if (obj.userData.isDoor && obj.userData.isOpenable) {
@@ -828,24 +817,21 @@
                     isInputActive = (moveForward || moveBackward || moveLeft || moveRight);
                 } else {
                     direction.x = joystickVector.x;
-                    direction.z = -joystickVector.y; // Джойстик ВВЕРХ это отрицательный Y на экране, но положительный вектор движения
+                    direction.z = -joystickVector.y; 
                     isInputActive = (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1);
                 }
 
                 let currentSpeed = 13.0;
                 if (isInputActive) {
                     if (isSprinting && stamina > 0) {
-                        currentSpeed = 22.0; 
-                        stamina -= delta * 25; 
+                        currentSpeed = 22.0; stamina -= delta * 25; 
                     } else {
                         stamina += delta * 10; 
                         if (stamina <= 0 && isSprintToggledMobile) {
                             isSprintToggledMobile = false; isSprinting = false; sprintBtn.classList.remove('sprint-active');
                         }
                     }
-                } else {
-                    stamina += delta * 20; 
-                }
+                } else { stamina += delta * 20; }
                 stamina = Math.max(0, Math.min(100, stamina));
                 
                 if (isInputActive || velocity.length() > 0.1) {
@@ -858,9 +844,7 @@
                 if (currentPlatform === 'pc') {
                     controls.moveRight(-velocity.x * delta); controls.moveForward(-velocity.z * delta);
                 } else {
-                    // Для телефона движение относительно взгляда
-                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); 
-                    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
                     forward.y = 0; forward.normalize(); right.y = 0; right.normalize();
                     camera.position.addScaledVector(forward, -velocity.z * delta); 
                     camera.position.addScaledVector(right, -velocity.x * delta);
@@ -874,8 +858,7 @@
                 camera.position.y = 1.7; 
 
                 if (isInputActive) {
-                    stepAccum += delta; 
-                    const stepThreshold = (currentSpeed > 15) ? 0.3 : 0.5; 
+                    stepAccum += delta; const stepThreshold = (currentSpeed > 15) ? 0.3 : 0.5; 
                     if (stepAccum > stepThreshold) { playFootstep(currentSpeed > 15); stepAccum = 0; } 
                     idleTimer = 0;
                 } else {
@@ -899,6 +882,11 @@
                     spookyLight.intensity = 1.5 + Math.random() * 2.0; 
                 }
 
+                let diffSpeedMulti = 1.0;
+                let diffDamageMulti = 0.5; 
+                if (currentDifficulty === 'easy') { diffSpeedMulti = 0.7; diffDamageMulti = 0; } 
+                else if (currentDifficulty === 'hard') { diffSpeedMulti = 1.4; diffDamageMulti = 1.0; }
+
                 let isTakingDamage = false;
                 
                 for (let i = 0; i < monsters.length; i++) {
@@ -910,35 +898,34 @@
                             const scale = 1.0 + Math.sin(elapsed * 5 + i) * 0.02; m.group.scale.set(scale, scale, scale);
                         }
                         
-                        const dirToMonster = new THREE.Vector3().subVectors(m.group.position, camera.position);
-                        dirToMonster.y = 0; 
-                        const distance = dirToMonster.length();
-                        dirToMonster.normalize();
+                        const lookDirToMonster = new THREE.Vector3().subVectors(m.group.position, camera.position);
+                        lookDirToMonster.y = 0; const distance = lookDirToMonster.length(); lookDirToMonster.normalize();
                         
-                        const lookDir = camera.getWorldDirection(new THREE.Vector3());
-                        lookDir.y = 0; lookDir.normalize();
-                        
-                        const isLookingAtMonster = (lookDir.angleTo(dirToMonster) < 0.5) && (distance < 15.0);
+                        // ИСПРАВЛЕНИЕ: Монстр всегда бежит в сторону камеры
+                        const moveDirToPlayer = new THREE.Vector3().copy(lookDirToMonster).negate();
+
+                        const lookDir = camera.getWorldDirection(new THREE.Vector3()); lookDir.y = 0; lookDir.normalize();
+                        const isLookingAtMonster = (lookDir.angleTo(lookDirToMonster) < 0.5) && (distance < 15.0);
 
                         if (isLookingAtMonster) {
                             m.stareTime += delta;
                             noiseOpacity = Math.max(noiseOpacity, 0.2 + m.stareTime * 0.5); 
                             
                             if (m.stareTime > 0.8) {
-                                m.group.visible = false; 
-                                m.lookAwayTimer = 3.0 + Math.random() * 3.0; 
-                                m.stareTime = 0;
+                                m.group.visible = false; m.lookAwayTimer = 3.0 + Math.random() * 3.0; m.stareTime = 0;
                                 playSound(monsterSpawnBuffer, 0.2, 1.5); 
                             }
                         } else {
                             m.stareTime = 0;
                             if (distance > 2.0) {
-                                m.group.position.x += dirToMonster.x * m.speed * delta;
-                                m.group.position.z += dirToMonster.z * m.speed * delta;
+                                m.group.position.x -= lookDirToMonster.x * m.speed * diffSpeedMulti * delta;
+                                m.group.position.z -= lookDirToMonster.z * m.speed * diffSpeedMulti * delta;
                                 m.group.lookAt(camera.position.x, 0, camera.position.z);
                                 if (Math.random() < delta * 2) playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
                             } else {
-                                isTakingDamage = true; health -= delta * 35; noiseOpacity = Math.max(noiseOpacity, 0.85); 
+                                if (diffDamageMulti > 0) {
+                                    isTakingDamage = true; health -= delta * 70 * diffDamageMulti; noiseOpacity = Math.max(noiseOpacity, 0.85); 
+                                }
                             }
                         }
                     } else if (m.lookAwayTimer > 0) {
