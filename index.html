@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Night Shift - Axon Body 3</title>
+    <title>Night Shift - Real Tables</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; user-select: none; touch-action: none; }
         #blocker {
@@ -21,7 +21,7 @@
             cursor: pointer; box-shadow: 0 0 20px #0a4; transition: 0.3s; margin-top: 20px;
         }
         #start-btn:hover { background: #0f6; box-shadow: 0 0 30px #0f6; }
-        #start-text { margin-top: 20px; font-size: 14px; color: #aaa; text-align: center; }
+        #start-text { margin-top: 20px; font-size: 14px; color: #aaa; }
         #crosshair {
             position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
             background-color: rgba(255,255,255,0.8); transform: translate(-50%, -50%);
@@ -46,11 +46,6 @@
             font-family: 'Courier New', monospace; font-size: 16px; text-shadow: 0 0 3px #00ffaa;
             line-height: 1.5;
         }
-        .status-text {
-            position: absolute; top: 35px; left: 50%; transform: translateX(-50%); color: #00ffaa;
-            font-family: 'Courier New', monospace; font-size: 16px; text-shadow: 0 0 3px #00ffaa;
-            display: flex; gap: 20px;
-        }
         .inventory-text {
             position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); color: #ffaa00;
             font-family: 'Courier New', monospace; font-size: 20px; font-weight: bold;
@@ -60,68 +55,96 @@
 
         /* Мобильное управление */
         #mobile-controls {
-            position: absolute; bottom: 30px; left: 0; width: 100%;
-            display: flex; justify-content: space-between; padding: 0 20px;
-            box-sizing: border-box; pointer-events: none; z-index: 20;
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 20;
         }
-        .move-panel, .action-panel { display: flex; gap: 15px; pointer-events: auto; }
-        .action-panel { flex-direction: column; justify-content: flex-end; }
+        .move-panel {
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+        .action-panel {
+            pointer-events: auto;
+        }
         .ctrl-btn {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: rgba(50,50,50,0.8); border: 2px solid #0f0;
-            color: #0f0; font-size: 24px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 15px #0f0; user-select: none; touch-action: none;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(50,50,50,0.8);
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-size: 30px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px #0f0;
+            user-select: none;
+            touch-action: none;
         }
-        .ctrl-btn:active { background: #0f0; color: #000; }
-        #sprint-btn { border-color: #00aaff; color: #00aaff; box-shadow: 0 0 15px #00aaff; }
-        #sprint-btn:active { background: #00aaff; color: #000; }
+        .ctrl-btn:active {
+            background: #0f0;
+            color: #000;
+        }
     </style>
 </head>
 <body>
     <div id="blocker">
         <h1 style="text-align:center">AXON BODY 3</h1>
         
+        <!-- Выбор языка -->
         <div class="language-selector">
-            <label class="selected"><input type="radio" name="lang" value="ru" checked> Русский</label>
-            <label><input type="radio" name="lang" value="uz"> O'zbekcha</label>
-            <label><input type="radio" name="lang" value="en"> English</label>
+            <label class="selected">
+                <input type="radio" name="lang" value="ru" checked> Русский
+            </label>
+            <label>
+                <input type="radio" name="lang" value="uz"> O'zbekcha
+            </label>
+            <label>
+                <input type="radio" name="lang" value="en"> English
+            </label>
         </div>
 
+        <!-- Выбор платформы -->
         <div class="platform-selector">
-            <label class="selected"><input type="radio" name="platform" value="pc" checked> ПК</label>
-            <label><input type="radio" name="platform" value="mobile"> Мобильный</label>
+            <label class="selected">
+                <input type="radio" name="platform" value="pc" checked> ПК
+            </label>
+            <label>
+                <input type="radio" name="platform" value="mobile"> Мобильный
+            </label>
         </div>
 
+        <!-- Кнопка старта -->
         <button id="start-btn">Начать смену</button>
-        <p id="start-text">Загрузка системы...<br><span style="color:#555;font-size:12px;">Управление: WASD - Ходьба | SHIFT - Бег | ЛКМ - Действие</span></p>
+        <p id="start-text">REAL TABLES LOADED.</p>
     </div>
     
     <div id="bodycam-ui">
         <div id="ui-time" class="time-text">03:45 AM <br> SYS: ONLINE</div>
         <div id="ui-task" class="task-text">ЗАДАЧИ:<br>[ ] Выключить ПК: 0/20<br>[ ] Выбросить мусор: 0/0</div>
-        <div class="status-text">
-            <div id="ui-battery" style="display:none;">🔋 100%</div>
-            <div id="ui-stamina">🏃 100%</div>
-        </div>
         <div id="ui-inventory" class="inventory-text" style="display:none;">В РУКАХ: 0 / 3</div>
         <div class="rec-text">● REC</div>
     </div>
     <div id="crosshair"></div>
 
+    <!-- Мобильное управление (изначально скрыто) -->
     <div id="mobile-controls" style="display: none;">
         <div class="move-panel">
-            <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
-                <div class="ctrl-btn" id="move-fwd">↑</div>
-                <div style="display:flex; gap:40px;">
-                    <div class="ctrl-btn" id="move-left">←</div>
-                    <div class="ctrl-btn" id="move-right">→</div>
-                </div>
-                <div class="ctrl-btn" id="move-back">↓</div>
-            </div>
+            <div class="ctrl-btn" id="move-fwd">↑</div>
+            <div class="ctrl-btn" id="move-left">←</div>
+            <div class="ctrl-btn" id="move-back">↓</div>
+            <div class="ctrl-btn" id="move-right">→</div>
         </div>
         <div class="action-panel">
-            <div class="ctrl-btn" id="sprint-btn">🏃</div>
             <div class="ctrl-btn" id="action-btn">E</div>
         </div>
     </div>
@@ -134,35 +157,71 @@
         // ========== ПЕРЕВОДЫ ==========
         const translations = {
             ru: {
-                rec: '● REC', timeOnline: '03:45 AM <br> SYS: ONLINE', timePowerFail: '03:45 AM <br> СБОЙ ПИТАНИЯ', timeBackup: '03:46 AM <br> РЕЗЕРВНОЕ ПИТАНИЕ',
-                tasks: 'ЗАДАЧИ:', taskPC: '[ ] Выключить ПК: {current}/20', taskPCDone: '[✓] ПК выключены (20/20)',
-                taskTrash: '[ ] Выбросить мусор: {current}/{total}', taskTrashDone: '[✓] Мусор выброшен ({total}/{total})',
-                taskBlackout: 'СБОЙ ПИТАНИЯ!<br>НАЙДИТЕ ФОНАРИК НА СТОЛЕ АДМИНА!', taskComplete: 'СИСТЕМА СБРОШЕНА.<br>ПОКИНЬТЕ КЛУБ!',
-                inventory: 'В РУКАХ: {current} / {max}', inventoryFull: 'ИНВЕНТАРЬ ПОЛОН! НЕСИ В БАК.',
-                startBtn: 'Начать смену', startText: 'СИСТЕМА ГОТОВА.', endWin: 'СМЕНА ОКОНЧЕНА.<br>ВЫ ВЫЖИЛИ.', endLose: 'ВАС СХВАТИЛИ.<br>СМЕНА ПРОВАЛЕНА.'
+                rec: '● REC',
+                timeOnline: '03:45 AM <br> SYS: ONLINE',
+                timePowerFail: '03:45 AM <br> СБОЙ ПИТАНИЯ',
+                timeBackup: '03:46 AM <br> РЕЗЕРВНОЕ ПИТАНИЕ',
+                tasks: 'ЗАДАЧИ:',
+                taskPC: '[ ] Выключить ПК: {current}/20',
+                taskPCDone: '[✓] ПК выключены (20/20)',
+                taskTrash: '[ ] Выбросить мусор: {current}/{total}',
+                taskTrashDone: '[✓] Мусор выброшен ({total}/{total})',
+                taskBlackout: 'СБОЙ ПИТАНИЯ!<br>НАЙДИТЕ ФОНАРИК НА СТОЛЕ АДМИНА!',
+                taskComplete: 'СИСТЕМА СБРОШЕНА.<br>ПОКИНЬТЕ КЛУБ!',
+                inventory: 'В РУКАХ: {current} / {max}',
+                inventoryFull: 'ИНВЕНТАРЬ ПОЛОН! НЕСИ В БАК.',
+                startBtn: 'Начать смену',
+                startText: 'REAL TABLES LOADED.',
+                endWin: 'СМЕНА ОКОНЧЕНА.<br>ВЫ ВЫЖИЛИ.',
+                endLose: 'ВАС СХВАТИЛИ.<br>СМЕНА ПРОВАЛЕНА.',
             },
             uz: {
-                rec: '● YOZILMOQDA', timeOnline: '03:45 AM <br> TIZIM: ISHLASH', timePowerFail: '03:45 AM <br> QUVVAT UZILDI', timeBackup: '03:46 AM <br> ZAXIRA QUVVAT',
-                tasks: 'VAZIFALAR:', taskPC: '[ ] Kompyuterni o\'chirish: {current}/20', taskPCDone: '[✓] Kompyuterlar o\'chirildi (20/20)',
-                taskTrash: '[ ] Axlatni tashlash: {current}/{total}', taskTrashDone: '[✓] Axlat tashlandi ({total}/{total})',
-                taskBlackout: 'QUVVAT UZILDI!<br>ADMIN STOLIDAN CHIROQNI TOPING!', taskComplete: 'TIZIM TOZALANDI.<br>KLUBDAN CHIQING!',
-                inventory: 'QO\'LDA: {current} / {max}', inventoryFull: 'INVENTAR TO\'LA! AXLAT QUTISIGA OLIB BOR.',
-                startBtn: 'Smenani boshlash', startText: 'TIZIM TAYYOR.', endWin: 'SMENA TUGADI.<br>SIZ OMON QOLDINGIZ.', endLose: 'SIZ TUTILDINGIZ.<br>SMENA BARBOD.'
+                rec: '● YOZILMOQDA',
+                timeOnline: '03:45 AM <br> TIZIM: ISHLASH',
+                timePowerFail: '03:45 AM <br> QUVVAT UZILDI',
+                timeBackup: '03:46 AM <br> ZAXIRA QUVVAT',
+                tasks: 'VAZIFALAR:',
+                taskPC: '[ ] Kompyuterni o\'chirish: {current}/20',
+                taskPCDone: '[✓] Kompyuterlar o\'chirildi (20/20)',
+                taskTrash: '[ ] Axlatni tashlash: {current}/{total}',
+                taskTrashDone: '[✓] Axlat tashlandi ({total}/{total})',
+                taskBlackout: 'QUVVAT UZILDI!<br>ADMIN STOLIDAN CHIROQNI TOPING!',
+                taskComplete: 'TIZIM TOZALANDI.<br>KLUBDAN CHIQING!',
+                inventory: 'QO\'LDA: {current} / {max}',
+                inventoryFull: 'INVENTAR TO\'LA! AXLAT QUTISIGA OLIB BOR.',
+                startBtn: 'Smenani boshlash',
+                startText: 'REAL TABLES LOADED.',
+                endWin: 'SMENA TUGADI.<br>SIZ OMON QOLDINGIZ.',
+                endLose: 'SIZ TUTILDINGIZ.<br>SMENA BARBOD.',
             },
             en: {
-                rec: '● REC', timeOnline: '03:45 AM <br> SYS: ONLINE', timePowerFail: '03:45 AM <br> POWER FAILURE', timeBackup: '03:46 AM <br> BACKUP POWER',
-                tasks: 'TASKS:', taskPC: '[ ] Turn off PCs: {current}/20', taskPCDone: '[✓] PCs off (20/20)',
-                taskTrash: '[ ] Throw trash: {current}/{total}', taskTrashDone: '[✓] Trash thrown ({total}/{total})',
-                taskBlackout: 'POWER FAILURE!<br>FIND FLASHLIGHT ON ADMIN DESK!', taskComplete: 'SYSTEM RESET.<br>LEAVE THE CLUB!',
-                inventory: 'HOLDING: {current} / {max}', inventoryFull: 'INVENTORY FULL! TAKE TO BIN.',
-                startBtn: 'Start Shift', startText: 'SYSTEM READY.', endWin: 'SHIFT COMPLETE.<br>YOU SURVIVED.', endLose: 'YOU WERE CAUGHT.<br>SHIFT FAILED.'
+                rec: '● REC',
+                timeOnline: '03:45 AM <br> SYS: ONLINE',
+                timePowerFail: '03:45 AM <br> POWER FAILURE',
+                timeBackup: '03:46 AM <br> BACKUP POWER',
+                tasks: 'TASKS:',
+                taskPC: '[ ] Turn off PCs: {current}/20',
+                taskPCDone: '[✓] PCs off (20/20)',
+                taskTrash: '[ ] Throw trash: {current}/{total}',
+                taskTrashDone: '[✓] Trash thrown ({total}/{total})',
+                taskBlackout: 'POWER FAILURE!<br>FIND FLASHLIGHT ON ADMIN DESK!',
+                taskComplete: 'SYSTEM RESET.<br>LEAVE THE CLUB!',
+                inventory: 'HOLDING: {current} / {max}',
+                inventoryFull: 'INVENTORY FULL! TAKE TO BIN.',
+                startBtn: 'Start Shift',
+                startText: 'REAL TABLES LOADED.',
+                endWin: 'SHIFT COMPLETE.<br>YOU SURVIVED.',
+                endLose: 'YOU WERE CAUGHT.<br>SHIFT FAILED.',
             }
         };
 
         let currentLanguage = 'ru';
-        let currentPlatform = 'pc';
+        let currentPlatform = 'pc'; // 'pc' или 'mobile'
 
+        // Элементы интерфейса
+        const langLabels = document.querySelectorAll('.language-selector label');
         const langRadios = document.querySelectorAll('input[name="lang"]');
+        const platformLabels = document.querySelectorAll('.platform-selector label');
         const platformRadios = document.querySelectorAll('input[name="platform"]');
         const startBtn = document.getElementById('start-btn');
         const startText = document.getElementById('start-text');
@@ -171,36 +230,58 @@
         const uiTask = document.getElementById('ui-task');
         const uiTime = document.getElementById('ui-time');
         const uiInventory = document.getElementById('ui-inventory');
-        const uiBattery = document.getElementById('ui-battery');
-        const uiStamina = document.getElementById('ui-stamina');
         const recElement = document.querySelector('.rec-text');
         const mobileControls = document.getElementById('mobile-controls');
 
         function updateUILanguage() {
             const t = translations[currentLanguage];
             startBtn.textContent = t.startBtn;
+            startText.textContent = t.startText;
         }
 
-        langRadios.forEach(radio => radio.addEventListener('change', (e) => {
-            document.querySelectorAll('.language-selector label').forEach(l => l.classList.remove('selected'));
-            e.target.parentElement.classList.add('selected'); currentLanguage = e.target.value; updateUILanguage();
-        }));
+        langRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                langLabels.forEach(l => l.classList.remove('selected'));
+                e.target.parentElement.classList.add('selected');
+                currentLanguage = e.target.value;
+                updateUILanguage();
+                console.log('Язык изменён на:', currentLanguage);
+            });
+        });
 
-        platformRadios.forEach(radio => radio.addEventListener('change', (e) => {
-            document.querySelectorAll('.platform-selector label').forEach(l => l.classList.remove('selected'));
-            e.target.parentElement.classList.add('selected'); currentPlatform = e.target.value;
-        }));
+        platformRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                platformLabels.forEach(l => l.classList.remove('selected'));
+                e.target.parentElement.classList.add('selected');
+                currentPlatform = e.target.value;
+                console.log('Платформа изменена на:', currentPlatform);
+            });
+        });
 
         updateUILanguage();
 
-        // ========== ЗВУКОВАЯ СИСТЕМА (ПРОЦЕДУРНАЯ) ==========
+        // ========== ЗВУКОВАЯ СИСТЕМА ==========
         let audioContext = null;
-        let footstepsBuffer, pickupBuffer, pcOffBuffer, blackoutBuffer, monsterSpawnBuffer, monsterFootstepBuffer, doorOpenBuffer, deathBuffer;
+        let footstepsBuffer = null;
+        let pickupBuffer = null;
+        let pcOffBuffer = null;
+        let blackoutBuffer = null;
+        let monsterSpawnBuffer = null;
+        let monsterFootstepBuffer = null;
+        let doorOpenBuffer = null;
+        let deathBuffer = null;
 
         function initAudio() {
             if (audioContext) return;
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioContext.state === 'suspended') audioContext.resume();
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            createSounds();
+            console.log('Аудио инициализировано');
+        }
+
+        function createSounds() {
             footstepsBuffer = createNoiseBuffer(0.2, 0.1, 200);
             pickupBuffer = createToneBuffer(0.15, 600, 'sine');
             pcOffBuffer = createToneBuffer(0.2, 100, 'sawtooth');
@@ -213,116 +294,198 @@
 
         function createNoiseBuffer(duration, volume, lowpassFreq) {
             if (!audioContext) return null;
-            const sampleRate = audioContext.sampleRate; const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
-            const data = buffer.getChannelData(0); let prev = 0;
-            const k = lowpassFreq > 0 ? Math.exp(-2 * Math.PI * lowpassFreq / sampleRate) : 0;
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+            const data = buffer.getChannelData(0);
             for (let i = 0; i < buffer.length; i++) {
                 data[i] = (Math.random() * 2 - 1) * volume;
-                if (k > 0) { data[i] = prev + (data[i] - prev) * (1 - k); prev = data[i]; }
+            }
+            if (lowpassFreq > 0) {
+                const k = Math.exp(-2 * Math.PI * lowpassFreq / sampleRate);
+                let prev = 0;
+                for (let i = 0; i < buffer.length; i++) {
+                    data[i] = prev + (data[i] - prev) * (1 - k);
+                    prev = data[i];
+                }
             }
             return buffer;
         }
 
         function createToneBuffer(duration, frequency, type = 'sine', volume = 0.3) {
             if (!audioContext) return null;
-            const sampleRate = audioContext.sampleRate; const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
             const data = buffer.getChannelData(0);
-            for (let i = 0; i < buffer.length; i++) data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * volume * (1 - i / buffer.length);
+            for (let i = 0; i < buffer.length; i++) {
+                data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * volume * (1 - i / buffer.length);
+            }
             return buffer;
         }
 
         function playSound(buffer, volume = 0.5, pitch = 1.0) {
             if (!audioContext || !buffer) return;
             if (audioContext.state === 'suspended') audioContext.resume();
-            const source = audioContext.createBufferSource(); source.buffer = buffer; source.playbackRate.value = pitch;
-            const gainNode = audioContext.createGain(); gainNode.gain.value = volume;
-            source.connect(gainNode).connect(audioContext.destination); source.start();
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.playbackRate.value = pitch;
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = volume;
+            source.connect(gainNode).connect(audioContext.destination);
+            source.start();
+        }
+
+        // Шаги игрока
+        let stepTimer = 0;
+        function playFootstep() {
+            if (gameEnded) return;
+            playSound(footstepsBuffer, 0.2, 0.8 + Math.random()*0.4);
         }
 
         // ========== ИГРОВАЯ ЛОГИКА ==========
         const scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x0a0a0a, 0.06); 
+
         const camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
-        // ВАЖНО: Включаем рендеринг теней
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
+        // Для мобильного управления мы не используем PointerLockControls, а обрабатываем касания вручную
         let controls;
-        if (currentPlatform === 'pc') controls = new THREE.PointerLockControls(camera, document.body);
-        else controls = { isLocked: true, lock: () => {}, unlock: () => {} };
+        if (currentPlatform === 'pc') {
+            controls = new THREE.PointerLockControls(camera, document.body);
+        } else {
+            // Заглушка
+            controls = { isLocked: true, lock: () => {}, unlock: () => {} };
+        }
 
-        let gameEnded = false; let gameWin = false;
-        let stamina = 100; let battery = 100; // Новые механики
+        let gameEnded = false;
+        let gameWin = false;
+
+        // Флаг, чтобы обработчики мобильных кнопок добавлялись только один раз
+        let mobileControlsInitialized = false;
 
         startBtn.addEventListener('click', () => {
+            console.log('Старт нажата, платформа:', currentPlatform);
             initAudio();
-            if (currentPlatform === 'pc') { if (!gameEnded) controls.lock(); } 
-            else startMobileGame();
+            if (currentPlatform === 'pc') {
+                if (!gameEnded) controls.lock();
+            } else {
+                startMobileGame();
+            }
         });
 
         function startMobileGame() {
-            blocker.style.display = 'none'; bodycamUI.style.display = 'block'; mobileControls.style.display = 'flex';
-            camera.position.set(-4.5, 1.7, 2); setupMobileControls(); updateUI();
+            console.log('Запуск мобильной игры');
+            blocker.style.display = 'none';
+            bodycamUI.style.display = 'block';
+            mobileControls.style.display = 'flex';
+            // Устанавливаем камеру в нужную позицию
+            camera.position.set(-4.5, 1.7, 2);
+            // Захватываем касания для поворота камеры
+            setupMobileControls();
+            updateUI();
         }
 
         if (currentPlatform === 'pc') {
-            controls.addEventListener('lock', () => { blocker.style.display = 'none'; bodycamUI.style.display = 'block'; updateUI(); });
-            controls.addEventListener('unlock', () => { if (!gameEnded) { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; } });
+            controls.addEventListener('lock', () => { 
+                console.log('Блокировка мыши');
+                blocker.style.display = 'none'; 
+                bodycamUI.style.display = 'block'; 
+                updateUI(); 
+            });
+
+            controls.addEventListener('unlock', () => { 
+                if (!gameEnded) { 
+                    blocker.style.display = 'flex'; 
+                    bodycamUI.style.display = 'none'; 
+                } 
+            });
         }
 
-        const velocity = new THREE.Vector3(); const direction = new THREE.Vector3();
-        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false, isSprinting = false;
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
 
         document.addEventListener('keydown', (e) => {
             if (currentPlatform !== 'pc') return;
             if(e.code === 'KeyW') moveForward = true; if(e.code === 'KeyA') moveLeft = true;
             if(e.code === 'KeyS') moveBackward = true; if(e.code === 'KeyD') moveRight = true;
-            if(e.code === 'ShiftLeft') isSprinting = true;
         });
         document.addEventListener('keyup', (e) => {
             if (currentPlatform !== 'pc') return;
             if(e.code === 'KeyW') moveForward = false; if(e.code === 'KeyA') moveLeft = false;
             if(e.code === 'KeyS') moveBackward = false; if(e.code === 'KeyD') moveRight = false;
-            if(e.code === 'ShiftLeft') isSprinting = false;
         });
 
-        // Мобильное управление
-        let mobileControlsInitialized = false;
+        // Мобильное управление кнопками
+        const moveFwd = document.getElementById('move-fwd');
+        const moveLeftBtn = document.getElementById('move-left');
+        const moveBack = document.getElementById('move-back');
+        const moveRightBtn = document.getElementById('move-right');
+        const actionBtn = document.getElementById('action-btn');
+
         function setupMobileControls() {
-            if (mobileControlsInitialized) return; mobileControlsInitialized = true;
-            const btnF = document.getElementById('move-fwd'), btnB = document.getElementById('move-back');
-            const btnL = document.getElementById('move-left'), btnR = document.getElementById('move-right');
-            const actBtn = document.getElementById('action-btn'), sprBtn = document.getElementById('sprint-btn');
+            if (mobileControlsInitialized) return;
+            mobileControlsInitialized = true;
+
+            moveFwd.addEventListener('touchstart', (e) => { e.preventDefault(); moveForward = true; });
+            moveFwd.addEventListener('touchend', (e) => { e.preventDefault(); moveForward = false; });
+            moveBack.addEventListener('touchstart', (e) => { e.preventDefault(); moveBackward = true; });
+            moveBack.addEventListener('touchend', (e) => { e.preventDefault(); moveBackward = false; });
+            moveLeftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft = true; });
+            moveLeftBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveLeft = false; });
+            moveRightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveRight = true; });
+            moveRightBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveRight = false; });
             
-            btnF.addEventListener('touchstart', (e) => { e.preventDefault(); moveForward = true; }); btnF.addEventListener('touchend', (e) => { e.preventDefault(); moveForward = false; });
-            btnB.addEventListener('touchstart', (e) => { e.preventDefault(); moveBackward = true; }); btnB.addEventListener('touchend', (e) => { e.preventDefault(); moveBackward = false; });
-            btnL.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft = true; }); btnL.addEventListener('touchend', (e) => { e.preventDefault(); moveLeft = false; });
-            btnR.addEventListener('touchstart', (e) => { e.preventDefault(); moveRight = true; }); btnR.addEventListener('touchend', (e) => { e.preventDefault(); moveRight = false; });
-            sprBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isSprinting = true; sprBtn.style.background = '#00aaff'; sprBtn.style.color = '#000'; });
-            sprBtn.addEventListener('touchend', (e) => { e.preventDefault(); isSprinting = false; sprBtn.style.background = 'rgba(50,50,50,0.8)'; sprBtn.style.color = '#00aaff';});
-            actBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (!gameEnded) handleInteraction(); });
+            actionBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (!gameEnded) {
+                    handleInteraction();
+                }
+            });
+            console.log('Мобильные кнопки инициализированы');
         }
 
-        let lastTouchX = 0, lastTouchY = 0, pitch = 0, yaw = 0; const PI_2 = Math.PI / 2;
-        document.addEventListener('touchstart', (e) => { if (currentPlatform === 'mobile' && !gameEnded && blocker.style.display === 'none') { lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY; } });
-        document.addEventListener('touchmove', (e) => {
-            if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return; e.preventDefault();
-            const touch = e.touches[0]; yaw -= (touch.clientX - lastTouchX) * 0.005; pitch -= (touch.clientY - lastTouchY) * 0.005;
-            pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
-            camera.rotation.y = yaw; camera.rotation.x = pitch;
-            lastTouchX = touch.clientX; lastTouchY = touch.clientY;
+        // Поворот камеры на мобильных через перетаскивание
+        let lastTouchX = 0, lastTouchY = 0;
+        let pitch = 0, yaw = 0;
+        const PI_2 = Math.PI / 2;
+
+        document.addEventListener('touchstart', (e) => {
+            if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return;
+            const touch = e.touches[0];
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
         });
 
-        // ========== ГЕОМЕТРИЯ С ТЕНЯМИ ==========
+        document.addEventListener('touchmove', (e) => {
+            if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - lastTouchX;
+            const deltaY = touch.clientY - lastTouchY;
+
+            yaw -= deltaX * 0.005;
+            pitch -= deltaY * 0.005;
+            pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
+
+            camera.rotation.y = yaw;
+            camera.rotation.x = pitch;
+
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+        });
+
+        // ========== ГЕОМЕТРИЯ КОМНАТЫ ==========
         function createTileTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#080808'; ctx.fillRect(0,0,256,256); ctx.strokeStyle = '#151515'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
-            const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(18, 12); return tex;
+            ctx.fillStyle = '#080808'; ctx.fillRect(0,0,256,256);
+            ctx.strokeStyle = '#151515'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
+            const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(18, 12); return tex;
         }
+
         function createWallTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 256; const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#111111'; ctx.fillRect(0,0,128,256); ctx.fillStyle = '#151515'; ctx.fillRect(0,0,64,256); 
@@ -334,292 +497,642 @@
         const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7 }); const wallMatLong = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 1 });
         const wallMatShort = new THREE.MeshStandardMaterial({ map: wallTexShort, roughness: 1 }); const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1 });
 
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), floorMat); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), floorMat); floor.rotation.x = -Math.PI / 2; scene.add(floor);
         const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), ceilingMat); ceiling.rotation.x = Math.PI / 2; ceiling.position.y = roomH; scene.add(ceiling);
 
         function createWall(w, h, x, y, z, rotY, mat) {
-            const wall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); wall.position.set(x, y, z); wall.rotation.y = rotY; wall.receiveShadow = true; scene.add(wall);
+            const wall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); wall.position.set(x, y, z); wall.rotation.y = rotY; scene.add(wall);
         }
         createWall(roomW, roomH, 0, roomH/2, -roomD/2, 0, wallMatLong); createWall(roomW, roomH, 0, roomH/2, roomD/2, Math.PI, wallMatLong); 
         createWall(roomD, roomH, -roomW/2, roomH/2, 0, Math.PI/2, wallMatShort); createWall(roomD, roomH, roomW/2, roomH/2, 0, -Math.PI/2, wallMatShort); 
 
-        const centerWall = new THREE.Mesh(new THREE.BoxGeometry(11, roomH, 0.5), new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 1 })); 
-        centerWall.position.set(2, roomH/2, 0); centerWall.castShadow = true; centerWall.receiveShadow = true; scene.add(centerWall);
+        const columnMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
+        function addColumn(x, z) { const col = new THREE.Mesh(new THREE.BoxGeometry(0.6, roomH, 0.6), columnMat); col.position.set(x, roomH/2, z); scene.add(col); }
+        addColumn(-8.8, -5.8); addColumn(8.8, -5.8); addColumn(-8.8, 5.8); addColumn(8.8, 5.8); addColumn(0, -5.8); addColumn(0, 5.8); 
+
+        const centerWallMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 1 });
+        const centerWall = new THREE.Mesh(new THREE.BoxGeometry(11, roomH, 0.5), centerWallMat); centerWall.position.set(2, roomH/2, 0); scene.add(centerWall);
 
         const mainAmbient = new THREE.AmbientLight(0xffffff, 0.8); scene.add(mainAmbient);
         const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5); scene.add(hemiLight);
 
+        const ledTopMat = new THREE.MeshBasicMaterial({ color: 0x5555ff }); const ledBotMat = new THREE.MeshBasicMaterial({ color: 0x00ffff }); 
+        function createLedStrip(w, d, x, y, z, material) { const strip = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), material); strip.position.set(x, y, z); scene.add(strip); }
+        createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, -roomD/2 + 0.025, ledTopMat); createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, roomD/2 - 0.025, ledTopMat);  
+        createLedStrip(0.05, roomD - 0.2, -roomW/2 + 0.025, roomH - 0.025, 0, ledTopMat); createLedStrip(0.05, roomD - 0.2, roomW/2 - 0.025, roomH - 0.025, 0, ledTopMat);  
+        createLedStrip(roomW - 0.2, 0.05, 0, 0.025, -roomD/2 + 0.025, ledBotMat); createLedStrip(roomW - 0.2, 0.05, 0, 0.025, roomD/2 - 0.025, ledBotMat);  
+        createLedStrip(0.05, roomD - 0.2, -roomW/2 + 0.025, 0.025, 0, ledBotMat); createLedStrip(0.05, roomD - 0.2, roomW/2 - 0.025, 0.025, 0, ledBotMat);
+
+        const ledStripGeo = new THREE.BoxGeometry(10.8, 0.1, 0.6); const rgbLedStripMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); 
+        const rgbLedStrip = new THREE.Mesh(ledStripGeo, rgbLedStripMat); rgbLedStrip.position.set(2, roomH - 0.2, 0); scene.add(rgbLedStrip);
+
         const pcScreenMatOn = new THREE.MeshBasicMaterial({ color: 0x1144aa }); const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 1 }); 
         const pcBodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 1 }); const deskMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.9 }); 
         const chairMatBlack = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8 }); const chairMatRed = new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.7 }); 
+        const canMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.7, roughness: 0.3 });
         const legMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
 
         function buildChairMesh(chairGroup) {
-            const parts = [
-                new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 5), chairMatBlack),
-                new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.4, 8), pcBodyMat),
-                new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.1, 0.45), chairMatBlack),
-                new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.7, 0.1), chairMatBlack)
-            ];
-            parts[0].position.y = 0.025; parts[1].position.y = 0.25; parts[2].position.y = 0.5; parts[3].position.set(0, 0.9, -0.2); parts[3].rotation.x = -0.1;
-            parts.forEach(p => { p.castShadow = true; p.receiveShadow = true; chairGroup.add(p); });
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 5), chairMatBlack); base.position.y = 0.025; chairGroup.add(base);
+            const lift = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.4, 8), pcBodyMat); lift.position.y = 0.25; chairGroup.add(lift);
+            const seat = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.1, 0.45), chairMatBlack); seat.position.y = 0.5; chairGroup.add(seat);
+            const seatDecor = new THREE.Mesh(new THREE.BoxGeometry(0.47, 0.05, 0.1), chairMatRed); seatDecor.position.set(0, 0.5, 0.1); chairGroup.add(seatDecor);
+            const back = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.7, 0.1), chairMatBlack); back.position.set(0, 0.9, -0.2); back.rotation.x = -0.1; chairGroup.add(back);
+            const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.15, 0.12), chairMatRed); headrest.position.set(0, 1.25, -0.23); headrest.rotation.x = -0.1; chairGroup.add(headrest);
+            const armL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.25, 0.3), pcBodyMat); armL.position.set(-0.25, 0.65, 0.0); chairGroup.add(armL);
+            const armR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.25, 0.3), pcBodyMat); armR.position.set(0.25, 0.65, 0.0); chairGroup.add(armR);
         }
 
         let interactables = []; let monitorsTurnedOff = 0; let trashCollected = 0; let currentInventory = 0; const MAX_INVENTORY = 3; let totalTrash = 0; 
-        let monsterSpawned = [false, false, false]; let isBlackout = false; let hasFlashlight = false;
+        let monsterSpawned = [false, false, false]; // флаги для трёх монстров
+        let isBlackout = false; let hasFlashlight = false;
 
-        // Админский стол
-        const adminPCGeo = new THREE.BoxGeometry(0.6, 0.4, 0.05); const adminPC = new THREE.Mesh(adminPCGeo, new THREE.MeshBasicMaterial({ color: 0x00ff00 })); 
-        adminPC.position.set(-6, 1.2, -2); adminPC.rotation.y = Math.PI/2; scene.add(adminPC);
+        // Стол админа
+        const adminMat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8});
         
+        const adminDeskLong = new THREE.Group();
+        adminDeskLong.position.set(-6, 0, -2);
+        const aTop1 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 4), adminMat); aTop1.position.y = 0.75; adminDeskLong.add(aTop1);
+        const aLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 3.8), legMat); aLeg1.position.set(-0.65, 0.75/2, 0); adminDeskLong.add(aLeg1);
+        scene.add(adminDeskLong);
+
+        const adminDeskShort = new THREE.Group();
+        adminDeskShort.position.set(-7.5, 0, -0.75);
+        const aTop2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, 1.5), adminMat); aTop2.position.y = 0.75; adminDeskShort.add(aTop2);
+        const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); adminDeskShort.add(aLeg2);
+        scene.add(adminDeskShort);
+        
+        const adminPCGeo = new THREE.BoxGeometry(0.6, 0.4, 0.05);
+        const adminPC = new THREE.Mesh(adminPCGeo, new THREE.MeshBasicMaterial({ color: 0x00ff00 })); adminPC.position.set(-6, 1.2, -2); adminPC.rotation.y = Math.PI/2; scene.add(adminPC);
+        const adminPCBack = new THREE.Mesh(adminPCGeo, new THREE.MeshStandardMaterial({ color: 0x111111 })); adminPCBack.position.set(-5.97, 1.2, -2); adminPCBack.rotation.y = Math.PI/2; scene.add(adminPCBack);
+        const adminChair = new THREE.Group(); adminChair.position.set(-6.8, 0, -2); adminChair.rotation.y = Math.PI/2; buildChairMesh(adminChair); scene.add(adminChair);
+
         const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111}));
-        flBody.rotation.set(Math.PI/2, Math.PI/4, 0); flBody.position.set(-6.2, 1.05, -2.5); flBody.userData = { isFlashlightItem: true }; flBody.visible = false; scene.add(flBody);
-        
-        const trashBin = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 })); 
-        trashBin.position.set(-8.0, 0.4, -4.8); trashBin.userData = { isTrashBin: true }; trashBin.castShadow = true; interactables.push(trashBin); scene.add(trashBin);
-        
+        flBody.rotation.x = Math.PI / 2; flBody.position.set(-6.2, 1.05, -2.5); flBody.rotation.y = Math.PI / 4;
+        flBody.userData = { isFlashlightItem: true }; flBody.visible = false; scene.add(flBody);
+        const flLens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16), new THREE.MeshBasicMaterial({color: 0xffffff}));
+        flLens.rotation.x = Math.PI / 2; flLens.position.set(-6.1, 1.05, -2.6); flLens.rotation.y = Math.PI / 4;
+        flLens.userData = { isFlashlightItem: true }; flLens.visible = false; scene.add(flLens);
+
+        const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
+        const trashBin = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); trashBin.position.set(-8.0, 0.4, -4.8); trashBin.userData = { isTrashBin: true }; interactables.push(trashBin); scene.add(trashBin);
         const doorMat = new THREE.MeshBasicMaterial({color: 0x440000}); 
         const exitDoor = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 2), doorMat); exitDoor.position.set(-roomW/2 + 0.05, 1.25, 3.5); exitDoor.userData = { isDoor: true, isOpenable: false }; interactables.push(exitDoor); scene.add(exitDoor);
 
-        // ВАЖНО: Настройка теней фонарика
-        const playerFlashlight = new THREE.SpotLight(0xffffff, 1.8, 25, Math.PI/6, 0.6, 1);
+        const playerFlashlight = new THREE.SpotLight(0xffffff, 1.6, 25, Math.PI/6.5, 0.6, 1);
         playerFlashlight.position.set(0.2, -0.2, 0); playerFlashlight.target.position.set(0, 0, -1); 
-        playerFlashlight.castShadow = true;
-        playerFlashlight.shadow.mapSize.width = 1024;
-        playerFlashlight.shadow.mapSize.height = 1024;
-        playerFlashlight.shadow.camera.near = 0.5;
-        playerFlashlight.shadow.camera.far = 25;
-        playerFlashlight.shadow.bias = -0.001;
 
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
-            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.01), pcScreenMatOn); screen.position.set(0, 0.2, 0); screen.userData = { isOn: true, isPC: true }; interactables.push(screen); group.add(screen);
-            const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.05), pcBodyMat); bezel.position.set(0, 0.2, -0.03); bezel.castShadow=true; group.add(bezel);
-            const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.06, 0.2, 8), pcBodyMat); stand.position.set(0, 0.0, -0.03); stand.castShadow=true; group.add(stand);
+            const monitorGroup = new THREE.Group();
+            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.01), pcScreenMatOn); screen.position.set(0, 0.2, 0); screen.userData = { isOn: true, isPC: true }; interactables.push(screen); monitorGroup.add(screen);
+            const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.05), pcBodyMat); bezel.position.set(0, 0.2, -0.03); monitorGroup.add(bezel);
+            const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.06, 0.2, 8), pcBodyMat); stand.position.set(0, 0.0, -0.03); monitorGroup.add(stand); group.add(monitorGroup);
+            const kbd = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.02, 0.18), pcBodyMat); kbd.position.set(0, 0.01, 0.2); group.add(kbd);
+            const mouse = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.03, 0.1), pcBodyMat); mouse.position.set(0.3, 0.015, 0.2); group.add(mouse);
             
             const chairGroup = new THREE.Group(); chairGroup.position.set(0, -0.75, 0.4); chairGroup.rotation.y = Math.PI; buildChairMesh(chairGroup); group.add(chairGroup);
             
             if (Math.random() < 0.6) {
-                const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.7 }));
-                can.position.set(Math.random() > 0.5 ? 0.35 : -0.35, 0.075, Math.random() * 0.2); can.userData = { isTrash: true }; can.castShadow=true; interactables.push(can); group.add(can); totalTrash++; 
+                const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), canMat);
+                const sideX = Math.random() > 0.5 ? 0.35 : -0.35; const offsetZ = Math.random() * 0.2; 
+                can.position.set(sideX, 0.075, offsetZ); can.userData = { isTrash: true }; interactables.push(can); group.add(can); totalTrash++; 
             }
             scene.add(group);
         }
 
         function createLongTable(startX, zPos) {
-            const tableGroup = new THREE.Group(); tableGroup.position.set(startX + 3.5, 0, zPos);
-            const top = new THREE.Mesh(new THREE.BoxGeometry(8, 0.05, 1.4), deskMat); top.position.y = 0.75; top.castShadow = true; top.receiveShadow = true; tableGroup.add(top);
-            for(let lx of [-3.9, 0, 3.9]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 1.3), legMat); leg.position.set(lx, 0.75/2, 0); leg.castShadow=true; tableGroup.add(leg); }
+            const tableGroup = new THREE.Group();
+            tableGroup.position.set(startX + 3.5, 0, zPos);
+            
+            const top = new THREE.Mesh(new THREE.BoxGeometry(8, 0.05, 1.4), deskMat);
+            top.position.y = 0.75;
+            tableGroup.add(top);
+            
+            for(let lx of [-3.9, 0, 3.9]) {
+                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 1.3), legMat);
+                leg.position.set(lx, 0.75/2, 0);
+                tableGroup.add(leg);
+            }
+            
             scene.add(tableGroup);
-            for (let i = 0; i < 5; i++) { createPCAndChair(startX + i * 1.7, zPos - 0.3, Math.PI); createPCAndChair(startX + i * 1.7, zPos + 0.3, 0); }
+
+            for (let i = 0; i < 5; i++) { 
+                const posX = startX + i * 1.7; 
+                createPCAndChair(posX, zPos - 0.3, Math.PI); 
+                createPCAndChair(posX, zPos + 0.3, 0); 
+            }
         }
         createLongTable(-1.5, -3.5); createLongTable(-1.5, 3.5);
 
-        // Загрузка Монстров (с тенями)
-        const monsters = [ { group: new THREE.Group(), active: false }, { group: new THREE.Group(), active: false }, { group: new THREE.Group(), active: false } ];
-        function createFallbackMonster(index, color) {
-            const group = new THREE.Group(); const mat = new THREE.MeshStandardMaterial({ color: color, emissive: 0x220000 });
-            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), mat); torso.position.y = 0.9; torso.castShadow = true; group.add(torso);
-            const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), mat); head.position.y = 2.0; head.castShadow = true; group.add(head);
-            group.visible = false; scene.add(group); monsters[index] = { group: group, active: false, speed: 1.8 + index*0.2, spawned: false, lookAwayTimer: 0 };
-        }
-        createFallbackMonster(0, 0xff0000); createFallbackMonster(1, 0x00ff00); createFallbackMonster(2, 0x0000ff);
+        // ========== ЗАГРУЗКА ТРЁХ МОДЕЛЕЙ ПРИЗРАКОВ ==========
+        const monsters = [
+            { path: 'model1.glb', color: 0xff0000, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 },
+            { path: 'model2.glb', color: 0x00ff00, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 },
+            { path: 'model3.glb', color: 0x0000ff, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 }
+        ];
 
-        let noiseOpacity = 0; // Для визуального шума
-        
+        const loader = new THREE.GLTFLoader();
+
+        function loadMonster(index, fallbackColor) {
+            loader.load(
+                monsters[index].path,
+                function (gltf) {
+                    const group = gltf.scene;
+                    group.scale.set(1.2, 1.2, 1.2);
+                    group.rotation.y = Math.PI;
+                    group.traverse(node => {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                        }
+                    });
+                    group.visible = false;
+                    scene.add(group);
+                    monsters[index].group = group;
+                    
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        monsters[index].mixer = new THREE.AnimationMixer(group);
+                        monsters[index].mixer.clipAction(gltf.animations[0]).play();
+                        console.log(`Монстр ${index+1} загружен с анимациями`);
+                    } else {
+                        monsters[index].useCustomAnimation = true;
+                        console.log(`Монстр ${index+1} загружен без анимаций, будет использована программная анимация`);
+                    }
+                },
+                undefined,
+                function (error) {
+                    console.error(`Ошибка загрузки модели монстра ${index+1}. Используется запасная модель.`, error);
+                    createFallbackMonster(index, fallbackColor);
+                }
+            );
+        }
+
+        function createFallbackMonster(index, color) {
+            const group = new THREE.Group();
+            const skinMat = new THREE.MeshStandardMaterial({ color: color, emissive: 0x220000 });
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x550000 });
+            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat);
+            torso.position.y = 0.9; group.add(torso);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), skinMat);
+            head.position.y = 2.0; group.add(head);
+            const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
+            eyeL.position.set(-0.1, 2.0, 0.18); group.add(eyeL);
+            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
+            eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
+            group.visible = false;
+            scene.add(group);
+            monsters[index].group = group;
+            monsters[index].useCustomAnimation = true;
+            console.log(`Запасная модель для монстра ${index+1} создана`);
+        }
+
+        // Загружаем всех трёх монстров (с разными цветами для запасных)
+        loadMonster(0, 0xff0000);
+        loadMonster(1, 0x00ff00);
+        loadMonster(2, 0x0000ff);
+
+        // Таймер бездействия
+        let idleTimer = 0;
+        const IDLE_TIME = 10; // секунд
+
+        // ========== ЭФФЕКТ ПОМЕХ ==========
+        const noiseCanvas = document.createElement('canvas');
+        noiseCanvas.id = 'noise-canvas';
+        Object.assign(noiseCanvas.style, {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: 7,
+            opacity: 0,
+            mixBlendMode: 'screen'
+        });
+        document.body.appendChild(noiseCanvas);
+        const noiseCtx = noiseCanvas.getContext('2d');
+        let noiseOpacity = 0;
+
+        function updateNoise() {
+            if (!noiseCanvas || noiseOpacity <= 0) {
+                noiseCanvas.style.opacity = '0';
+                return;
+            }
+            const w = noiseCanvas.width = window.innerWidth;
+            const h = noiseCanvas.height = window.innerHeight;
+            const imageData = noiseCtx.createImageData(w, h);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const val = Math.random() * 255;
+                data[i] = val;
+                data[i+1] = val;
+                data[i+2] = val;
+                data[i+3] = 200;
+            }
+            noiseCtx.putImageData(imageData, 0, 0);
+            noiseCanvas.style.opacity = noiseOpacity;
+            requestAnimationFrame(updateNoise);
+        }
+        updateNoise();
+
+        // ========== ЛОГИКА ПОЯВЛЕНИЯ МОНСТРОВ ==========
         function spawnMonster(index) {
-            if (monsters[index].spawned) return; monsters[index].spawned = true; monsters[index].active = true;
-            const lookDir = new THREE.Vector3(); camera.getWorldDirection(lookDir); lookDir.y = 0; lookDir.normalize();
-            let spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, camera.position.x - (lookDir.x * 5)));
-            let spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, camera.position.z - (lookDir.z * 5)));
-            monsters[index].group.position.set(spawnX, 0, spawnZ); monsters[index].group.visible = true;
+            if (monsters[index].spawned) return;
+            monsters[index].spawned = true;
+            monsters[index].active = true;
+            const lookDir = new THREE.Vector3();
+            camera.getWorldDirection(lookDir);
+            lookDir.y = 0;
+            lookDir.normalize();
+            let spawnX = camera.position.x - (lookDir.x * 5);
+            let spawnZ = camera.position.z - (lookDir.z * 5);
+            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
+            spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
+            monsters[index].group.position.set(spawnX, 0, spawnZ);
+            monsters[index].group.visible = true;
             playSound(monsterSpawnBuffer, 0.4);
+            console.log(`Монстр ${index+1} появился`);
+        }
+
+        function checkMonsterCollision() {
+            for (let i = 0; i < monsters.length; i++) {
+                if (monsters[i].active && monsters[i].group.visible) {
+                    const dist = camera.position.distanceTo(monsters[i].group.position);
+                    if (dist < 1.5) return true;
+                }
+            }
+            return false;
         }
 
         function gameOver() {
-            gameEnded = true; gameWin = false;
-            if (currentPlatform === 'pc') controls.unlock(); else { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
-            blocker.style.backgroundColor = "rgba(0,0,0,1)"; startText.innerHTML = translations[currentLanguage].endLose; startText.style.color = "#ff0000"; startText.style.fontSize = "24px"; blocker.style.display = 'flex';
+            gameEnded = true;
+            gameWin = false;
+            if (currentPlatform === 'pc') {
+                controls.unlock();
+            } else {
+                blocker.style.display = 'flex';
+                bodycamUI.style.display = 'none';
+                mobileControls.style.display = 'none';
+            }
+            const t = translations[currentLanguage];
+            blocker.style.backgroundColor = "rgba(0,0,0,1)";
+            startText.innerHTML = t.endLose;
+            startText.style.color = "#ff0000";
+            startText.style.fontSize = "24px";
+            blocker.style.display = 'flex';
             playSound(deathBuffer, 0.6);
         }
 
+        // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
         function triggerBlackout() {
-            if (isBlackout) return; isBlackout = true;
+            if (isBlackout) return; 
+            isBlackout = true;
             scene.remove(mainAmbient); hemiLight.intensity = 0.05; 
-            flBody.visible = true; interactables.push(flBody); 
+            ledTopMat.color.setHex(0x000022); ledBotMat.color.setHex(0x000022); rgbLedStripMat.color.setHex(0x220000); 
+            
+            flBody.visible = true; flLens.visible = true; 
+            interactables.push(flBody, flLens); 
+
             if (blackoutBuffer) {
-                const src = audioContext.createBufferSource(); src.buffer = blackoutBuffer; src.loop = true;
-                const gain = audioContext.createGain(); gain.gain.value = 0.3; src.connect(gain).connect(audioContext.destination); src.start(); window.blackoutLoop = src;
+                const source = audioContext.createBufferSource();
+                source.buffer = blackoutBuffer;
+                source.loop = true;
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 0.3;
+                source.connect(gainNode).connect(audioContext.destination);
+                source.start();
+                window.blackoutLoop = source;
             }
+
             updateUI();
         }
 
         function pickupFlashlight() {
-            hasFlashlight = true; flBody.visible = false; interactables = interactables.filter(i => i !== flBody);
-            camera.add(playerFlashlight); camera.add(playerFlashlight.target); uiBattery.style.display = "block";
-            if (window.blackoutLoop) { window.blackoutLoop.stop(); window.blackoutLoop = null; }
+            hasFlashlight = true;
+            flBody.visible = false; flLens.visible = false; 
+            interactables = interactables.filter(item => item !== flBody && item !== flLens);
+            
+            camera.add(playerFlashlight); camera.add(playerFlashlight.target);
+
+            uiInventory.style.display = "block"; 
+
+            if (window.blackoutLoop) {
+                window.blackoutLoop.stop();
+                window.blackoutLoop = null;
+            }
+
             updateUI();
         }
 
         function updateUI() {
-            const t = translations[currentLanguage]; recElement.textContent = t.rec;
-            const allDone = monitorsTurnedOff >= 20 && trashCollected >= totalTrash;
+            const t = translations[currentLanguage];
+            
+            recElement.textContent = t.rec;
+
+            const allTasksDone = monitorsTurnedOff >= 20 && trashCollected >= totalTrash;
 
             if (!isBlackout) {
-                uiTime.innerHTML = t.timeOnline; uiTime.style.color = "white";
-                let pcTxt = monitorsTurnedOff >= 20 ? t.taskPCDone : t.taskPC.replace('{current}', monitorsTurnedOff);
-                let trashTxt = trashCollected >= totalTrash ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
-                uiTask.innerHTML = `${t.tasks}<br>${pcTxt}<br>${trashTxt}`; uiTask.style.color = "#00ffaa";
+                uiTime.innerHTML = t.timeOnline;
+                uiTime.style.color = "white";
+                let pcText = monitorsTurnedOff >= 20 
+                    ? t.taskPCDone 
+                    : t.taskPC.replace('{current}', monitorsTurnedOff);
+                let trashText = trashCollected >= totalTrash 
+                    ? t.taskTrashDone.replace('{total}', totalTrash)
+                    : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
+                uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`;
+                uiTask.style.color = "#00ffaa";
             } else {
                 if (!hasFlashlight) {
-                    uiTime.innerHTML = t.timePowerFail; uiTime.style.color = "#ff0000"; uiTask.innerHTML = t.taskBlackout; uiTask.style.color = "#ff0000";
+                    uiTime.innerHTML = t.timePowerFail;
+                    uiTime.style.color = "#ff0000";
+                    uiTask.innerHTML = t.taskBlackout;
+                    uiTask.style.color = "#ff0000";
                 } else {
-                    uiTime.innerHTML = t.timeBackup; uiTime.style.color = "#ffaa00";
-                    if (allDone) {
-                        uiTask.innerHTML = t.taskComplete; uiTask.style.color = "#00ff00";
-                        if (!exitDoor.userData.isOpenable) { doorMat.color.setHex(0x00ff00); exitDoor.userData.isOpenable = true; }
+                    uiTime.innerHTML = t.timeBackup;
+                    uiTime.style.color = "#ffaa00";
+                    
+                    if (allTasksDone) {
+                        uiTask.innerHTML = t.taskComplete;
+                        uiTask.style.color = "#00ff00";
+                        if (!exitDoor.userData.isOpenable) {
+                            doorMat.color.setHex(0x00ff00);
+                            exitDoor.userData.isOpenable = true;
+                        }
                     } else {
-                        let pcTxt = monitorsTurnedOff >= 20 ? t.taskPCDone : t.taskPC.replace('{current}', monitorsTurnedOff);
-                        let trashTxt = trashCollected >= totalTrash ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
-                        uiTask.innerHTML = `${t.tasks}<br>${pcTxt}<br>${trashTxt}`; uiTask.style.color = "#00ffaa";
+                        let pcText = monitorsTurnedOff >= 20 
+                            ? t.taskPCDone 
+                            : t.taskPC.replace('{current}', monitorsTurnedOff);
+                        let trashText = trashCollected >= totalTrash 
+                            ? t.taskTrashDone.replace('{total}', totalTrash)
+                            : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
+                        uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`;
+                        uiTask.style.color = "#00ffaa";
                     }
                 }
             }
-            if (hasFlashlight) { uiInventory.style.display="block"; uiInventory.innerHTML = t.inventory.replace('{current}', currentInventory).replace('{max}', MAX_INVENTORY); } 
-            else uiInventory.style.display = "none";
-            
-            uiStamina.innerText = `🏃 ${Math.floor(stamina)}%`;
-            uiBattery.innerText = `🔋 ${Math.floor(battery)}%`;
+
+            if (hasFlashlight) {
+                uiInventory.innerHTML = t.inventory.replace('{current}', currentInventory).replace('{max}', MAX_INVENTORY);
+                uiInventory.style.color = "#ffaa00";
+            } else {
+                uiInventory.style.display = "none";
+            }
         }
 
         const raycaster = new THREE.Raycaster();
-        document.addEventListener('mousedown', (e) => { if (currentPlatform === 'pc' && controls.isLocked && !gameEnded) handleInteraction(); });
+        document.addEventListener('mousedown', (e) => {
+            if (currentPlatform !== 'pc') return;
+            if (!controls.isLocked || gameEnded) return;
+            handleInteraction();
+        });
 
         function handleInteraction() {
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const intersects = raycaster.intersectObjects(interactables);
+            
             if (intersects.length > 0) {
                 const obj = intersects[0].object;
+                
                 if (!isBlackout && (obj.userData.isPC || obj.userData.isTrash)) triggerBlackout();
-                if (obj.userData.isFlashlightItem) { pickupFlashlight(); playSound(pickupBuffer, 0.3); }
+
+                if (obj.userData.isFlashlightItem) {
+                    pickupFlashlight();
+                    playSound(pickupBuffer, 0.3);
+                }
+                
                 if (obj.userData.isPC && obj.userData.isOn) {
-                    obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2);
-                    if (monitorsTurnedOff >= 7 && !monsters[1].spawned) spawnMonster(1); updateUI();
+                    obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++;
+                    playSound(pcOffBuffer, 0.2);
+                    // Проверка условия для монстра 2 (7 ПК)
+                    if (monitorsTurnedOff >= 7 && !monsters[1].spawned) {
+                        spawnMonster(1);
+                    }
+                    updateUI();
                 }
+
                 if (obj.userData.isTrash) {
-                    if (currentInventory < MAX_INVENTORY) { obj.parent.remove(obj); interactables = interactables.filter(item => item !== obj); currentInventory++; playSound(pickupBuffer, 0.2); updateUI(); }
+                    if (currentInventory < MAX_INVENTORY) {
+                        obj.parent.remove(obj); interactables = interactables.filter(item => item !== obj); currentInventory++; 
+                        playSound(pickupBuffer, 0.2);
+                        updateUI();
+                    } else if (hasFlashlight) {
+                        const t = translations[currentLanguage];
+                        uiInventory.innerHTML = t.inventoryFull; uiInventory.style.color = "#ff3333"; setTimeout(updateUI, 2000);
+                    }
                 }
-                if (obj.userData.isTrashBin && currentInventory > 0) {
-                    trashCollected += currentInventory; currentInventory = 0;
-                    if (trashCollected >= 4 && !monsters[0].spawned) spawnMonster(0); updateUI();
+
+                if (obj.userData.isTrashBin) {
+                    if (currentInventory > 0) { 
+                        trashCollected += currentInventory; 
+                        currentInventory = 0; 
+                        // Проверка условия для монстра 1 (4 бутылки)
+                        if (trashCollected >= 4 && !monsters[0].spawned) {
+                            spawnMonster(0);
+                        }
+                        updateUI(); 
+                    }
                 }
+
                 if (obj.userData.isDoor && obj.userData.isOpenable) {
-                    gameEnded = true; gameWin = true;
-                    if (currentPlatform === 'pc') controls.unlock(); else { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
-                    blocker.style.backgroundColor = "rgba(0,0,0,1)"; startText.innerHTML = translations[currentLanguage].endWin; startText.style.color = "#00ff00"; startText.style.fontSize = "24px"; blocker.style.display = 'flex'; playSound(doorOpenBuffer, 0.4);
+                    gameEnded = true;
+                    gameWin = true;
+                    if (currentPlatform === 'pc') {
+                        controls.unlock();
+                    } else {
+                        blocker.style.display = 'flex';
+                        bodycamUI.style.display = 'none';
+                        mobileControls.style.display = 'none';
+                    }
+                    const t = translations[currentLanguage];
+                    blocker.style.backgroundColor = "rgba(0,0,0,1)";
+                    startText.innerHTML = t.endWin;
+                    startText.style.color = "#00ff00";
+                    startText.style.fontSize = "24px";
+                    blocker.style.display = 'flex';
+                    playSound(doorOpenBuffer, 0.4);
                 }
             }
         }
 
-        const obstacles = [ { minX: -3.5, maxX: 7.5, minZ: -0.25, maxZ: 0.25 }, { minX: -2.0, maxX: 6.0, minZ: -4.3, maxZ: -2.7 }, { minX: -2.0, maxX: 6.0, minZ: 2.7, maxZ: 4.3 }, { minX: -6.75, maxX: -5.25, minZ: -4.0, maxZ: 0.0 }, { minX: -9.0, maxX: -6.0, minZ: -1.5, maxZ: 0.0 } ];
+        scene.add(camera); camera.position.set(-4.5, 1.7, 2);
+        // Для мобильных установим начальные углы
+        yaw = camera.rotation.y;
+        pitch = camera.rotation.x;
+
+        const obstacles = [
+            { minX: -3.5, maxX: 7.5, minZ: -0.25, maxZ: 0.25 },
+            { minX: -2.0, maxX: 6.0, minZ: -4.3, maxZ: -2.7 },
+            { minX: -2.0, maxX: 6.0, minZ: 2.7, maxZ: 4.3 },
+            { minX: -6.75, maxX: -5.25, minZ: -4.0, maxZ: 0.0 },
+            { minX: -9.0, maxX: -6.0, minZ: -1.5, maxZ: 0.0 }
+        ];
+
         function checkCollision(x, z) {
-            const r = 0.3; const limitX = roomW/2 - r; const limitZ = roomD/2 - r; 
+            const r = 0.3; 
+            const limitX = roomW/2 - r; const limitZ = roomD/2 - r; 
             if (x < -limitX || x > limitX || z < -limitZ || z > limitZ) return true; 
-            for (let obs of obstacles) if (x > obs.minX - r && x < obs.maxX + r && z > obs.minZ - r && z < obs.maxZ + r) return true; 
+
+            for (let obs of obstacles) {
+                if (x > obs.minX - r && x < obs.maxX + r && z > obs.minZ - r && z < obs.maxZ + r) {
+                    return true; 
+                }
+            }
             return false;
         }
 
-        let prevTime = performance.now(); const clock = new THREE.Clock(); let stepAccum = 0; let idleTimer = 0;
+        let prevTime = performance.now(); const clock = new THREE.Clock(); 
+        let stepAccum = 0;
 
         function animate() {
             requestAnimationFrame(animate);
+
             if ((controls.isLocked || currentPlatform === 'mobile') && !gameEnded) {
                 const time = performance.now(); const delta = (time - prevTime) / 1000;
                 velocity.x -= velocity.x * 10.0 * delta; velocity.z -= velocity.z * 10.0 * delta;
                 direction.z = Number(moveForward) - Number(moveBackward); direction.x = Number(moveRight) - Number(moveLeft); direction.normalize();
 
-                // Механика выносливости (Спринт)
-                let isMoving = (moveForward || moveBackward || moveLeft || moveRight);
-                let speed = 13.0;
-                
-                if (isMoving && isSprinting && stamina > 0) {
-                    speed = 22.0; // Быстрее бежим
-                    stamina = Math.max(0, stamina - delta * 25); // Тратим выносливость
-                } else {
-                    stamina = Math.min(100, stamina + delta * 15); // Восстанавливаем
-                }
-
-                // Механика батареи фонарика
-                if (isBlackout && hasFlashlight) {
-                    battery = Math.max(0, battery - delta * 0.5); // Медленно разряжается
-                    if (battery <= 0) {
-                        playerFlashlight.intensity = 0; // Фонарик садится
-                    } else if (battery < 15) {
-                        playerFlashlight.intensity = (Math.random() > 0.5 ? 1.8 : 0.2); // Моргает перед смертью
-                    }
-                }
-
-                if (isMoving || hasFlashlight) updateUI(); // Обновляем UI счетчиков
-
+                const speed = 13.0; 
                 if (moveForward || moveBackward) velocity.z -= direction.z * speed * delta;
                 if (moveLeft || moveRight) velocity.x -= direction.x * speed * delta;
 
-                const oldX = camera.position.x; const oldZ = camera.position.z;
+                const oldX = camera.position.x;
+                const oldZ = camera.position.z;
 
-                if (currentPlatform === 'pc') { controls.moveRight(-velocity.x * delta); controls.moveForward(-velocity.z * delta); } 
-                else {
-                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-                    forward.y = 0; forward.normalize(); right.y = 0; right.normalize();
-                    // Фикс мобильной коллизии: Сначала высчитываем новую точку, потом двигаем
-                    const nextX = camera.position.x - (right.x * velocity.x * delta) - (forward.x * velocity.z * delta);
-                    const nextZ = camera.position.z - (right.z * velocity.x * delta) - (forward.z * velocity.z * delta);
-                    camera.position.x = nextX; camera.position.z = nextZ;
+                // Для мобильных двигаем камеру напрямую, для ПК через controls
+                if (currentPlatform === 'pc') {
+                    controls.moveRight(-velocity.x * delta); 
+                    controls.moveForward(-velocity.z * delta);
+                } else {
+                    // Движение в направлении взгляда
+                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+                    forward.y = 0; forward.normalize();
+                    right.y = 0; right.normalize();
+                    camera.position.addScaledVector(forward, -velocity.z * delta);
+                    camera.position.addScaledVector(right, -velocity.x * delta);
                 }
 
-                const newX = camera.position.x; const newZ = camera.position.z;
-                if (checkCollision(newX, oldZ)) camera.position.x = oldX;
-                if (checkCollision(oldX, newZ)) camera.position.z = oldZ;
-                if (!checkCollision(newX, oldZ) && !checkCollision(oldX, newZ) && checkCollision(newX, newZ)) { camera.position.x = oldX; camera.position.z = oldZ; }
+                const newX = camera.position.x;
+                const newZ = camera.position.z;
+
+                let colX = checkCollision(newX, oldZ);
+                let colZ = checkCollision(oldX, newZ);
+                let colBoth = checkCollision(newX, newZ);
+
+                if (colX) camera.position.x = oldX;
+                if (colZ) camera.position.z = oldZ;
+                if (!colX && !colZ && colBoth) {
+                    camera.position.x = oldX;
+                    camera.position.z = oldZ;
+                }
+
                 camera.position.y = 1.7; 
 
-                if (isMoving && velocity.length() > 0.1) {
-                    stepAccum += delta; if (stepAccum > (isSprinting ? 0.25 : 0.4)) { playSound(footstepsBuffer, 0.2, 0.8 + Math.random()*0.4); stepAccum = 0; }
-                    idleTimer = 0;
+                // Шаги игрока и таймер бездействия
+                const isMoving = (moveForward || moveBackward || moveLeft || moveRight) && (velocity.length() > 0.1);
+                if (isMoving) {
+                    stepAccum += delta;
+                    if (stepAccum > 0.4) {
+                        playFootstep();
+                        stepAccum = 0;
+                    }
+                    idleTimer = 0; // сброс таймера при движении
                 } else {
-                    stepAccum = 0; idleTimer += delta;
-                    if (idleTimer >= 10 && !monsters[2].spawned) spawnMonster(2);
+                    stepAccum = 0;
+                    idleTimer += delta;
+                    // Проверка условия для монстра 3 (10 секунд бездействия)
+                    if (idleTimer >= IDLE_TIME && !monsters[2].spawned) {
+                        spawnMonster(2);
+                    }
                 }
 
-                // Логика монстров
+                // RGB лента
+                if (!isBlackout) {
+                    const elapsedTime = clock.getElapsedTime();
+                    const r = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5;
+                    const g = Math.sin(elapsedTime * 0.5 + Math.PI/2) * 0.5 + 0.5;
+                    const b = Math.sin(elapsedTime * 0.5 + Math.PI) * 0.5 + 0.5;
+                    rgbLedStripMat.color.setRGB(r, g, b);
+                } else if (isBlackout && hasFlashlight) {
+                    const elapsedTime = clock.getElapsedTime();
+                    const flicker = Math.sin(elapsedTime * 20) * 0.2 + 0.8;
+                    playerFlashlight.intensity = 1.6 * flicker;
+                }
+
+                // ========== ЛОГИКА МОНСТРОВ ==========
                 for (let i = 0; i < monsters.length; i++) {
                     const m = monsters[i];
                     if (m.active && m.group.visible) {
+                        const elapsed = clock.getElapsedTime();
+                        
+                        // Программная анимация (если нет встроенной)
+                        if (m.useCustomAnimation) {
+                            m.group.position.y = Math.sin(elapsed * 3 + i) * 0.1;
+                            m.group.rotation.z = Math.sin(elapsed * 2 + i) * 0.05;
+                            const scale = 1.0 + Math.sin(elapsed * 5 + i) * 0.02;
+                            m.group.scale.set(scale, scale, scale);
+                        }
+                        
+                        // Проверка взгляда игрока на этого монстра
                         const lookRay = new THREE.Raycaster(camera.position, camera.getWorldDirection(new THREE.Vector3()));
-                        if (lookRay.intersectObjects(m.group.children, true).length > 0) { m.group.visible = false; m.lookAwayTimer = 2.0; } 
-                        else {
-                            const dirToPlayer = new THREE.Vector3().subVectors(camera.position, m.group.position); dirToPlayer.y = 0; const dist = dirToPlayer.length();
-                            if (dist > 1.5) {
-                                dirToPlayer.normalize(); m.group.position.x += dirToPlayer.x * m.speed * delta; m.group.position.z += dirToPlayer.z * m.speed * delta;
+                        const parts = m.group.children;
+                        const intersectsLook = lookRay.intersectObjects(parts, true);
+                        if (intersectsLook.length > 0) {
+                            m.group.visible = false;
+                            m.lookAwayTimer = 2.0;
+                        } else {
+                            // Движение к игроку
+                            const directionToPlayer = new THREE.Vector3().subVectors(camera.position, m.group.position);
+                            directionToPlayer.y = 0;
+                            const distance = directionToPlayer.length();
+                            if (distance > 1.5) {
+                                directionToPlayer.normalize();
+                                m.group.position.x += directionToPlayer.x * m.speed * delta;
+                                m.group.position.z += directionToPlayer.z * m.speed * delta;
                                 m.group.lookAt(camera.position.x, 0, camera.position.z);
-                                if (dist < 1.6) gameOver(); // Фикс коллизии с монстром
+                                
+                                if (Math.random() < delta * 2) {
+                                    playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
+                                }
                             }
+                            noiseOpacity = Math.min(0.7, 0.3 + 0.4 * (1 - Math.min(1, distance / 5)));
                         }
                     } else if (m.lookAwayTimer > 0) {
                         m.lookAwayTimer -= delta;
                         if (m.lookAwayTimer <= 0) {
-                            const lookDir = camera.getWorldDirection(new THREE.Vector3()); lookDir.y = 0; lookDir.normalize();
-                            m.group.position.set(Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, camera.position.x - (lookDir.x * 5))), 0, Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, camera.position.z - (lookDir.z * 5))));
-                            m.group.visible = true; m.lookAwayTimer = 0; playSound(monsterSpawnBuffer, 0.3);
+                            const lookDir = camera.getWorldDirection(new THREE.Vector3());
+                            lookDir.y = 0; lookDir.normalize();
+                            let spawnX = camera.position.x - (lookDir.x * 5);
+                            let spawnZ = camera.position.z - (lookDir.z * 5);
+                            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
+                            spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
+                            m.group.position.set(spawnX, 0, spawnZ);
+                            m.group.visible = true;
+                            m.lookAwayTimer = 0;
+                            playSound(monsterSpawnBuffer, 0.3);
                         }
                     }
                 }
+
+                if (checkMonsterCollision()) {
+                    gameOver();
+                }
+
                 prevTime = time;
+            }
+            // Обновление анимаций для всех монстров
+            for (let m of monsters) {
+                if (m.mixer) m.mixer.update(clock.getDelta());
             }
             renderer.render(scene, camera);
         }
         animate();
 
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
