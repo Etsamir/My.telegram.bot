@@ -7,36 +7,95 @@
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
         
+        /* ================= СТРАШНОЕ МЕНЮ (VHS / BODYCAM) ================= */
         #blocker {
-            position: absolute; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
+            position: absolute; width: 100%; height: 100%; 
+            background: #000; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
             font-family: 'Courier New', Courier, monospace; cursor: default; z-index: 10;
         }
-        #blocker h1 { margin-bottom: 10px; letter-spacing: 4px; text-align: center; }
+
+        .menu-container {
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #333;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 1), 0 0 20px rgba(0,0,0,1);
+            padding: 40px;
+            border-radius: 4px;
+            max-width: 500px;
+            width: 85%;
+            position: relative;
+        }
+
+        .menu-container::before {
+            content: " "; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
+            background-size: 100% 4px; pointer-events: none; opacity: 0.6;
+        }
+
+        .menu-title {
+            color: #ddd; font-size: 34px; margin: 0 0 30px 0; letter-spacing: 8px; 
+            text-align: center; 
+            text-shadow: 2px 0px 1px rgba(255,0,0,0.8), -2px 0px 1px rgba(0,0,255,0.8);
+            border-bottom: 1px solid #333; padding-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .settings-group { margin-bottom: 25px; position: relative; z-index: 1; }
         
-        /* Настройки меню */
-        .settings-row { margin: 8px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .settings-row label { cursor: pointer; padding: 8px 15px; border: 1px solid #555; border-radius: 4px; background: #222; transition: 0.3s; font-size: 14px; }
-        .settings-row label.selected { background: #0a4; border-color: #0f0; color: #0f0; }
+        .settings-title {
+            font-size: 12px; color: #777; margin-bottom: 10px; 
+            text-transform: uppercase; letter-spacing: 3px; font-weight: bold;
+        }
+
+        .settings-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        
+        .settings-row label { 
+            cursor: pointer; padding: 12px 0; border: 1px solid #222; border-radius: 2px; 
+            background: #050505; transition: all 0.2s ease; font-size: 14px; color: #666; 
+            flex: 1; text-align: center; min-width: 30%; font-weight: bold;
+        }
+        .settings-row label:hover { background: #111; color: #999; }
+        .settings-row label.selected { 
+            background: #eee; color: #000; border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
         .settings-row input { display: none; }
         
         #start-btn {
-            padding: 15px 40px; font-size: 24px; font-family: 'Courier New', monospace;
-            background: #0a4; color: white; border: none; border-radius: 8px;
-            cursor: pointer; box-shadow: 0 0 20px #0a4; transition: 0.3s; margin-top: 15px;
+            position: relative; z-index: 1;
+            margin-top: 15px; padding: 15px; font-size: 24px; font-family: 'Courier New', monospace;
+            background: #300; color: #f55; border: 1px solid #600; border-radius: 2px;
+            cursor: pointer; transition: 0.2s; width: 100%; font-weight: bold;
+            letter-spacing: 4px; text-transform: uppercase;
         }
-        #start-btn:hover { background: #0f6; box-shadow: 0 0 30px #0f6; }
-        #start-text { margin-top: 15px; font-size: 14px; color: #aaa; text-align: center; line-height: 1.5; padding: 0 20px; }
+        #start-btn:hover { background: #800; color: #fff; border-color: #f00; box-shadow: 0 0 15px rgba(255, 0, 0, 0.4); }
         
+        #start-text { 
+            position: relative; z-index: 1; margin-top: 20px; font-size: 13px; color: #555; 
+            text-align: center; line-height: 1.6;
+        }
+
+        /* Кнопка рестарта */
+        #restart-btn {
+            position: relative; z-index: 1; margin-top: 15px; padding: 15px; font-size: 20px; 
+            font-family: 'Courier New', monospace; background: #222; color: #fff; border: 1px solid #777; 
+            border-radius: 2px; cursor: pointer; transition: 0.2s; width: 100%; font-weight: bold;
+            letter-spacing: 4px; text-transform: uppercase;
+        }
+        #restart-btn:hover { background: #eee; color: #000; box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+
+        /* ======================================================= */
+
         #crosshair {
             position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
-            background-color: rgba(255,255,255,0.8); transform: translate(-50%, -50%);
+            background-color: rgba(255,255,255,0.6); transform: translate(-50%, -50%);
             border-radius: 50%; z-index: 5; pointer-events: none;
         }
+        
         #bodycam-ui {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 8; display: none;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8); transition: box-shadow 0.2s;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9); transition: box-shadow 0.2s;
         }
         .rec-text {
             position: absolute; top: 30px; right: 40px; color: #ff3333;
@@ -44,25 +103,26 @@
             text-shadow: 0 0 5px red; animation: blink 1s infinite;
         }
         .time-text {
-            position: absolute; top: 35px; left: 40px; color: white;
-            font-family: 'Courier New', monospace; font-size: 18px; text-shadow: 0 0 3px white; line-height: 1.3;
+            position: absolute; top: 35px; left: 40px; color: #ddd;
+            font-family: 'Courier New', monospace; font-size: 18px; line-height: 1.3;
         }
         .task-text {
-            position: absolute; top: 85px; left: 40px; color: #00ffaa;
-            font-family: 'Courier New', monospace; font-size: 16px; text-shadow: 0 0 3px #00ffaa; line-height: 1.5;
+            position: absolute; top: 85px; left: 40px; color: #ccc;
+            font-family: 'Courier New', monospace; font-size: 16px; line-height: 1.5;
         }
         .stats-text {
-            position: absolute; top: 155px; left: 40px; color: #00ffaa;
-            font-family: 'Courier New', monospace; font-size: 16px; text-shadow: 0 0 3px #00ffaa; line-height: 1.5;
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #ccc;
+            font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold;
+            width: 100%; text-align: center; letter-spacing: 2px;
         }
         .inventory-text {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); color: #ffaa00;
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); color: #aaa;
             font-family: 'Courier New', monospace; font-size: 20px; font-weight: bold;
-            text-shadow: 0 0 5px #ffaa00; transition: color 0.3s; width: 100%; text-align: center;
+            width: 100%; text-align: center; transition: color 0.3s;
         }
         @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0;} 100% {opacity: 1;} }
 
-        /* МОБИЛЬНЫЙ ИНТЕРФЕЙС И ДЖОЙСТИК */
+        /* МОБИЛЬНЫЕ КНОПКИ */
         #mobile-controls {
             position: absolute; bottom: 30px; right: 20px;
             display: flex; flex-direction: column; gap: 15px;
@@ -71,26 +131,27 @@
         .action-panel { pointer-events: auto; display: flex; flex-direction: column; gap: 15px; align-items: flex-end; }
         .ctrl-btn {
             width: 65px; height: 65px; border-radius: 50%;
-            background: rgba(30,30,30,0.8); border: 2px solid #0f0; color: #0f0;
+            background: rgba(20,20,20,0.6); border: 2px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7);
             font-size: 28px; font-weight: bold; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 10px #0f0; user-select: none; touch-action: none; transition: 0.1s;
+            user-select: none; touch-action: none; transition: 0.1s;
         }
-        .ctrl-btn:active { background: #0f0; color: #000; box-shadow: 0 0 20px #0f0; }
+        .ctrl-btn:active { background: rgba(255,255,255,0.8); color: #000; border-color: #fff; }
         
-        #sprint-btn { border-color: #ffaa00; color: #ffaa00; box-shadow: 0 0 10px #ffaa00; font-size: 22px; }
-        .sprint-active { background: #ffaa00 !important; color: #000 !important; box-shadow: 0 0 20px #ffaa00 !important; }
+        #sprint-btn { font-size: 22px; }
+        .sprint-active { background: rgba(200,50,50,0.8) !important; color: #fff !important; border-color: #ff3333 !important; }
 
+        /* Джойстик */
         #joystick-base {
             position: absolute; width: 120px; height: 120px;
-            background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(0, 255, 0, 0.3);
+            background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 50%; display: none; transform: translate(-50%, -50%);
             pointer-events: none; z-index: 25;
         }
         #joystick-stick {
             position: absolute; width: 50px; height: 50px;
-            background: rgba(0, 255, 0, 0.7); border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4); border-radius: 50%;
             top: 50%; left: 50%; transform: translate(-50%, -50%);
-            pointer-events: none; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            pointer-events: none; 
         }
         
         @media (min-width: 768px) {
@@ -100,40 +161,60 @@
 </head>
 <body>
     <div id="blocker">
-        <h1>AXON BODY 3</h1>
-        
-        <div class="settings-row language-selector">
-            <label class="selected"><input type="radio" name="lang" value="ru" checked> Русский</label>
-            <label><input type="radio" name="lang" value="uz"> O'zbekcha</label>
-            <label><input type="radio" name="lang" value="en"> English</label>
-        </div>
-        
-        <div class="settings-row platform-selector">
-            <label class="selected"><input type="radio" name="platform" value="pc" checked> ПК</label>
-            <label><input type="radio" name="platform" value="mobile"> Мобильный</label>
+        <div class="menu-container" id="main-menu">
+            <h1 class="menu-title">AXON BODY 3</h1>
+            
+            <div class="settings-group">
+                <div class="settings-title" id="lbl-lang">System Language</div>
+                <div class="settings-row language-selector">
+                    <label class="selected"><input type="radio" name="lang" value="ru" checked> RU</label>
+                    <label><input type="radio" name="lang" value="uz"> UZ</label>
+                    <label><input type="radio" name="lang" value="en"> EN</label>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <div class="settings-title" id="lbl-platform">Device Platform</div>
+                <div class="settings-row platform-selector">
+                    <label class="selected"><input type="radio" name="platform" value="pc" checked> PC</label>
+                    <label><input type="radio" name="platform" value="mobile"> MOBILE</label>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-title" id="lbl-diff">Threat Level</div>
+                <div class="settings-row difficulty-selector">
+                    <label><input type="radio" name="difficulty" value="easy"> <span id="diff-easy">0%</span></label>
+                    <label class="selected"><input type="radio" name="difficulty" value="medium" checked> <span id="diff-medium">50%</span></label>
+                    <label><input type="radio" name="difficulty" value="hard"> <span id="diff-hard">100%</span></label>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-title" id="lbl-gfx">Video Graphics</div>
+                <div class="settings-row graphics-selector">
+                    <label><input type="radio" name="graphics" value="low"> <span id="gfx-low">LOW</span></label>
+                    <label><input type="radio" name="graphics" value="medium"> <span id="gfx-medium">MID</span></label>
+                    <label class="selected"><input type="radio" name="graphics" value="high" checked> <span id="gfx-high">MAX</span></label>
+                </div>
+            </div>
+
+            <button id="start-btn">INITIATE REC</button>
+            <div id="start-text">SYSTEM READY. AWAITING OPERATOR.</div>
         </div>
 
-        <div class="settings-row difficulty-selector">
-            <label><input type="radio" name="difficulty" value="easy"> <span id="diff-easy">Мирная (0%)</span></label>
-            <label class="selected"><input type="radio" name="difficulty" value="medium" checked> <span id="diff-medium">Средняя (50%)</span></label>
-            <label><input type="radio" name="difficulty" value="hard"> <span id="diff-hard">Сложная (100%)</span></label>
+        <div class="menu-container" id="game-over-menu" style="display: none; text-align: center;">
+            <h1 class="menu-title" id="game-over-title" style="border: none;">TITLE</h1>
+            <p id="game-over-desc" style="color: #aaa; font-size: 16px; margin-bottom: 30px; letter-spacing: 2px;">DESC</p>
+            <button id="restart-btn">RESTART SHIFT</button>
         </div>
-
-        <div class="settings-row graphics-selector">
-            <label><input type="radio" name="graphics" value="low"> <span id="gfx-low">Графика: Мин</span></label>
-            <label><input type="radio" name="graphics" value="medium"> <span id="gfx-medium">Графика: Сред</span></label>
-            <label class="selected"><input type="radio" name="graphics" value="high" checked> <span id="gfx-high">Графика: Макс</span></label>
-        </div>
-
-        <button id="start-btn">Начать смену</button>
-        <p id="start-text">REAL TABLES LOADED.</p>
     </div>
     
     <div id="bodycam-ui">
         <div id="ui-time" class="time-text">--:--:-- <br> SYS: ONLINE</div>
         <div id="ui-task" class="task-text">ЗАДАЧИ:<br>[ ] Выключить ПК: 0/20<br>[ ] Выбросить мусор: 0/0</div>
-        <div id="ui-stats" class="stats-text">HP: 100%<br>STM: 100%</div>
         <div id="ui-inventory" class="inventory-text" style="display:none;">В РУКАХ: 0 / 3</div>
+        <div id="ui-stats" class="stats-text">HP: 100% | STM: 100%</div>
         <div class="rec-text">● REC</div>
         <div id="joystick-base"><div id="joystick-stick"></div></div>
     </div>
@@ -151,7 +232,6 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // ========== ПЕРЕВОДЫ ==========
         const translations = {
             ru: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'СБОЙ ПИТАНИЯ', backupPower: 'РЕЗЕРВНОЕ ПИТАНИЕ',
@@ -159,10 +239,12 @@
                 taskTrash: '[ ] Выбросить мусор: {current}/{total}', taskTrashDone: '[✓] Мусор выброшен ({total}/{total})', 
                 taskBlackout: 'СБОЙ ПИТАНИЯ!<br>НАЙДИТЕ ФОНАРИК НА СТОЛЕ АДМИНА!', taskComplete: 'СИСТЕМА СБРОШЕНА.<br>ПОКИНЬТЕ КЛУБ!', 
                 stats: 'HP: {hp}% | STM: {stm}%', inventory: 'В РУКАХ: {current} / {max}', inventoryFull: 'ИНВЕНТАРЬ ПОЛОН! НЕСИ В БАК.', 
-                startBtn: 'Начать смену', startText: 'Смена началась. Следите за порядком.<br>Shift - Бег. E - Взаимодействие.', 
-                endWin: 'СМЕНА ОКОНЧЕНА.<br>ВЫ ВЫЖИЛИ.', endLose: 'ЖИЗНЕННЫЕ ПОКАЗАТЕЛИ: 0<br>СМЕНА ПРОВАЛЕНА.',
-                diffEasy: 'Мирная (0%)', diffMedium: 'Средняя (50%)', diffHard: 'Сложная (100%)',
-                gfxLow: 'Граф: Мин', gfxMedium: 'Граф: Сред', gfxHigh: 'Граф: Макс'
+                startBtn: 'Начать запись', startText: 'Смена началась. Будьте осторожны.<br>Shift - Бег. E - Взаимодействие.', 
+                winTitle: 'СМЕНА ОКОНЧЕНА', winDesc: 'ВЫ УСПЕШНО ВЫЖИЛИ.', 
+                loseTitle: 'СВЯЗЬ ПОТЕРЯНА', loseDesc: 'ЖИЗНЕННЫЕ ПОКАЗАТЕЛИ: 0', restartBtn: 'ПОВТОРИТЬ СМЕНУ',
+                diffEasy: 'Мирная', diffMedium: 'Средняя', diffHard: 'Кошмар',
+                gfxLow: 'Мин', gfxMedium: 'Сред', gfxHigh: 'Макс',
+                lblLang: 'ЯЗЫК СИСТЕМЫ', lblPlatform: 'ПЛАТФОРМА', lblDiff: 'УРОВЕНЬ УГРОЗЫ', lblGfx: 'КАЧЕСТВО ВИДЕО'
             },
             uz: { 
                 sysOnline: 'TIZIM: ISHLASH', powerFail: 'QUVVAT UZILDI', backupPower: 'ZAXIRA QUVVAT',
@@ -170,10 +252,12 @@
                 taskTrash: '[ ] Axlatni tashlash: {current}/{total}', taskTrashDone: '[✓] Axlat tashlandi ({total}/{total})', 
                 taskBlackout: 'QUVVAT UZILDI!<br>ADMIN STOLIDAN CHIROQNI TOPING!', taskComplete: 'TIZIM TOZALANDI.<br>KLUBDAN CHIQING!', 
                 stats: 'JON: {hp}% | QUVVAT: {stm}%', inventory: 'QO\'LDA: {current} / {max}', inventoryFull: 'INVENTAR TO\'LA! AXLAT QUTISIGA OLIB BOR.', 
-                startBtn: 'Smenani boshlash', startText: 'Smena boshlandi. Tartibni saqlang.<br>Chap tomon - Yuris. O\'ng - Qarash.', 
-                endWin: 'SMENA TUGADI.<br>SIZ OMON QOLDINGIZ.', endLose: 'HAYOTIY KO\'RSATKICHLAR: 0<br>SMENA BARBOD.',
-                diffEasy: 'Tinch (0%)', diffMedium: "O'rta (50%)", diffHard: 'Qiyin (100%)',
-                gfxLow: 'Graf: Past', gfxMedium: 'Graf: O\'rta', gfxHigh: 'Graf: Yuqori'
+                startBtn: 'Yozishni boshlash', startText: 'Smena boshlandi. Ehtiyot bo\'ling.<br>Chap tomon - Yuris. O\'ng - Qarash.', 
+                winTitle: 'SMENA TUGADI', winDesc: 'SIZ OMON QOLDINGIZ.', 
+                loseTitle: 'ALOQA UZILDI', loseDesc: 'HAYOTIY KO\'RSATKICHLAR: 0', restartBtn: 'SMENANI QAYTA BOSHLASH',
+                diffEasy: 'Tinch', diffMedium: "O'rta", diffHard: 'Dahshat',
+                gfxLow: 'Past', gfxMedium: 'O\'rta', gfxHigh: 'Yuqori',
+                lblLang: 'TIZIM TILI', lblPlatform: 'QURILMA', lblDiff: 'XAVF DARAJASI', lblGfx: 'VIDEO SIFATI'
             },
             en: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'POWER FAILURE', backupPower: 'BACKUP POWER',
@@ -181,10 +265,12 @@
                 taskTrash: '[ ] Throw trash: {current}/{total}', taskTrashDone: '[✓] Trash thrown ({total}/{total})', 
                 taskBlackout: 'POWER FAILURE!<br>FIND FLASHLIGHT ON ADMIN DESK!', taskComplete: 'SYSTEM RESET.<br>LEAVE THE CLUB!', 
                 stats: 'HP: {hp}% | STM: {stm}%', inventory: 'HOLDING: {current} / {max}', inventoryFull: 'INVENTORY FULL! TAKE TO BIN.', 
-                startBtn: 'Start Shift', startText: 'Shift started. Keep order.<br>Shift to Sprint. E to Interact.', 
-                endWin: 'SHIFT COMPLETE.<br>YOU SURVIVED.', endLose: 'VITALS: 0<br>SHIFT FAILED.',
-                diffEasy: 'Peaceful (0%)', diffMedium: 'Normal (50%)', diffHard: 'Hard (100%)',
-                gfxLow: 'Gfx: Low', gfxMedium: 'Gfx: Med', gfxHigh: 'Gfx: High'
+                startBtn: 'INITIATE REC', startText: 'Shift started. Stay alert.<br>Shift to Sprint. E to Interact.', 
+                winTitle: 'SHIFT COMPLETE', winDesc: 'YOU SURVIVED.', 
+                loseTitle: 'CONNECTION LOST', loseDesc: 'VITALS: 0', restartBtn: 'RESTART SHIFT',
+                diffEasy: 'Safe', diffMedium: 'Normal', diffHard: 'Nightmare',
+                gfxLow: 'Low', gfxMedium: 'Med', gfxHigh: 'High',
+                lblLang: 'SYSTEM LANGUAGE', lblPlatform: 'DEVICE PLATFORM', lblDiff: 'THREAT LEVEL', lblGfx: 'VIDEO GRAPHICS'
             }
         };
 
@@ -199,6 +285,7 @@
         const gfxLabels = document.querySelectorAll('.graphics-selector label'); const gfxRadios = document.querySelectorAll('input[name="graphics"]'); 
         
         const startBtn = document.getElementById('start-btn'); const startText = document.getElementById('start-text'); 
+        const restartBtn = document.getElementById('restart-btn');
         const blocker = document.getElementById('blocker'); const bodycamUI = document.getElementById('bodycam-ui'); 
         const uiTask = document.getElementById('ui-task'); const uiTime = document.getElementById('ui-time'); 
         const uiStats = document.getElementById('ui-stats'); const uiInventory = document.getElementById('ui-inventory'); 
@@ -209,12 +296,18 @@
             const t = translations[currentLanguage]; 
             startBtn.textContent = t.startBtn; 
             startText.innerHTML = t.startText; 
+            restartBtn.textContent = t.restartBtn;
             document.getElementById('diff-easy').textContent = t.diffEasy;
             document.getElementById('diff-medium').textContent = t.diffMedium;
             document.getElementById('diff-hard').textContent = t.diffHard;
             document.getElementById('gfx-low').textContent = t.gfxLow;
             document.getElementById('gfx-medium').textContent = t.gfxMedium;
             document.getElementById('gfx-high').textContent = t.gfxHigh;
+            
+            document.getElementById('lbl-lang').textContent = t.lblLang;
+            document.getElementById('lbl-platform').textContent = t.lblPlatform;
+            document.getElementById('lbl-diff').textContent = t.lblDiff;
+            document.getElementById('lbl-gfx').textContent = t.lblGfx;
         }
 
         function setupRadioButtons(radios, labels, callback) {
@@ -298,42 +391,33 @@
         let isSprinting = false;
         let isSprintToggledMobile = false; 
 
-        // === ПРИМЕНЕНИЕ НАСТРОЕК ГРАФИКИ ===
         function applyGraphicsSettings() {
             if (currentGraphics === 'low') {
-                renderer.setPixelRatio(0.7); // Снижаем разрешение
+                renderer.setPixelRatio(0.7); 
                 renderer.shadowMap.enabled = false;
                 renderer.toneMapping = THREE.LinearToneMapping;
                 floorMat.bumpMap = null; wallMatLong.bumpMap = null; wallMatShort.bumpMap = null;
             } else if (currentGraphics === 'medium') {
                 renderer.setPixelRatio(1.0);
                 renderer.shadowMap.enabled = true;
-                renderer.shadowMap.type = THREE.BasicShadowMap; // Жесткие тени (легче)
+                renderer.shadowMap.type = THREE.BasicShadowMap; 
                 renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 floorMat.bumpMap = null; wallMatLong.bumpMap = null; wallMatShort.bumpMap = null;
             } else {
-                // High
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
                 renderer.shadowMap.enabled = true;
-                renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Мягкие тени
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
                 renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 floorMat.bumpMap = floorTex; wallMatLong.bumpMap = wallTex; wallMatShort.bumpMap = wallTexShort;
             }
             
-            floorMat.needsUpdate = true;
-            wallMatLong.needsUpdate = true;
-            wallMatShort.needsUpdate = true;
-
-            scene.traverse((child) => {
-                if (child.isMesh && child.material) {
-                    child.material.needsUpdate = true;
-                }
-            });
+            floorMat.needsUpdate = true; wallMatLong.needsUpdate = true; wallMatShort.needsUpdate = true;
+            scene.traverse((child) => { if (child.isMesh && child.material) child.material.needsUpdate = true; });
         }
 
         startBtn.addEventListener('click', () => { 
             initAudio(); 
-            applyGraphicsSettings(); // Применяем графику перед запуском
+            applyGraphicsSettings(); 
             
             if (currentPlatform === 'pc') { 
                 if (!controls.lock) {
@@ -346,6 +430,11 @@
                 controls.isLocked = true; 
                 startMobileGame(); 
             } 
+        });
+        
+        // Кнопка полного рестарта
+        restartBtn.addEventListener('click', () => {
+            window.location.reload();
         });
 
         function startMobileGame() { 
@@ -672,13 +761,38 @@
             monsters[index].group.position.set(spawnX, 0, spawnZ); monsters[index].group.visible = true; playSound(monsterSpawnBuffer, 0.4);
         }
 
-        function gameOver() {
-            gameEnded = true; gameWin = false;
-            if (currentPlatform === 'pc') controls.unlock(); else { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
-            const t = translations[currentLanguage]; blocker.style.backgroundColor = "rgba(100,0,0,0.9)";
-            startText.innerHTML = t.endLose; startText.style.color = "#ff0000"; startText.style.fontSize = "24px"; blocker.style.display = 'flex';
-            playSound(deathBuffer, 0.6);
+        // ================= ФУНКЦИЯ ОКОНЧАНИЯ ИГРЫ =================
+        function endGame(isWin) {
+            gameEnded = true; gameWin = isWin;
+            if (currentPlatform === 'pc') controls.unlock(); 
+            else { bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
+            
+            const t = translations[currentLanguage]; 
+            document.getElementById('main-menu').style.display = "none";
+            const goMenu = document.getElementById('game-over-menu');
+            const goTitle = document.getElementById('game-over-title');
+            const goDesc = document.getElementById('game-over-desc');
+            
+            goMenu.style.display = 'block';
+            blocker.style.display = 'flex';
+            
+            if (isWin) {
+                blocker.style.background = "radial-gradient(circle, #030 0%, #000 80%)";
+                goTitle.textContent = t.winTitle;
+                goTitle.style.color = "#0f0";
+                goTitle.style.textShadow = "0 0 15px #0f0";
+                goDesc.textContent = t.winDesc;
+                playSound(doorOpenBuffer, 0.4);
+            } else {
+                blocker.style.background = "radial-gradient(circle, #400 0%, #000 80%)";
+                goTitle.textContent = t.loseTitle;
+                goTitle.style.color = "#f00";
+                goTitle.style.textShadow = "0 0 15px #f00";
+                goDesc.textContent = t.loseDesc;
+                playSound(deathBuffer, 0.6);
+            }
         }
+        // ==========================================================
 
         function triggerBlackout() {
             if (isBlackout) return; isBlackout = true;
@@ -715,24 +829,23 @@
             let trashText = trashCollected >= totalTrash ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
             
             if (!isBlackout) {
-                uiTime.style.color = "white"; uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; uiTask.style.color = "#00ffaa";
+                uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; 
             } else {
                 if (!hasFlashlight) {
-                    uiTime.style.color = "#ff0000"; uiTask.innerHTML = t.taskBlackout; uiTask.style.color = "#ff0000";
+                    uiTask.innerHTML = t.taskBlackout; uiTask.style.color = "#ff0000";
                 } else {
-                    uiTime.style.color = "#ffaa00";
                     if (allTasksDone) {
                         uiTask.innerHTML = t.taskComplete; uiTask.style.color = "#00ff00";
                         if (!exitDoor.userData.isOpenable) { doorMat.color.setHex(0x00ff00); exitDoor.userData.isOpenable = true; }
                     } else {
-                        uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; uiTask.style.color = "#00ffaa";
+                        uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; uiTask.style.color = "#ccc";
                     }
                 }
             }
-            if (hasFlashlight) { uiInventory.innerHTML = t.inventory.replace('{current}', currentInventory).replace('{max}', MAX_INVENTORY); uiInventory.style.color = "#ffaa00"; } else { uiInventory.style.display = "none"; }
+            if (hasFlashlight) { uiInventory.innerHTML = t.inventory.replace('{current}', currentInventory).replace('{max}', MAX_INVENTORY); } else { uiInventory.style.display = "none"; }
             
             uiStats.innerHTML = t.stats.replace('{hp}', Math.floor(health)).replace('{stm}', Math.floor(stamina));
-            if (health < 40) uiStats.style.color = "#ff3333"; else uiStats.style.color = "#00ffaa";
+            if (health < 40) uiStats.style.color = "#ff3333"; else uiStats.style.color = "#ccc";
         }
 
         const raycaster = new THREE.Raycaster();
@@ -771,8 +884,6 @@
                 if (obj.userData.isTrash) {
                     if (currentInventory < MAX_INVENTORY) {
                         obj.parent.remove(obj); interactables = interactables.filter(item => item !== obj); currentInventory++; playSound(pickupBuffer, 0.2); updateUI();
-                    } else if (hasFlashlight) {
-                        const t = translations[currentLanguage]; uiInventory.innerHTML = t.inventoryFull; uiInventory.style.color = "#ff3333"; setTimeout(updateUI, 2000);
                     }
                 }
 
@@ -781,10 +892,7 @@
                 }
 
                 if (obj.userData.isDoor && obj.userData.isOpenable) {
-                    gameEnded = true; gameWin = true;
-                    if (currentPlatform === 'pc') controls.unlock(); else { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
-                    const t = translations[currentLanguage]; blocker.style.backgroundColor = "rgba(0,0,0,1)";
-                    startText.innerHTML = t.endWin; startText.style.color = "#00ff00"; startText.style.fontSize = "24px"; blocker.style.display = 'flex'; playSound(doorOpenBuffer, 0.4);
+                    endGame(true); // Вызываем новую функцию победы
                 }
             }
         }
@@ -816,8 +924,7 @@
                     direction.normalize();
                     isInputActive = (moveForward || moveBackward || moveLeft || moveRight);
                 } else {
-                    direction.x = joystickVector.x;
-                    direction.z = -joystickVector.y; 
+                    direction.x = joystickVector.x; direction.z = -joystickVector.y; 
                     isInputActive = (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1);
                 }
 
@@ -882,8 +989,7 @@
                     spookyLight.intensity = 1.5 + Math.random() * 2.0; 
                 }
 
-                let diffSpeedMulti = 1.0;
-                let diffDamageMulti = 0.5; 
+                let diffSpeedMulti = 1.0; let diffDamageMulti = 0.5; 
                 if (currentDifficulty === 'easy') { diffSpeedMulti = 0.7; diffDamageMulti = 0; } 
                 else if (currentDifficulty === 'hard') { diffSpeedMulti = 1.4; diffDamageMulti = 1.0; }
 
@@ -900,8 +1006,6 @@
                         
                         const lookDirToMonster = new THREE.Vector3().subVectors(m.group.position, camera.position);
                         lookDirToMonster.y = 0; const distance = lookDirToMonster.length(); lookDirToMonster.normalize();
-                        
-                        // ИСПРАВЛЕНИЕ: Монстр всегда бежит в сторону камеры
                         const moveDirToPlayer = new THREE.Vector3().copy(lookDirToMonster).negate();
 
                         const lookDir = camera.getWorldDirection(new THREE.Vector3()); lookDir.y = 0; lookDir.normalize();
@@ -910,7 +1014,6 @@
                         if (isLookingAtMonster) {
                             m.stareTime += delta;
                             noiseOpacity = Math.max(noiseOpacity, 0.2 + m.stareTime * 0.5); 
-                            
                             if (m.stareTime > 0.8) {
                                 m.group.visible = false; m.lookAwayTimer = 3.0 + Math.random() * 3.0; m.stareTime = 0;
                                 playSound(monsterSpawnBuffer, 0.2, 1.5); 
@@ -918,14 +1021,12 @@
                         } else {
                             m.stareTime = 0;
                             if (distance > 2.0) {
-                                m.group.position.x -= lookDirToMonster.x * m.speed * diffSpeedMulti * delta;
-                                m.group.position.z -= lookDirToMonster.z * m.speed * diffSpeedMulti * delta;
+                                m.group.position.x += moveDirToPlayer.x * m.speed * diffSpeedMulti * delta;
+                                m.group.position.z += moveDirToPlayer.z * m.speed * diffSpeedMulti * delta;
                                 m.group.lookAt(camera.position.x, 0, camera.position.z);
                                 if (Math.random() < delta * 2) playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
                             } else {
-                                if (diffDamageMulti > 0) {
-                                    isTakingDamage = true; health -= delta * 70 * diffDamageMulti; noiseOpacity = Math.max(noiseOpacity, 0.85); 
-                                }
+                                if (diffDamageMulti > 0) { isTakingDamage = true; health -= delta * 70 * diffDamageMulti; noiseOpacity = Math.max(noiseOpacity, 0.85); }
                             }
                         }
                     } else if (m.lookAwayTimer > 0) {
@@ -939,14 +1040,10 @@
                     }
                 }
                 
-                if (isTakingDamage) {
-                    bodycamUI.style.boxShadow = "inset 0 0 150px rgba(255, 0, 0, 0.8)";
-                } else {
-                    bodycamUI.style.boxShadow = "inset 0 0 100px rgba(0, 0, 0, 0.8)";
-                    if (noiseOpacity > 0 && !spookyEventTriggered) noiseOpacity -= delta * 2; 
-                }
+                if (isTakingDamage) { bodycamUI.style.boxShadow = "inset 0 0 150px rgba(255, 0, 0, 0.8)"; } 
+                else { bodycamUI.style.boxShadow = "inset 0 0 150px rgba(0, 0, 0, 0.9)"; if (noiseOpacity > 0 && !spookyEventTriggered) noiseOpacity -= delta * 2; }
                 
-                if (health <= 0) { health = 0; gameOver(); }
+                if (health <= 0) { health = 0; endGame(false); } // Вызываем поражение
 
                 updateUI(); 
                 prevTime = time;
