@@ -543,7 +543,8 @@
             const armR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.25, 0.3), pcBodyMat); armR.position.set(0.25, 0.65, 0.0); chairGroup.add(armR);
         }
 
-        let interactables = []; let monitorsTurnedOff = 0; let trashCollected = 0; let currentInventory = 0; const MAX_INVENTORY = 3; let totalTrash = 0; let monsterSpawned = false;
+        let interactables = []; let monitorsTurnedOff = 0; let trashCollected = 0; let currentInventory = 0; const MAX_INVENTORY = 3; let totalTrash = 0; 
+        let monsterSpawned = [false, false, false]; // флаги для трёх монстров
         let isBlackout = false; let hasFlashlight = false;
 
         // Стол админа
@@ -624,59 +625,76 @@
         }
         createLongTable(-1.5, -3.5); createLongTable(-1.5, 3.5);
 
-        // ========== ЗАГРУЗКА МОДЕЛИ ПРИЗРАКА ==========
-        let monsterGroup = new THREE.Group();
-        let mixer = null;
+        // ========== ЗАГРУЗКА ТРЁХ МОДЕЛЕЙ ПРИЗРАКОВ ==========
+        const monsters = [
+            { path: 'model1.glb', color: 0xff0000, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 },
+            { path: 'model2.glb', color: 0x00ff00, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 },
+            { path: 'model3.glb', color: 0x0000ff, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 }
+        ];
 
         const loader = new THREE.GLTFLoader();
-        loader.load(
-            'ghost_model.glb',
-            function (gltf) {
-                monsterGroup = gltf.scene;
-                monsterGroup.scale.set(1.2, 1.2, 1.2);
-                monsterGroup.rotation.y = Math.PI;
-                monsterGroup.traverse(node => {
-                    if (node.isMesh) {
-                        node.castShadow = true;
-                        node.receiveShadow = true;
-                    }
-                });
-                monsterGroup.visible = false;
-                scene.add(monsterGroup);
-                
-                if (gltf.animations && gltf.animations.length) {
-                    mixer = new THREE.AnimationMixer(monsterGroup);
-                    mixer.clipAction(gltf.animations[0]).play();
-                }
-                console.log('Модель монстра загружена');
-            },
-            undefined,
-            function (error) {
-                console.error('Ошибка загрузки модели монстра. Используется запасная модель.', error);
-                createFallbackMonster();
-            }
-        );
 
-        function createFallbackMonster() {
-            monsterGroup = new THREE.Group();
-            const skinMat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x220000 });
-            const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x550000 });
-            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat);
-            torso.position.y = 0.9; monsterGroup.add(torso);
-            const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), skinMat);
-            head.position.y = 2.0; monsterGroup.add(head);
-            const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
-            eyeL.position.set(-0.1, 2.0, 0.18); monsterGroup.add(eyeL);
-            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
-            eyeR.position.set(0.1, 2.0, 0.18); monsterGroup.add(eyeR);
-            monsterGroup.visible = false;
-            scene.add(monsterGroup);
-            console.log('Запасная модель монстра создана');
+        function loadMonster(index, fallbackColor) {
+            loader.load(
+                monsters[index].path,
+                function (gltf) {
+                    const group = gltf.scene;
+                    group.scale.set(1.2, 1.2, 1.2);
+                    group.rotation.y = Math.PI;
+                    group.traverse(node => {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                        }
+                    });
+                    group.visible = false;
+                    scene.add(group);
+                    monsters[index].group = group;
+                    
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        monsters[index].mixer = new THREE.AnimationMixer(group);
+                        monsters[index].mixer.clipAction(gltf.animations[0]).play();
+                        console.log(`Монстр ${index+1} загружен с анимациями`);
+                    } else {
+                        monsters[index].useCustomAnimation = true;
+                        console.log(`Монстр ${index+1} загружен без анимаций, будет использована программная анимация`);
+                    }
+                },
+                undefined,
+                function (error) {
+                    console.error(`Ошибка загрузки модели монстра ${index+1}. Используется запасная модель.`, error);
+                    createFallbackMonster(index, fallbackColor);
+                }
+            );
         }
 
-        let monsterActive = false;
-        let monsterSpeed = 1.8;
-        let monsterLookAwayTimer = 0;
+        function createFallbackMonster(index, color) {
+            const group = new THREE.Group();
+            const skinMat = new THREE.MeshStandardMaterial({ color: color, emissive: 0x220000 });
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x550000 });
+            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat);
+            torso.position.y = 0.9; group.add(torso);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), skinMat);
+            head.position.y = 2.0; group.add(head);
+            const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
+            eyeL.position.set(-0.1, 2.0, 0.18); group.add(eyeL);
+            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
+            eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
+            group.visible = false;
+            scene.add(group);
+            monsters[index].group = group;
+            monsters[index].useCustomAnimation = true;
+            console.log(`Запасная модель для монстра ${index+1} создана`);
+        }
+
+        // Загружаем всех трёх монстров (с разными цветами для запасных)
+        loadMonster(0, 0xff0000);
+        loadMonster(1, 0x00ff00);
+        loadMonster(2, 0x0000ff);
+
+        // Таймер бездействия
+        let idleTimer = 0;
+        const IDLE_TIME = 10; // секунд
 
         // ========== ЭФФЕКТ ПОМЕХ ==========
         const noiseCanvas = document.createElement('canvas');
@@ -718,11 +736,11 @@
         }
         updateNoise();
 
-        // ========== ЛОГИКА МОНСТРА ==========
-        function spawnMonsterBehindPlayer() {
-            if (monsterSpawned) return;
-            monsterSpawned = true;
-            monsterActive = true;
+        // ========== ЛОГИКА ПОЯВЛЕНИЯ МОНСТРОВ ==========
+        function spawnMonster(index) {
+            if (monsters[index].spawned) return;
+            monsters[index].spawned = true;
+            monsters[index].active = true;
             const lookDir = new THREE.Vector3();
             camera.getWorldDirection(lookDir);
             lookDir.y = 0;
@@ -731,15 +749,20 @@
             let spawnZ = camera.position.z - (lookDir.z * 5);
             spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
             spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
-            monsterGroup.position.set(spawnX, 0, spawnZ);
-            monsterGroup.visible = true;
+            monsters[index].group.position.set(spawnX, 0, spawnZ);
+            monsters[index].group.visible = true;
             playSound(monsterSpawnBuffer, 0.4);
+            console.log(`Монстр ${index+1} появился`);
         }
 
         function checkMonsterCollision() {
-            if (!monsterActive || !monsterGroup.visible) return false;
-            const dist = camera.position.distanceTo(monsterGroup.position);
-            return dist < 1.5;
+            for (let i = 0; i < monsters.length; i++) {
+                if (monsters[i].active && monsters[i].group.visible) {
+                    const dist = camera.position.distanceTo(monsters[i].group.position);
+                    if (dist < 1.5) return true;
+                }
+            }
+            return false;
         }
 
         function gameOver() {
@@ -882,7 +905,10 @@
                 if (obj.userData.isPC && obj.userData.isOn) {
                     obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++;
                     playSound(pcOffBuffer, 0.2);
-                    if (monitorsTurnedOff === 10) spawnMonsterBehindPlayer(); 
+                    // Проверка условия для монстра 2 (7 ПК)
+                    if (monitorsTurnedOff >= 7 && !monsters[1].spawned) {
+                        spawnMonster(1);
+                    }
                     updateUI();
                 }
 
@@ -898,7 +924,15 @@
                 }
 
                 if (obj.userData.isTrashBin) {
-                    if (currentInventory > 0) { trashCollected += currentInventory; currentInventory = 0; updateUI(); }
+                    if (currentInventory > 0) { 
+                        trashCollected += currentInventory; 
+                        currentInventory = 0; 
+                        // Проверка условия для монстра 1 (4 бутылки)
+                        if (trashCollected >= 4 && !monsters[0].spawned) {
+                            spawnMonster(0);
+                        }
+                        updateUI(); 
+                    }
                 }
 
                 if (obj.userData.isDoor && obj.userData.isOpenable) {
@@ -996,15 +1030,22 @@
 
                 camera.position.y = 1.7; 
 
-                // Шаги игрока
-                if ((moveForward || moveBackward || moveLeft || moveRight) && (velocity.length() > 0.1)) {
+                // Шаги игрока и таймер бездействия
+                const isMoving = (moveForward || moveBackward || moveLeft || moveRight) && (velocity.length() > 0.1);
+                if (isMoving) {
                     stepAccum += delta;
                     if (stepAccum > 0.4) {
                         playFootstep();
                         stepAccum = 0;
                     }
+                    idleTimer = 0; // сброс таймера при движении
                 } else {
                     stepAccum = 0;
+                    idleTimer += delta;
+                    // Проверка условия для монстра 3 (10 секунд бездействия)
+                    if (idleTimer >= IDLE_TIME && !monsters[2].spawned) {
+                        spawnMonster(2);
+                    }
                 }
 
                 // RGB лента
@@ -1020,46 +1061,58 @@
                     playerFlashlight.intensity = 1.6 * flicker;
                 }
 
-                // Логика монстра
-                if (monsterActive && monsterGroup.visible) {
-                    const time = clock.getElapsedTime();
-                    monsterGroup.position.y = Math.sin(time * 3) * 0.05;
-                    
-                    const lookRay = new THREE.Raycaster(camera.position, camera.getWorldDirection(new THREE.Vector3()));
-                    const monsterParts = monsterGroup.children;
-                    const intersectsLook = lookRay.intersectObjects(monsterParts, true);
-                    if (intersectsLook.length > 0) {
-                        monsterGroup.visible = false;
-                        monsterLookAwayTimer = 2.0;
-                    } else {
-                        const directionToPlayer = new THREE.Vector3().subVectors(camera.position, monsterGroup.position);
-                        directionToPlayer.y = 0;
-                        const distance = directionToPlayer.length();
-                        if (distance > 1.5) {
-                            directionToPlayer.normalize();
-                            monsterGroup.position.x += directionToPlayer.x * monsterSpeed * delta;
-                            monsterGroup.position.z += directionToPlayer.z * monsterSpeed * delta;
-                            monsterGroup.lookAt(camera.position.x, 0, camera.position.z);
-                            
-                            if (Math.random() < delta * 2) {
-                                playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
-                            }
+                // ========== ЛОГИКА МОНСТРОВ ==========
+                for (let i = 0; i < monsters.length; i++) {
+                    const m = monsters[i];
+                    if (m.active && m.group.visible) {
+                        const elapsed = clock.getElapsedTime();
+                        
+                        // Программная анимация (если нет встроенной)
+                        if (m.useCustomAnimation) {
+                            m.group.position.y = Math.sin(elapsed * 3 + i) * 0.1;
+                            m.group.rotation.z = Math.sin(elapsed * 2 + i) * 0.05;
+                            const scale = 1.0 + Math.sin(elapsed * 5 + i) * 0.02;
+                            m.group.scale.set(scale, scale, scale);
                         }
-                        noiseOpacity = Math.min(0.7, 0.3 + 0.4 * (1 - Math.min(1, distance / 5)));
-                    }
-                } else if (monsterLookAwayTimer > 0) {
-                    monsterLookAwayTimer -= delta;
-                    if (monsterLookAwayTimer <= 0) {
-                        const lookDir = camera.getWorldDirection(new THREE.Vector3());
-                        lookDir.y = 0; lookDir.normalize();
-                        let spawnX = camera.position.x - (lookDir.x * 5);
-                        let spawnZ = camera.position.z - (lookDir.z * 5);
-                        spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
-                        spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
-                        monsterGroup.position.set(spawnX, 0, spawnZ);
-                        monsterGroup.visible = true;
-                        monsterLookAwayTimer = 0;
-                        playSound(monsterSpawnBuffer, 0.3);
+                        
+                        // Проверка взгляда игрока на этого монстра
+                        const lookRay = new THREE.Raycaster(camera.position, camera.getWorldDirection(new THREE.Vector3()));
+                        const parts = m.group.children;
+                        const intersectsLook = lookRay.intersectObjects(parts, true);
+                        if (intersectsLook.length > 0) {
+                            m.group.visible = false;
+                            m.lookAwayTimer = 2.0;
+                        } else {
+                            // Движение к игроку
+                            const directionToPlayer = new THREE.Vector3().subVectors(camera.position, m.group.position);
+                            directionToPlayer.y = 0;
+                            const distance = directionToPlayer.length();
+                            if (distance > 1.5) {
+                                directionToPlayer.normalize();
+                                m.group.position.x += directionToPlayer.x * m.speed * delta;
+                                m.group.position.z += directionToPlayer.z * m.speed * delta;
+                                m.group.lookAt(camera.position.x, 0, camera.position.z);
+                                
+                                if (Math.random() < delta * 2) {
+                                    playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
+                                }
+                            }
+                            noiseOpacity = Math.min(0.7, 0.3 + 0.4 * (1 - Math.min(1, distance / 5)));
+                        }
+                    } else if (m.lookAwayTimer > 0) {
+                        m.lookAwayTimer -= delta;
+                        if (m.lookAwayTimer <= 0) {
+                            const lookDir = camera.getWorldDirection(new THREE.Vector3());
+                            lookDir.y = 0; lookDir.normalize();
+                            let spawnX = camera.position.x - (lookDir.x * 5);
+                            let spawnZ = camera.position.z - (lookDir.z * 5);
+                            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
+                            spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
+                            m.group.position.set(spawnX, 0, spawnZ);
+                            m.group.visible = true;
+                            m.lookAwayTimer = 0;
+                            playSound(monsterSpawnBuffer, 0.3);
+                        }
                     }
                 }
 
@@ -1069,7 +1122,10 @@
 
                 prevTime = time;
             }
-            if (mixer) mixer.update(clock.getDelta());
+            // Обновление анимаций для всех монстров
+            for (let m of monsters) {
+                if (m.mixer) m.mixer.update(clock.getDelta());
+            }
             renderer.render(scene, camera);
         }
         animate();
