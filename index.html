@@ -2,17 +2,20 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Night Shift - Real Tables</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Night Shift - Bodycam Horror</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; user-select: none; touch-action: none; }
+        /* Защита от случайного выделения текста и жестов браузера на мобилках */
+        body { margin: 0; overflow: hidden; background-color: #000; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+        
         #blocker {
             position: absolute; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
             display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
             font-family: 'Courier New', Courier, monospace; cursor: default; z-index: 10;
         }
-        #blocker h1 { margin-bottom: 10px; letter-spacing: 4px; }
-        .language-selector, .platform-selector { margin: 20px; display: flex; gap: 20px; }
-        .language-selector label, .platform-selector label { cursor: pointer; padding: 5px 15px; border: 1px solid #555; border-radius: 4px; background: #222; transition: 0.3s; }
+        #blocker h1 { margin-bottom: 10px; letter-spacing: 4px; text-align: center; }
+        .language-selector, .platform-selector { margin: 20px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .language-selector label, .platform-selector label { cursor: pointer; padding: 10px 20px; border: 1px solid #555; border-radius: 4px; background: #222; transition: 0.3s; }
         .language-selector label.selected, .platform-selector label.selected { background: #0a4; border-color: #0f0; color: #0f0; }
         .language-selector input, .platform-selector input { display: none; }
         #start-btn {
@@ -21,7 +24,8 @@
             cursor: pointer; box-shadow: 0 0 20px #0a4; transition: 0.3s; margin-top: 20px;
         }
         #start-btn:hover { background: #0f6; box-shadow: 0 0 30px #0f6; }
-        #start-text { margin-top: 20px; font-size: 14px; color: #aaa; }
+        #start-text { margin-top: 20px; font-size: 14px; color: #aaa; text-align: center; line-height: 1.5; padding: 0 20px; }
+        
         #crosshair {
             position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
             background-color: rgba(255,255,255,0.8); transform: translate(-50%, -50%);
@@ -30,7 +34,7 @@
         #bodycam-ui {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 8; display: none;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8); 
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8); transition: box-shadow 0.2s;
         }
         .rec-text {
             position: absolute; top: 30px; right: 40px; color: #ff3333;
@@ -39,112 +43,88 @@
         }
         .time-text {
             position: absolute; top: 35px; left: 40px; color: white;
-            font-family: 'Courier New', monospace; font-size: 18px; text-shadow: 0 0 3px white;
+            font-family: 'Courier New', monospace; font-size: 18px; text-shadow: 0 0 3px white; line-height: 1.3;
         }
         .task-text {
-            position: absolute; top: 80px; left: 40px; color: #00ffaa;
-            font-family: 'Courier New', monospace; font-size: 16px; text-shadow: 0 0 3px #00ffaa;
-            line-height: 1.5;
+            position: absolute; top: 85px; left: 40px; color: #00ffaa;
+            font-family: 'Courier New', monospace; font-size: 16px; text-shadow: 0 0 3px #00ffaa; line-height: 1.5;
+        }
+        .stats-text {
+            position: absolute; top: 155px; left: 40px; color: #00ffaa;
+            font-family: 'Courier New', monospace; font-size: 16px; text-shadow: 0 0 3px #00ffaa; line-height: 1.5;
         }
         .inventory-text {
             position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); color: #ffaa00;
             font-family: 'Courier New', monospace; font-size: 20px; font-weight: bold;
-            text-shadow: 0 0 5px #ffaa00; transition: color 0.3s;
+            text-shadow: 0 0 5px #ffaa00; transition: color 0.3s; width: 100%; text-align: center;
         }
         @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0;} 100% {opacity: 1;} }
 
-        /* Мобильное управление */
+        /* МОБИЛЬНЫЙ ИНТЕРФЕЙС И ДЖОЙСТИК */
         #mobile-controls {
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-sizing: border-box;
-            pointer-events: none;
-            z-index: 20;
+            position: absolute; bottom: 30px; right: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+            z-index: 20; pointer-events: none;
         }
-        .move-panel {
-            display: flex;
-            gap: 15px;
-            pointer-events: auto;
-        }
-        .action-panel {
-            pointer-events: auto;
-        }
+        .action-panel { pointer-events: auto; display: flex; flex-direction: column; gap: 15px; align-items: flex-end; }
         .ctrl-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: rgba(50,50,50,0.8);
-            border: 2px solid #0f0;
-            color: #0f0;
-            font-size: 30px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 15px #0f0;
-            user-select: none;
-            touch-action: none;
+            width: 65px; height: 65px; border-radius: 50%;
+            background: rgba(30,30,30,0.8); border: 2px solid #0f0; color: #0f0;
+            font-size: 28px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 10px #0f0; user-select: none; touch-action: none; transition: 0.1s;
         }
-        .ctrl-btn:active {
-            background: #0f0;
-            color: #000;
+        .ctrl-btn:active { background: #0f0; color: #000; box-shadow: 0 0 20px #0f0; }
+        
+        #sprint-btn { border-color: #ffaa00; color: #ffaa00; box-shadow: 0 0 10px #ffaa00; font-size: 22px; }
+        .sprint-active { background: #ffaa00 !important; color: #000 !important; box-shadow: 0 0 20px #ffaa00 !important; }
+
+        /* Внешний вид джойстика */
+        #joystick-base {
+            position: absolute; width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50%; display: none; transform: translate(-50%, -50%);
+            pointer-events: none; z-index: 25;
+        }
+        #joystick-stick {
+            position: absolute; width: 50px; height: 50px;
+            background: rgba(0, 255, 0, 0.7); border-radius: 50%;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            pointer-events: none; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
         }
     </style>
 </head>
 <body>
     <div id="blocker">
-        <h1 style="text-align:center">AXON BODY 3</h1>
-        
-        <!-- Выбор языка -->
+        <h1>AXON BODY 3</h1>
         <div class="language-selector">
-            <label class="selected">
-                <input type="radio" name="lang" value="ru" checked> Русский
-            </label>
-            <label>
-                <input type="radio" name="lang" value="uz"> O'zbekcha
-            </label>
-            <label>
-                <input type="radio" name="lang" value="en"> English
-            </label>
+            <label class="selected"><input type="radio" name="lang" value="ru" checked> Русский</label>
+            <label><input type="radio" name="lang" value="uz"> O'zbekcha</label>
+            <label><input type="radio" name="lang" value="en"> English</label>
         </div>
-
-        <!-- Выбор платформы -->
         <div class="platform-selector">
-            <label class="selected">
-                <input type="radio" name="platform" value="pc" checked> ПК
-            </label>
-            <label>
-                <input type="radio" name="platform" value="mobile"> Мобильный
-            </label>
+            <label class="selected"><input type="radio" name="platform" value="pc" checked> ПК</label>
+            <label><input type="radio" name="platform" value="mobile"> Мобильный</label>
         </div>
-
-        <!-- Кнопка старта -->
         <button id="start-btn">Начать смену</button>
         <p id="start-text">REAL TABLES LOADED.</p>
     </div>
     
     <div id="bodycam-ui">
-        <div id="ui-time" class="time-text">03:45 AM <br> SYS: ONLINE</div>
+        <div id="ui-time" class="time-text">--:--:-- <br> SYS: ONLINE</div>
         <div id="ui-task" class="task-text">ЗАДАЧИ:<br>[ ] Выключить ПК: 0/20<br>[ ] Выбросить мусор: 0/0</div>
+        <div id="ui-stats" class="stats-text">HP: 100%<br>STM: 100%</div>
         <div id="ui-inventory" class="inventory-text" style="display:none;">В РУКАХ: 0 / 3</div>
         <div class="rec-text">● REC</div>
+        
+        <div id="joystick-base">
+            <div id="joystick-stick"></div>
+        </div>
     </div>
     <div id="crosshair"></div>
 
-    <!-- Мобильное управление (изначально скрыто) -->
     <div id="mobile-controls" style="display: none;">
-        <div class="move-panel">
-            <div class="ctrl-btn" id="move-fwd">↑</div>
-            <div class="ctrl-btn" id="move-left">←</div>
-            <div class="ctrl-btn" id="move-back">↓</div>
-            <div class="ctrl-btn" id="move-right">→</div>
-        </div>
         <div class="action-panel">
+            <div class="ctrl-btn" id="sprint-btn">🏃</div>
             <div class="ctrl-btn" id="action-btn">E</div>
         </div>
     </div>
@@ -154,739 +134,616 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // ========== ПЕРЕВОДЫ ==========
         const translations = {
-            ru: {
-                rec: '● REC',
-                timeOnline: '03:45 AM <br> SYS: ONLINE',
-                timePowerFail: '03:45 AM <br> СБОЙ ПИТАНИЯ',
-                timeBackup: '03:46 AM <br> РЕЗЕРВНОЕ ПИТАНИЕ',
-                tasks: 'ЗАДАЧИ:',
-                taskPC: '[ ] Выключить ПК: {current}/20',
-                taskPCDone: '[✓] ПК выключены (20/20)',
-                taskTrash: '[ ] Выбросить мусор: {current}/{total}',
-                taskTrashDone: '[✓] Мусор выброшен ({total}/{total})',
-                taskBlackout: 'СБОЙ ПИТАНИЯ!<br>НАЙДИТЕ ФОНАРИК НА СТОЛЕ АДМИНА!',
-                taskComplete: 'СИСТЕМА СБРОШЕНА.<br>ПОКИНЬТЕ КЛУБ!',
-                inventory: 'В РУКАХ: {current} / {max}',
-                inventoryFull: 'ИНВЕНТАРЬ ПОЛОН! НЕСИ В БАК.',
-                startBtn: 'Начать смену',
-                startText: 'REAL TABLES LOADED.',
-                endWin: 'СМЕНА ОКОНЧЕНА.<br>ВЫ ВЫЖИЛИ.',
-                endLose: 'ВАС СХВАТИЛИ.<br>СМЕНА ПРОВАЛЕНА.',
+            ru: { 
+                sysOnline: 'SYS: ONLINE', powerFail: 'СБОЙ ПИТАНИЯ', backupPower: 'РЕЗЕРВНОЕ ПИТАНИЕ',
+                tasks: 'ЗАДАЧИ:', taskPC: '[ ] Выключить ПК: {current}/20', taskPCDone: '[✓] ПК выключены (20/20)', 
+                taskTrash: '[ ] Выбросить мусор: {current}/{total}', taskTrashDone: '[✓] Мусор выброшен ({total}/{total})', 
+                taskBlackout: 'СБОЙ ПИТАНИЯ!<br>НАЙДИТЕ ФОНАРИК НА СТОЛЕ АДМИНА!', taskComplete: 'СИСТЕМА СБРОШЕНА.<br>ПОКИНЬТЕ КЛУБ!', 
+                stats: 'HP: {hp}% | STM: {stm}%', inventory: 'В РУКАХ: {current} / {max}', inventoryFull: 'ИНВЕНТАРЬ ПОЛОН! НЕСИ В БАК.', 
+                startBtn: 'Начать смену', startText: 'Смена началась. Следите за порядком.<br>Shift - Бег. E - Взаимодействие.', 
+                endWin: 'СМЕНА ОКОНЧЕНА.<br>ВЫ ВЫЖИЛИ.', endLose: 'ЖИЗНЕННЫЕ ПОКАЗАТЕЛИ: 0<br>СМЕНА ПРОВАЛЕНА.' 
             },
-            uz: {
-                rec: '● YOZILMOQDA',
-                timeOnline: '03:45 AM <br> TIZIM: ISHLASH',
-                timePowerFail: '03:45 AM <br> QUVVAT UZILDI',
-                timeBackup: '03:46 AM <br> ZAXIRA QUVVAT',
-                tasks: 'VAZIFALAR:',
-                taskPC: '[ ] Kompyuterni o\'chirish: {current}/20',
-                taskPCDone: '[✓] Kompyuterlar o\'chirildi (20/20)',
-                taskTrash: '[ ] Axlatni tashlash: {current}/{total}',
-                taskTrashDone: '[✓] Axlat tashlandi ({total}/{total})',
-                taskBlackout: 'QUVVAT UZILDI!<br>ADMIN STOLIDAN CHIROQNI TOPING!',
-                taskComplete: 'TIZIM TOZALANDI.<br>KLUBDAN CHIQING!',
-                inventory: 'QO\'LDA: {current} / {max}',
-                inventoryFull: 'INVENTAR TO\'LA! AXLAT QUTISIGA OLIB BOR.',
-                startBtn: 'Smenani boshlash',
-                startText: 'REAL TABLES LOADED.',
-                endWin: 'SMENA TUGADI.<br>SIZ OMON QOLDINGIZ.',
-                endLose: 'SIZ TUTILDINGIZ.<br>SMENA BARBOD.',
+            uz: { 
+                sysOnline: 'TIZIM: ISHLASH', powerFail: 'QUVVAT UZILDI', backupPower: 'ZAXIRA QUVVAT',
+                tasks: 'VAZIFALAR:', taskPC: '[ ] Kompyuterni o\'chirish: {current}/20', taskPCDone: '[✓] Kompyuterlar o\'chirildi (20/20)', 
+                taskTrash: '[ ] Axlatni tashlash: {current}/{total}', taskTrashDone: '[✓] Axlat tashlandi ({total}/{total})', 
+                taskBlackout: 'QUVVAT UZILDI!<br>ADMIN STOLIDAN CHIROQNI TOPING!', taskComplete: 'TIZIM TOZALANDI.<br>KLUBDAN CHIQING!', 
+                stats: 'JON: {hp}% | QUVVAT: {stm}%', inventory: 'QO\'LDA: {current} / {max}', inventoryFull: 'INVENTAR TO\'LA! AXLAT QUTISIGA OLIB BOR.', 
+                startBtn: 'Smenani boshlash', startText: 'Smena boshlandi. Tartibni saqlang.<br>Chap tomon - Yuris. O\'ng - Qarash.', 
+                endWin: 'SMENA TUGADI.<br>SIZ OMON QOLDINGIZ.', endLose: 'HAYOTIY KO\'RSATKICHLAR: 0<br>SMENA BARBOD.' 
             },
-            en: {
-                rec: '● REC',
-                timeOnline: '03:45 AM <br> SYS: ONLINE',
-                timePowerFail: '03:45 AM <br> POWER FAILURE',
-                timeBackup: '03:46 AM <br> BACKUP POWER',
-                tasks: 'TASKS:',
-                taskPC: '[ ] Turn off PCs: {current}/20',
-                taskPCDone: '[✓] PCs off (20/20)',
-                taskTrash: '[ ] Throw trash: {current}/{total}',
-                taskTrashDone: '[✓] Trash thrown ({total}/{total})',
-                taskBlackout: 'POWER FAILURE!<br>FIND FLASHLIGHT ON ADMIN DESK!',
-                taskComplete: 'SYSTEM RESET.<br>LEAVE THE CLUB!',
-                inventory: 'HOLDING: {current} / {max}',
-                inventoryFull: 'INVENTORY FULL! TAKE TO BIN.',
-                startBtn: 'Start Shift',
-                startText: 'REAL TABLES LOADED.',
-                endWin: 'SHIFT COMPLETE.<br>YOU SURVIVED.',
-                endLose: 'YOU WERE CAUGHT.<br>SHIFT FAILED.',
+            en: { 
+                sysOnline: 'SYS: ONLINE', powerFail: 'POWER FAILURE', backupPower: 'BACKUP POWER',
+                tasks: 'TASKS:', taskPC: '[ ] Turn off PCs: {current}/20', taskPCDone: '[✓] PCs off (20/20)', 
+                taskTrash: '[ ] Throw trash: {current}/{total}', taskTrashDone: '[✓] Trash thrown ({total}/{total})', 
+                taskBlackout: 'POWER FAILURE!<br>FIND FLASHLIGHT ON ADMIN DESK!', taskComplete: 'SYSTEM RESET.<br>LEAVE THE CLUB!', 
+                stats: 'HP: {hp}% | STM: {stm}%', inventory: 'HOLDING: {current} / {max}', inventoryFull: 'INVENTORY FULL! TAKE TO BIN.', 
+                startBtn: 'Start Shift', startText: 'Shift started. Keep order.<br>Shift to Sprint. E to Interact.', 
+                endWin: 'SHIFT COMPLETE.<br>YOU SURVIVED.', endLose: 'VITALS: 0<br>SHIFT FAILED.' 
             }
         };
 
-        let currentLanguage = 'ru';
-        let currentPlatform = 'pc'; // 'pc' или 'mobile'
+        let currentLanguage = 'ru'; let currentPlatform = 'pc';
 
-        // Элементы интерфейса
-        const langLabels = document.querySelectorAll('.language-selector label');
-        const langRadios = document.querySelectorAll('input[name="lang"]');
-        const platformLabels = document.querySelectorAll('.platform-selector label');
-        const platformRadios = document.querySelectorAll('input[name="platform"]');
-        const startBtn = document.getElementById('start-btn');
-        const startText = document.getElementById('start-text');
-        const blocker = document.getElementById('blocker');
-        const bodycamUI = document.getElementById('bodycam-ui');
-        const uiTask = document.getElementById('ui-task');
-        const uiTime = document.getElementById('ui-time');
-        const uiInventory = document.getElementById('ui-inventory');
-        const recElement = document.querySelector('.rec-text');
-        const mobileControls = document.getElementById('mobile-controls');
+        const langLabels = document.querySelectorAll('.language-selector label'); 
+        const langRadios = document.querySelectorAll('input[name="lang"]'); 
+        const platformLabels = document.querySelectorAll('.platform-selector label'); 
+        const platformRadios = document.querySelectorAll('input[name="platform"]'); 
+        const startBtn = document.getElementById('start-btn'); 
+        const startText = document.getElementById('start-text'); 
+        const blocker = document.getElementById('blocker'); 
+        const bodycamUI = document.getElementById('bodycam-ui'); 
+        const uiTask = document.getElementById('ui-task'); 
+        const uiTime = document.getElementById('ui-time'); 
+        const uiStats = document.getElementById('ui-stats'); 
+        const uiInventory = document.getElementById('ui-inventory'); 
+        const recElement = document.querySelector('.rec-text'); 
+        const mobileControls = document.getElementById('mobile-controls'); 
+        const sprintBtn = document.getElementById('sprint-btn');
+        const actionBtn = document.getElementById('action-btn');
 
-        function updateUILanguage() {
-            const t = translations[currentLanguage];
-            startBtn.textContent = t.startBtn;
-            startText.textContent = t.startText;
+        function updateUILanguage() { 
+            const t = translations[currentLanguage]; 
+            startBtn.textContent = t.startBtn; 
+            startText.innerHTML = t.startText; 
         }
 
-        langRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                langLabels.forEach(l => l.classList.remove('selected'));
-                e.target.parentElement.classList.add('selected');
-                currentLanguage = e.target.value;
-                updateUILanguage();
-                console.log('Язык изменён на:', currentLanguage);
-            });
-        });
-
-        platformRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                platformLabels.forEach(l => l.classList.remove('selected'));
-                e.target.parentElement.classList.add('selected');
-                currentPlatform = e.target.value;
-                console.log('Платформа изменена на:', currentPlatform);
-            });
-        });
-
+        langRadios.forEach(radio => { radio.addEventListener('change', (e) => { langLabels.forEach(l => l.classList.remove('selected')); e.target.parentElement.classList.add('selected'); currentLanguage = e.target.value; updateUILanguage(); }); });
+        platformRadios.forEach(radio => { radio.addEventListener('change', (e) => { platformLabels.forEach(l => l.classList.remove('selected')); e.target.parentElement.classList.add('selected'); currentPlatform = e.target.value; }); });
         updateUILanguage();
 
-        // ========== ЗВУКОВАЯ СИСТЕМА ==========
-        let audioContext = null;
-        let footstepsBuffer = null;
-        let pickupBuffer = null;
-        let pcOffBuffer = null;
-        let blackoutBuffer = null;
-        let monsterSpawnBuffer = null;
-        let monsterFootstepBuffer = null;
-        let doorOpenBuffer = null;
-        let deathBuffer = null;
+        let audioContext = null; let footstepsBuffer = null; let pickupBuffer = null; let pcOffBuffer = null; let blackoutBuffer = null; let monsterSpawnBuffer = null; let monsterFootstepBuffer = null; let doorOpenBuffer = null; let deathBuffer = null; let jumpscareBuffer = null;
 
         function initAudio() {
             if (audioContext) return;
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
+            if (audioContext.state === 'suspended') audioContext.resume();
             createSounds();
-            console.log('Аудио инициализировано');
         }
 
         function createSounds() {
-            footstepsBuffer = createNoiseBuffer(0.2, 0.1, 200);
-            pickupBuffer = createToneBuffer(0.15, 600, 'sine');
-            pcOffBuffer = createToneBuffer(0.2, 100, 'sawtooth');
-            blackoutBuffer = createNoiseBuffer(1.5, 0.3, 60);
-            monsterSpawnBuffer = createNoiseBuffer(0.8, 0.2, 80);
-            monsterFootstepBuffer = createToneBuffer(0.3, 60, 'triangle');
-            doorOpenBuffer = createToneBuffer(0.5, 400, 'sine', 0.3);
-            deathBuffer = createNoiseBuffer(1.0, 0.5, 150);
+            footstepsBuffer = createNoiseBuffer(0.2, 0.1, 200); pickupBuffer = createToneBuffer(0.15, 600, 'sine'); pcOffBuffer = createToneBuffer(0.2, 100, 'sawtooth'); blackoutBuffer = createNoiseBuffer(1.5, 0.3, 60); monsterSpawnBuffer = createNoiseBuffer(0.8, 0.2, 80); monsterFootstepBuffer = createToneBuffer(0.3, 60, 'triangle'); doorOpenBuffer = createToneBuffer(0.5, 400, 'sine', 0.3); deathBuffer = createNoiseBuffer(1.0, 0.5, 150);
+            
+            if (audioContext) {
+                const sr = audioContext.sampleRate; jumpscareBuffer = audioContext.createBuffer(1, sr * 1.5, sr); const data = jumpscareBuffer.getChannelData(0);
+                for (let i = 0; i < jumpscareBuffer.length; i++) { data[i] = (Math.random() * 2 - 1) * Math.exp(-i/(sr*0.5)); data[i] += Math.sin(i * 0.05) * 0.8 * Math.exp(-i/(sr*1.0)); }
+            }
         }
 
         function createNoiseBuffer(duration, volume, lowpassFreq) {
             if (!audioContext) return null;
-            const sampleRate = audioContext.sampleRate;
-            const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < buffer.length; i++) {
-                data[i] = (Math.random() * 2 - 1) * volume;
-            }
-            if (lowpassFreq > 0) {
-                const k = Math.exp(-2 * Math.PI * lowpassFreq / sampleRate);
-                let prev = 0;
-                for (let i = 0; i < buffer.length; i++) {
-                    data[i] = prev + (data[i] - prev) * (1 - k);
-                    prev = data[i];
-                }
-            }
+            const sampleRate = audioContext.sampleRate; const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate); const data = buffer.getChannelData(0);
+            for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * volume;
+            if (lowpassFreq > 0) { const k = Math.exp(-2 * Math.PI * lowpassFreq / sampleRate); let prev = 0; for (let i = 0; i < buffer.length; i++) { data[i] = prev + (data[i] - prev) * (1 - k); prev = data[i]; } }
             return buffer;
         }
 
         function createToneBuffer(duration, frequency, type = 'sine', volume = 0.3) {
             if (!audioContext) return null;
-            const sampleRate = audioContext.sampleRate;
-            const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < buffer.length; i++) {
-                data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * volume * (1 - i / buffer.length);
-            }
+            const sampleRate = audioContext.sampleRate; const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate); const data = buffer.getChannelData(0);
+            for (let i = 0; i < buffer.length; i++) data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * volume * (1 - i / buffer.length);
             return buffer;
         }
 
         function playSound(buffer, volume = 0.5, pitch = 1.0) {
             if (!audioContext || !buffer) return;
             if (audioContext.state === 'suspended') audioContext.resume();
-            const source = audioContext.createBufferSource();
-            source.buffer = buffer;
-            source.playbackRate.value = pitch;
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = volume;
-            source.connect(gainNode).connect(audioContext.destination);
-            source.start();
+            const source = audioContext.createBufferSource(); source.buffer = buffer; source.playbackRate.value = pitch;
+            const gainNode = audioContext.createGain(); gainNode.gain.value = volume;
+            source.connect(gainNode).connect(audioContext.destination); source.start();
         }
 
-        // Шаги игрока
-        let stepTimer = 0;
-        function playFootstep() {
-            if (gameEnded) return;
-            playSound(footstepsBuffer, 0.2, 0.8 + Math.random()*0.4);
-        }
+        let stepTimer = 0; function playFootstep(isSprint) { if (gameEnded) return; playSound(footstepsBuffer, isSprint ? 0.3 : 0.2, isSprint ? 1.2 : 0.8 + Math.random()*0.4); }
 
-        // ========== ИГРОВАЯ ЛОГИКА ==========
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x0a0a0a, 0.06); 
+        scene.fog = new THREE.FogExp2(0x050505, 0.08); 
 
-        const camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.rotation.order = 'YXZ'; // Важно для мобильной камеры, чтобы она не заваливалась
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+        renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
         document.body.appendChild(renderer.domElement);
 
-        // Для мобильного управления мы не используем PointerLockControls, а обрабатываем касания вручную
-        let controls;
-        if (currentPlatform === 'pc') {
-            controls = new THREE.PointerLockControls(camera, document.body);
-        } else {
-            // Заглушка
-            controls = { isLocked: true, lock: () => {}, unlock: () => {} };
-        }
+        let controls = { isLocked: false }; 
+        let gameEnded = false; let gameWin = false; let mobileControlsInitialized = false;
 
-        let gameEnded = false;
-        let gameWin = false;
+        let health = 100;
+        let stamina = 100;
+        let isSprinting = false;
+        let isSprintToggledMobile = false; 
 
-        // Флаг, чтобы обработчики мобильных кнопок добавлялись только один раз
-        let mobileControlsInitialized = false;
-
-        startBtn.addEventListener('click', () => {
-            console.log('Старт нажата, платформа:', currentPlatform);
-            initAudio();
-            if (currentPlatform === 'pc') {
-                if (!gameEnded) controls.lock();
-            } else {
-                startMobileGame();
-            }
+        startBtn.addEventListener('click', () => { 
+            initAudio(); 
+            if (currentPlatform === 'pc') { 
+                if (!controls.lock) {
+                    controls = new THREE.PointerLockControls(camera, document.body);
+                    controls.addEventListener('lock', () => { blocker.style.display = 'none'; bodycamUI.style.display = 'block'; updateUI(); });
+                    controls.addEventListener('unlock', () => { if (!gameEnded) { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; } });
+                }
+                if (!gameEnded) controls.lock(); 
+            } else { 
+                controls.isLocked = true; 
+                startMobileGame(); 
+            } 
         });
 
-        function startMobileGame() {
-            console.log('Запуск мобильной игры');
-            blocker.style.display = 'none';
-            bodycamUI.style.display = 'block';
-            mobileControls.style.display = 'flex';
-            // Устанавливаем камеру в нужную позицию
-            camera.position.set(-4.5, 1.7, 2);
-            // Захватываем касания для поворота камеры
-            setupMobileControls();
-            updateUI();
+        function startMobileGame() { 
+            blocker.style.display = 'none'; bodycamUI.style.display = 'block'; mobileControls.style.display = 'flex'; 
+            camera.position.set(-4.5, 1.7, 2); 
+            setupMobileControls(); 
+            updateUI(); 
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
         }
 
-        if (currentPlatform === 'pc') {
-            controls.addEventListener('lock', () => { 
-                console.log('Блокировка мыши');
-                blocker.style.display = 'none'; 
-                bodycamUI.style.display = 'block'; 
-                updateUI(); 
-            });
-
-            controls.addEventListener('unlock', () => { 
-                if (!gameEnded) { 
-                    blocker.style.display = 'flex'; 
-                    bodycamUI.style.display = 'none'; 
-                } 
-            });
-        }
-
-        const velocity = new THREE.Vector3();
-        const direction = new THREE.Vector3();
+        const velocity = new THREE.Vector3(); const direction = new THREE.Vector3(); 
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        
+        // Переменные для мобильного джойстика
+        let joystickVector = { x: 0, y: 0 };
+        let moveTouchId = null;
+        let lookTouchId = null;
+        let joystickCenter = { x: 0, y: 0 };
+        let lookLastPos = { x: 0, y: 0 };
+        let pitch = 0, yaw = 0; const PI_2 = Math.PI / 2;
 
         document.addEventListener('keydown', (e) => {
             if (currentPlatform !== 'pc') return;
             if(e.code === 'KeyW') moveForward = true; if(e.code === 'KeyA') moveLeft = true;
             if(e.code === 'KeyS') moveBackward = true; if(e.code === 'KeyD') moveRight = true;
+            if(e.code === 'ShiftLeft') isSprinting = true;
         });
         document.addEventListener('keyup', (e) => {
             if (currentPlatform !== 'pc') return;
             if(e.code === 'KeyW') moveForward = false; if(e.code === 'KeyA') moveLeft = false;
             if(e.code === 'KeyS') moveBackward = false; if(e.code === 'KeyD') moveRight = false;
+            if(e.code === 'ShiftLeft') isSprinting = false;
         });
-
-        // Мобильное управление кнопками
-        const moveFwd = document.getElementById('move-fwd');
-        const moveLeftBtn = document.getElementById('move-left');
-        const moveBack = document.getElementById('move-back');
-        const moveRightBtn = document.getElementById('move-right');
-        const actionBtn = document.getElementById('action-btn');
 
         function setupMobileControls() {
-            if (mobileControlsInitialized) return;
-            mobileControlsInitialized = true;
-
-            moveFwd.addEventListener('touchstart', (e) => { e.preventDefault(); moveForward = true; });
-            moveFwd.addEventListener('touchend', (e) => { e.preventDefault(); moveForward = false; });
-            moveBack.addEventListener('touchstart', (e) => { e.preventDefault(); moveBackward = true; });
-            moveBack.addEventListener('touchend', (e) => { e.preventDefault(); moveBackward = false; });
-            moveLeftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft = true; });
-            moveLeftBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveLeft = false; });
-            moveRightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveRight = true; });
-            moveRightBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveRight = false; });
+            if (mobileControlsInitialized) return; mobileControlsInitialized = true;
             
-            actionBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                if (!gameEnded) {
-                    handleInteraction();
-                }
-            });
-            console.log('Мобильные кнопки инициализированы');
+            // Изолируем нажатия на кнопки действий, чтобы они не вращали камеру
+            actionBtn.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); e.stopPropagation(); 
+                if (!gameEnded) handleInteraction(); 
+            }, { passive: false });
+            
+            sprintBtn.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); e.stopPropagation();
+                isSprintToggledMobile = !isSprintToggledMobile;
+                if (isSprintToggledMobile) sprintBtn.classList.add('sprint-active');
+                else sprintBtn.classList.remove('sprint-active');
+                isSprinting = isSprintToggledMobile;
+            }, { passive: false });
         }
 
-        // Поворот камеры на мобильных через перетаскивание
-        let lastTouchX = 0, lastTouchY = 0;
-        let pitch = 0, yaw = 0;
-        const PI_2 = Math.PI / 2;
-
+        // === НОВАЯ СИСТЕМА DUAL STICK (Джойстик слева, обзор справа) ===
         document.addEventListener('touchstart', (e) => {
             if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return;
-            const touch = e.touches[0];
-            lastTouchX = touch.clientX;
-            lastTouchY = touch.clientY;
-        });
+            if (e.target.closest('.ctrl-btn')) return; // Не трогаем кнопки
+            
+            const halfWidth = window.innerWidth / 2;
+
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                
+                // Левая половина: ходьба (Джойстик)
+                if (touch.clientX < halfWidth && moveTouchId === null) {
+                    moveTouchId = touch.identifier;
+                    joystickCenter = { x: touch.clientX, y: touch.clientY };
+                    
+                    const jBase = document.getElementById('joystick-base');
+                    jBase.style.display = 'block';
+                    jBase.style.left = touch.clientX + 'px';
+                    jBase.style.top = touch.clientY + 'px';
+                    document.getElementById('joystick-stick').style.transform = `translate(-50%, -50%)`;
+                } 
+                // Правая половина: обзор
+                else if (touch.clientX >= halfWidth && lookTouchId === null) {
+                    lookTouchId = touch.identifier;
+                    lookLastPos = { x: touch.clientX, y: touch.clientY };
+                }
+            }
+        }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
             if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - lastTouchX;
-            const deltaY = touch.clientY - lastTouchY;
+            e.preventDefault(); // Полный запрет скролла страницы
 
-            yaw -= deltaX * 0.005;
-            pitch -= deltaY * 0.005;
-            pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                
+                if (touch.identifier === moveTouchId) {
+                    let dx = touch.clientX - joystickCenter.x;
+                    let dy = touch.clientY - joystickCenter.y;
+                    const maxR = 50; // Максимальное отклонение стика
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist > maxR) {
+                        dx = dx * maxR / dist;
+                        dy = dy * maxR / dist;
+                    }
+                    
+                    document.getElementById('joystick-stick').style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                    // Нормализованный вектор от -1 до 1
+                    joystickVector.x = dx / maxR;
+                    joystickVector.y = dy / maxR;
 
-            camera.rotation.y = yaw;
-            camera.rotation.x = pitch;
+                } else if (touch.identifier === lookTouchId) {
+                    const deltaX = touch.clientX - lookLastPos.x;
+                    const deltaY = touch.clientY - lookLastPos.y;
+                    
+                    yaw -= deltaX * 0.005;
+                    pitch -= deltaY * 0.005;
+                    pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
+                    
+                    camera.rotation.y = yaw;
+                    camera.rotation.x = pitch;
+                    
+                    lookLastPos = { x: touch.clientX, y: touch.clientY };
+                }
+            }
+        }, { passive: false });
 
-            lastTouchX = touch.clientX;
-            lastTouchY = touch.clientY;
-        });
+        const handleTouchEnd = (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                if (touch.identifier === moveTouchId) {
+                    moveTouchId = null;
+                    document.getElementById('joystick-base').style.display = 'none';
+                    joystickVector = { x: 0, y: 0 };
+                } else if (touch.identifier === lookTouchId) {
+                    lookTouchId = null;
+                }
+            }
+        };
 
-        // ========== ГЕОМЕТРИЯ КОМНАТЫ ==========
+        document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('touchcancel', handleTouchEnd);
+
+
         function createTileTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#080808'; ctx.fillRect(0,0,256,256);
-            ctx.strokeStyle = '#151515'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
-            const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(18, 12); return tex;
+            ctx.fillStyle = '#111'; ctx.fillRect(0,0,256,256); ctx.strokeStyle = '#222'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
+            const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(18, 12); return tex;
         }
 
         function createWallTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 256; const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#111111'; ctx.fillRect(0,0,128,256); ctx.fillStyle = '#151515'; ctx.fillRect(0,0,64,256); 
+            ctx.fillStyle = '#181818'; ctx.fillRect(0,0,128,256); ctx.fillStyle = '#222'; ctx.fillRect(0,0,64,256); 
             const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; return tex;
         }
 
+        function createDesktopTexture() {
+            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 256; const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#0b1d2e'; ctx.fillRect(0,0,512,256); 
+            ctx.strokeStyle = '#1e3d59'; ctx.lineWidth = 2; 
+            for(let i=0; i<512; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,256); ctx.stroke(); }
+            for(let i=0; i<256; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(512,i); ctx.stroke(); }
+            ctx.fillStyle = '#111'; ctx.fillRect(100, 30, 312, 176);
+            ctx.fillStyle = '#556b2f'; ctx.fillRect(100, 150, 312, 56); 
+            ctx.fillStyle = '#87ceeb'; ctx.fillRect(100, 30, 312, 120); 
+            ctx.fillStyle = '#ff0000'; ctx.font = 'bold 20px Courier'; ctx.fillText("MATCH IN PROGRESS", 150, 100);
+            ctx.fillStyle = '#050505'; ctx.fillRect(0,230,512,26);
+            ctx.fillStyle = '#00a8ff'; ctx.fillRect(5,233,30,20);
+            ctx.fillStyle = '#ffffff'; for(let i=0; i<4; i++) { ctx.fillRect(10, 10 + i*35, 20, 20); }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const spookyFrames = [];
+        for (let f = 0; f < 4; f++) {
+            const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 128; const ctx = canvas.getContext('2d');
+            for (let i = 0; i < 256; i += 2) {
+                for (let j = 0; j < 128; j += 2) {
+                    const c = Math.floor(Math.random() * 150 + 50); 
+                    ctx.fillStyle = `rgb(${c},${c},${c})`; ctx.fillRect(i, j, 2, 2);
+                }
+            }
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(128, 60, 30, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(128, 130, 70, 50, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(115, 55, 3, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(141, 55, 3, 0, Math.PI*2); ctx.fill();
+            spookyFrames.push(new THREE.CanvasTexture(canvas));
+        }
+        let currentSpookyFrame = 0; let spookyFrameTimer = 0;
+
         const roomW = 18, roomD = 12, roomH = 3.8; 
         const floorTex = createTileTexture(); const wallTex = createWallTexture(); wallTex.repeat.set(roomW/2, 1); const wallTexShort = createWallTexture(); wallTexShort.repeat.set(roomD/2, 1);
-        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7 }); const wallMatLong = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 1 });
-        const wallMatShort = new THREE.MeshStandardMaterial({ map: wallTexShort, roughness: 1 }); const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1 });
+        
+        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, bumpMap: floorTex, bumpScale: 0.02, roughness: 0.5, metalness: 0.1 }); 
+        const wallMatLong = new THREE.MeshStandardMaterial({ map: wallTex, bumpMap: wallTex, bumpScale: 0.05, roughness: 0.9 });
+        const wallMatShort = new THREE.MeshStandardMaterial({ map: wallTexShort, bumpMap: wallTexShort, bumpScale: 0.05, roughness: 0.9 }); 
+        const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1 });
 
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), floorMat); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), floorMat); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
         const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), ceilingMat); ceiling.rotation.x = Math.PI / 2; ceiling.position.y = roomH; scene.add(ceiling);
 
-        function createWall(w, h, x, y, z, rotY, mat) {
-            const wall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); wall.position.set(x, y, z); wall.rotation.y = rotY; scene.add(wall);
-        }
+        function createWall(w, h, x, y, z, rotY, mat) { const wall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); wall.position.set(x, y, z); wall.rotation.y = rotY; wall.receiveShadow = true; scene.add(wall); }
         createWall(roomW, roomH, 0, roomH/2, -roomD/2, 0, wallMatLong); createWall(roomW, roomH, 0, roomH/2, roomD/2, Math.PI, wallMatLong); 
         createWall(roomD, roomH, -roomW/2, roomH/2, 0, Math.PI/2, wallMatShort); createWall(roomD, roomH, roomW/2, roomH/2, 0, -Math.PI/2, wallMatShort); 
 
         const columnMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
-        function addColumn(x, z) { const col = new THREE.Mesh(new THREE.BoxGeometry(0.6, roomH, 0.6), columnMat); col.position.set(x, roomH/2, z); scene.add(col); }
+        function addColumn(x, z) { const col = new THREE.Mesh(new THREE.BoxGeometry(0.6, roomH, 0.6), columnMat); col.position.set(x, roomH/2, z); col.castShadow = true; col.receiveShadow = true; scene.add(col); }
         addColumn(-8.8, -5.8); addColumn(8.8, -5.8); addColumn(-8.8, 5.8); addColumn(8.8, 5.8); addColumn(0, -5.8); addColumn(0, 5.8); 
 
         const centerWallMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 1 });
-        const centerWall = new THREE.Mesh(new THREE.BoxGeometry(11, roomH, 0.5), centerWallMat); centerWall.position.set(2, roomH/2, 0); scene.add(centerWall);
+        const centerWall = new THREE.Mesh(new THREE.BoxGeometry(11, roomH, 0.5), centerWallMat); centerWall.position.set(2, roomH/2, 0); centerWall.castShadow = true; centerWall.receiveShadow = true; scene.add(centerWall);
 
-        const mainAmbient = new THREE.AmbientLight(0xffffff, 0.8); scene.add(mainAmbient);
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5); scene.add(hemiLight);
+        const mainAmbient = new THREE.AmbientLight(0xffffff, 0.3); scene.add(mainAmbient);
+        const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.4); scene.add(hemiLight);
 
-        const ledTopMat = new THREE.MeshBasicMaterial({ color: 0x5555ff }); const ledBotMat = new THREE.MeshBasicMaterial({ color: 0x00ffff }); 
+        const ledTopMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x2255ff, emissiveIntensity: 2 }); 
+        const ledBotMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ffff, emissiveIntensity: 2 }); 
         function createLedStrip(w, d, x, y, z, material) { const strip = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), material); strip.position.set(x, y, z); scene.add(strip); }
         createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, -roomD/2 + 0.025, ledTopMat); createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, roomD/2 - 0.025, ledTopMat);  
         createLedStrip(0.05, roomD - 0.2, -roomW/2 + 0.025, roomH - 0.025, 0, ledTopMat); createLedStrip(0.05, roomD - 0.2, roomW/2 - 0.025, roomH - 0.025, 0, ledTopMat);  
         createLedStrip(roomW - 0.2, 0.05, 0, 0.025, -roomD/2 + 0.025, ledBotMat); createLedStrip(roomW - 0.2, 0.05, 0, 0.025, roomD/2 - 0.025, ledBotMat);  
         createLedStrip(0.05, roomD - 0.2, -roomW/2 + 0.025, 0.025, 0, ledBotMat); createLedStrip(0.05, roomD - 0.2, roomW/2 - 0.025, 0.025, 0, ledBotMat);
 
-        const ledStripGeo = new THREE.BoxGeometry(10.8, 0.1, 0.6); const rgbLedStripMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); 
+        const ledStripGeo = new THREE.BoxGeometry(10.8, 0.1, 0.6); const rgbLedStripMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff0000, emissiveIntensity: 2 }); 
         const rgbLedStrip = new THREE.Mesh(ledStripGeo, rgbLedStripMat); rgbLedStrip.position.set(2, roomH - 0.2, 0); scene.add(rgbLedStrip);
 
-        const pcScreenMatOn = new THREE.MeshBasicMaterial({ color: 0x1144aa }); const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 1 }); 
-        const pcBodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 1 }); const deskMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.9 }); 
-        const chairMatBlack = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8 }); const chairMatRed = new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.7 }); 
-        const canMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.7, roughness: 0.3 });
-        const legMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+        const spookyLight = new THREE.PointLight(0xddddff, 0, 4); spookyLight.castShadow = true; scene.add(spookyLight);
+
+        const desktopTexMat = createDesktopTexture();
+
+        const pcScreenMatOn = new THREE.MeshStandardMaterial({ map: desktopTexMat, emissiveMap: desktopTexMat, emissive: 0xffffff, emissiveIntensity: 0.8, roughness: 0.2 }); 
+        const pcScreenMatSpooky = new THREE.MeshStandardMaterial({ map: spookyFrames[0], emissiveMap: spookyFrames[0], emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.2 }); 
+        const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 0.2, metalness: 0.8 }); 
+        const pcBodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.9 }); 
+        const deskMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.7 }); 
+        const chairMatBlack = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8 }); 
+        const chairMatRed = new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.7 }); 
+        const canMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.9, roughness: 0.2 });
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8, metalness: 0.5 });
+        const mousepadMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+        const kbdKeysMat = new THREE.MeshStandardMaterial({ color: 0x020202, roughness: 0.8 });
+
+        function castAndReceive(mesh) { mesh.castShadow = true; mesh.receiveShadow = true; }
 
         function buildChairMesh(chairGroup) {
-            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 5), chairMatBlack); base.position.y = 0.025; chairGroup.add(base);
-            const lift = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.4, 8), pcBodyMat); lift.position.y = 0.25; chairGroup.add(lift);
-            const seat = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.1, 0.45), chairMatBlack); seat.position.y = 0.5; chairGroup.add(seat);
-            const seatDecor = new THREE.Mesh(new THREE.BoxGeometry(0.47, 0.05, 0.1), chairMatRed); seatDecor.position.set(0, 0.5, 0.1); chairGroup.add(seatDecor);
-            const back = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.7, 0.1), chairMatBlack); back.position.set(0, 0.9, -0.2); back.rotation.x = -0.1; chairGroup.add(back);
-            const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.15, 0.12), chairMatRed); headrest.position.set(0, 1.25, -0.23); headrest.rotation.x = -0.1; chairGroup.add(headrest);
-            const armL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.25, 0.3), pcBodyMat); armL.position.set(-0.25, 0.65, 0.0); chairGroup.add(armL);
-            const armR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.25, 0.3), pcBodyMat); armR.position.set(0.25, 0.65, 0.0); chairGroup.add(armR);
+            for(let i=0; i<5; i++) {
+                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.25), pcBodyMat); leg.position.y = 0.015; leg.rotation.y = (Math.PI * 2 / 5) * i; leg.position.x = Math.sin((Math.PI * 2 / 5) * i) * 0.12; leg.position.z = Math.cos((Math.PI * 2 / 5) * i) * 0.12; castAndReceive(leg); chairGroup.add(leg);
+            }
+            const lift = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.4, 8), pcBodyMat); lift.position.y = 0.25; castAndReceive(lift); chairGroup.add(lift);
+            const seat = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.08, 0.45), chairMatBlack); seat.position.y = 0.5; castAndReceive(seat); chairGroup.add(seat);
+            const seatSideL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 0.45), chairMatRed); seatSideL.position.set(-0.2, 0.52, 0); castAndReceive(seatSideL); chairGroup.add(seatSideL);
+            const seatSideR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 0.45), chairMatRed); seatSideR.position.set(0.2, 0.52, 0); castAndReceive(seatSideR); chairGroup.add(seatSideR);
+            const back = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.8, 0.08), chairMatBlack); back.position.set(0, 0.95, -0.2); back.rotation.x = -0.1; castAndReceive(back); chairGroup.add(back);
+            const backSideL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.75, 0.1), chairMatRed); backSideL.position.set(-0.18, 0.95, -0.18); backSideL.rotation.x = -0.1; backSideL.rotation.y = 0.2; castAndReceive(backSideL); chairGroup.add(backSideL);
+            const backSideR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.75, 0.1), chairMatRed); backSideR.position.set(0.18, 0.95, -0.18); backSideR.rotation.x = -0.1; backSideR.rotation.y = -0.2; castAndReceive(backSideR); chairGroup.add(backSideR);
+            const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.15, 0.08), chairMatRed); headrest.position.set(0, 1.4, -0.24); headrest.rotation.x = -0.1; castAndReceive(headrest); chairGroup.add(headrest);
+            const armL = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.25, 0.03), pcBodyMat); armL.position.set(-0.25, 0.65, 0.0); castAndReceive(armL); chairGroup.add(armL);
+            const armPadL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.25), chairMatBlack); armPadL.position.set(-0.25, 0.78, 0.0); castAndReceive(armPadL); chairGroup.add(armPadL);
+            const armR = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.25, 0.03), pcBodyMat); armR.position.set(0.25, 0.65, 0.0); castAndReceive(armR); chairGroup.add(armR);
+            const armPadR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.25), chairMatBlack); armPadR.position.set(0.25, 0.78, 0.0); castAndReceive(armPadR); chairGroup.add(armPadR);
         }
 
         let interactables = []; let monitorsTurnedOff = 0; let trashCollected = 0; let currentInventory = 0; const MAX_INVENTORY = 3; let totalTrash = 0; 
-        let monsterSpawned = [false, false, false]; // флаги для трёх монстров
         let isBlackout = false; let hasFlashlight = false;
-
-        // Стол админа
-        const adminMat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8});
         
-        const adminDeskLong = new THREE.Group();
-        adminDeskLong.position.set(-6, 0, -2);
-        const aTop1 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 4), adminMat); aTop1.position.y = 0.75; adminDeskLong.add(aTop1);
-        const aLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 3.8), legMat); aLeg1.position.set(-0.65, 0.75/2, 0); adminDeskLong.add(aLeg1);
+        let allPCScreens = []; let spookyEventTriggered = false;
+
+        const adminMat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8});
+        const adminDeskLong = new THREE.Group(); adminDeskLong.position.set(-6, 0, -2);
+        const aTop1 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 4), adminMat); aTop1.position.y = 0.75; castAndReceive(aTop1); adminDeskLong.add(aTop1);
+        const aLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 3.8), legMat); aLeg1.position.set(-0.65, 0.75/2, 0); castAndReceive(aLeg1); adminDeskLong.add(aLeg1);
         scene.add(adminDeskLong);
 
-        const adminDeskShort = new THREE.Group();
-        adminDeskShort.position.set(-7.5, 0, -0.75);
-        const aTop2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, 1.5), adminMat); aTop2.position.y = 0.75; adminDeskShort.add(aTop2);
-        const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); adminDeskShort.add(aLeg2);
+        const adminDeskShort = new THREE.Group(); adminDeskShort.position.set(-7.5, 0, -0.75);
+        const aTop2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, 1.5), adminMat); aTop2.position.y = 0.75; castAndReceive(aTop2); adminDeskShort.add(aTop2);
+        const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); castAndReceive(aLeg2); adminDeskShort.add(aLeg2);
         scene.add(adminDeskShort);
         
         const adminPCGeo = new THREE.BoxGeometry(0.6, 0.4, 0.05);
-        const adminPC = new THREE.Mesh(adminPCGeo, new THREE.MeshBasicMaterial({ color: 0x00ff00 })); adminPC.position.set(-6, 1.2, -2); adminPC.rotation.y = Math.PI/2; scene.add(adminPC);
-        const adminPCBack = new THREE.Mesh(adminPCGeo, new THREE.MeshStandardMaterial({ color: 0x111111 })); adminPCBack.position.set(-5.97, 1.2, -2); adminPCBack.rotation.y = Math.PI/2; scene.add(adminPCBack);
+        const adminPC = new THREE.Mesh(adminPCGeo, new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 1 })); adminPC.position.set(-6, 1.2, -2); adminPC.rotation.y = Math.PI/2; castAndReceive(adminPC); scene.add(adminPC);
+        const adminPCBack = new THREE.Mesh(adminPCGeo, new THREE.MeshStandardMaterial({ color: 0x111111 })); adminPCBack.position.set(-5.97, 1.2, -2); adminPCBack.rotation.y = Math.PI/2; castAndReceive(adminPCBack); scene.add(adminPCBack);
         const adminChair = new THREE.Group(); adminChair.position.set(-6.8, 0, -2); adminChair.rotation.y = Math.PI/2; buildChairMesh(adminChair); scene.add(adminChair);
 
-        const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111}));
-        flBody.rotation.x = Math.PI / 2; flBody.position.set(-6.2, 1.05, -2.5); flBody.rotation.y = Math.PI / 4;
-        flBody.userData = { isFlashlightItem: true }; flBody.visible = false; scene.add(flBody);
-        const flLens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16), new THREE.MeshBasicMaterial({color: 0xffffff}));
-        flLens.rotation.x = Math.PI / 2; flLens.position.set(-6.1, 1.05, -2.6); flLens.rotation.y = Math.PI / 4;
-        flLens.userData = { isFlashlightItem: true }; flLens.visible = false; scene.add(flLens);
+        const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.3, metalness: 0.8}));
+        flBody.rotation.x = Math.PI / 2; flBody.position.set(-6.2, 1.05, -2.5); flBody.rotation.y = Math.PI / 4; flBody.userData = { isFlashlightItem: true }; flBody.visible = false; castAndReceive(flBody); scene.add(flBody);
+        const flLens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16), new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0xffffff, emissiveIntensity: 5}));
+        flLens.rotation.x = Math.PI / 2; flLens.position.set(-6.1, 1.05, -2.6); flLens.rotation.y = Math.PI / 4; flLens.userData = { isFlashlightItem: true }; flLens.visible = false; scene.add(flLens);
 
         const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
-        const trashBin = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); trashBin.position.set(-8.0, 0.4, -4.8); trashBin.userData = { isTrashBin: true }; interactables.push(trashBin); scene.add(trashBin);
-        const doorMat = new THREE.MeshBasicMaterial({color: 0x440000}); 
-        const exitDoor = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 2), doorMat); exitDoor.position.set(-roomW/2 + 0.05, 1.25, 3.5); exitDoor.userData = { isDoor: true, isOpenable: false }; interactables.push(exitDoor); scene.add(exitDoor);
+        const trashBin = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); trashBin.position.set(-8.0, 0.4, -4.8); trashBin.userData = { isTrashBin: true }; castAndReceive(trashBin); interactables.push(trashBin); scene.add(trashBin);
 
-        const playerFlashlight = new THREE.SpotLight(0xffffff, 1.6, 25, Math.PI/6.5, 0.6, 1);
-        playerFlashlight.position.set(0.2, -0.2, 0); playerFlashlight.target.position.set(0, 0, -1); 
+        const doorFrameMat = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.9});
+        const doorFrame1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.6, 0.1), doorFrameMat); doorFrame1.position.set(-roomW/2 + 0.05, 1.3, 2.45); castAndReceive(doorFrame1); scene.add(doorFrame1);
+        const doorFrame2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.6, 0.1), doorFrameMat); doorFrame2.position.set(-roomW/2 + 0.05, 1.3, 4.55); castAndReceive(doorFrame2); scene.add(doorFrame2);
+        const doorFrameTop = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.1, 2.2), doorFrameMat); doorFrameTop.position.set(-roomW/2 + 0.05, 2.65, 3.5); castAndReceive(doorFrameTop); scene.add(doorFrameTop);
+
+        const doorMat = new THREE.MeshStandardMaterial({color: 0x440000, roughness: 0.8}); 
+        const exitDoor = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 2), doorMat); exitDoor.position.set(-roomW/2 + 0.05, 1.25, 3.5); exitDoor.userData = { isDoor: true, isOpenable: false }; castAndReceive(exitDoor); interactables.push(exitDoor); scene.add(exitDoor);
+
+        const doorHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2), new THREE.MeshStandardMaterial({color: 0x888888, metalness: 0.8}));
+        doorHandle.rotation.x = Math.PI/2; doorHandle.position.set(0.06, 0, 0); castAndReceive(doorHandle); exitDoor.add(doorHandle);
+
+        const exitSignMat = new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 2});
+        const exitSign = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.3, 0.8), exitSignMat); exitSign.position.set(-roomW/2 + 0.05, 2.9, 3.5); scene.add(exitSign);
+
+        const playerFlashlight = new THREE.SpotLight(0xffeedd, 2.5, 25, Math.PI/6, 0.5, 1);
+        playerFlashlight.position.set(0.2, -0.2, 0); playerFlashlight.target.position.set(0, 0, -1); playerFlashlight.castShadow = true; playerFlashlight.shadow.mapSize.width = 1024; playerFlashlight.shadow.mapSize.height = 1024; playerFlashlight.shadow.camera.near = 0.5; playerFlashlight.shadow.camera.far = 25; playerFlashlight.shadow.bias = -0.001;
 
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
+            
             const monitorGroup = new THREE.Group();
-            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.01), pcScreenMatOn); screen.position.set(0, 0.2, 0); screen.userData = { isOn: true, isPC: true }; interactables.push(screen); monitorGroup.add(screen);
-            const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.05), pcBodyMat); bezel.position.set(0, 0.2, -0.03); monitorGroup.add(bezel);
-            const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.06, 0.2, 8), pcBodyMat); stand.position.set(0, 0.0, -0.03); monitorGroup.add(stand); group.add(monitorGroup);
-            const kbd = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.02, 0.18), pcBodyMat); kbd.position.set(0, 0.01, 0.2); group.add(kbd);
-            const mouse = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.03, 0.1), pcBodyMat); mouse.position.set(0.3, 0.015, 0.2); group.add(mouse);
+            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOn); 
+            screen.position.set(0, 0.22, 0.01); screen.userData = { isOn: true, isPC: true, isSpooky: false }; 
+            castAndReceive(screen); interactables.push(screen); monitorGroup.add(screen); allPCScreens.push(screen); 
+            
+            const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); bezel.position.set(0, 0.22, -0.01); castAndReceive(bezel); monitorGroup.add(bezel);
+            const standNeck = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.02), pcBodyMat); standNeck.position.set(0, 0.1, -0.03); standNeck.rotation.x = -0.15; castAndReceive(standNeck); monitorGroup.add(standNeck);
+            const standBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.15), pcBodyMat); standBase.position.set(0, 0.005, -0.02); castAndReceive(standBase); monitorGroup.add(standBase); 
+            group.add(monitorGroup);
+
+            const mousepad = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.002, 0.3), mousepadMat); mousepad.position.set(0.05, 0.001, 0.22); castAndReceive(mousepad); group.add(mousepad);
+
+            const kbdGroup = new THREE.Group(); kbdGroup.position.set(-0.12, 0.01, 0.22); kbdGroup.rotation.x = 0.05; 
+            const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); kbdGroup.add(kbdBase);
+            const kbdRGBBase = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.016, 0.15), rgbLedStripMat); kbdRGBBase.position.y = 0.002; kbdGroup.add(kbdRGBBase);
+            const kbdKeysMain = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.02, 0.13), kbdKeysMat); kbdKeysMain.position.set(-0.05, 0.005, 0); castAndReceive(kbdKeysMain); kbdGroup.add(kbdKeysMain);
+            const kbdKeysNum = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.02, 0.13), kbdKeysMat); kbdKeysNum.position.set(0.15, 0.005, 0); castAndReceive(kbdKeysNum); kbdGroup.add(kbdKeysNum);
+            group.add(kbdGroup);
+
+            const mouseGroup = new THREE.Group(); mouseGroup.position.set(0.28, 0.005, 0.22); mouseGroup.rotation.y = -0.15;
+            const mouseBody = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.1, 12), pcBodyMat); mouseBody.rotation.x = Math.PI / 2; mouseBody.scale.set(1, 0.5, 1); mouseBody.position.y = 0.015; castAndReceive(mouseBody); mouseGroup.add(mouseBody);
+            const mouseRGB = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.02, 12), rgbLedStripMat); mouseRGB.rotation.x = Math.PI / 2; mouseRGB.scale.set(1, 0.5, 1); mouseRGB.position.set(0, 0.005, 0.02); mouseGroup.add(mouseRGB);
+            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 8), rgbLedStripMat); wheel.rotation.z = Math.PI / 2; wheel.position.set(0, 0.022, -0.035); mouseGroup.add(wheel);
+            group.add(mouseGroup);
             
             const chairGroup = new THREE.Group(); chairGroup.position.set(0, -0.75, 0.4); chairGroup.rotation.y = Math.PI; buildChairMesh(chairGroup); group.add(chairGroup);
             
             if (Math.random() < 0.6) {
                 const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), canMat);
-                const sideX = Math.random() > 0.5 ? 0.35 : -0.35; const offsetZ = Math.random() * 0.2; 
-                can.position.set(sideX, 0.075, offsetZ); can.userData = { isTrash: true }; interactables.push(can); group.add(can); totalTrash++; 
+                const sideX = Math.random() > 0.5 ? 0.45 : -0.45; const offsetZ = Math.random() * 0.2; 
+                can.position.set(sideX, 0.075, offsetZ); can.userData = { isTrash: true }; castAndReceive(can); interactables.push(can); group.add(can); totalTrash++; 
             }
             scene.add(group);
         }
 
         function createLongTable(startX, zPos) {
-            const tableGroup = new THREE.Group();
-            tableGroup.position.set(startX + 3.5, 0, zPos);
-            
-            const top = new THREE.Mesh(new THREE.BoxGeometry(8, 0.05, 1.4), deskMat);
-            top.position.y = 0.75;
-            tableGroup.add(top);
-            
-            for(let lx of [-3.9, 0, 3.9]) {
-                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 1.3), legMat);
-                leg.position.set(lx, 0.75/2, 0);
-                tableGroup.add(leg);
-            }
-            
+            const tableGroup = new THREE.Group(); tableGroup.position.set(startX + 3.5, 0, zPos);
+            const top = new THREE.Mesh(new THREE.BoxGeometry(8, 0.05, 1.4), deskMat); top.position.y = 0.75; castAndReceive(top); tableGroup.add(top);
+            for(let lx of [-3.9, 0, 3.9]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 1.3), legMat); leg.position.set(lx, 0.75/2, 0); castAndReceive(leg); tableGroup.add(leg); }
             scene.add(tableGroup);
-
-            for (let i = 0; i < 5; i++) { 
-                const posX = startX + i * 1.7; 
-                createPCAndChair(posX, zPos - 0.3, Math.PI); 
-                createPCAndChair(posX, zPos + 0.3, 0); 
-            }
+            for (let i = 0; i < 5; i++) { const posX = startX + i * 1.7; createPCAndChair(posX, zPos - 0.3, Math.PI); createPCAndChair(posX, zPos + 0.3, 0); }
         }
         createLongTable(-1.5, -3.5); createLongTable(-1.5, 3.5);
 
-        // ========== ЗАГРУЗКА ТРЁХ МОДЕЛЕЙ ПРИЗРАКОВ ==========
         const monsters = [
-            { path: 'model1.glb', color: 0xff0000, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 },
-            { path: 'model2.glb', color: 0x00ff00, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 },
-            { path: 'model3.glb', color: 0x0000ff, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, mixer: null, useCustomAnimation: false, speed: 1.8 }
+            { path: 'model1.glb', color: 0xff0000, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.2 },
+            { path: 'model2.glb', color: 0x00ff00, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.5 },
+            { path: 'model3.glb', color: 0x0000ff, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.0 }
         ];
 
         const loader = new THREE.GLTFLoader();
-
         function loadMonster(index, fallbackColor) {
-            loader.load(
-                monsters[index].path,
-                function (gltf) {
-                    const group = gltf.scene;
-                    group.scale.set(1.2, 1.2, 1.2);
-                    group.rotation.y = Math.PI;
-                    group.traverse(node => {
-                        if (node.isMesh) {
-                            node.castShadow = true;
-                            node.receiveShadow = true;
-                        }
-                    });
-                    group.visible = false;
-                    scene.add(group);
-                    monsters[index].group = group;
-                    
+            loader.load( monsters[index].path, function (gltf) {
+                    const group = gltf.scene; group.scale.set(1.2, 1.2, 1.2); group.rotation.y = Math.PI;
+                    group.traverse(node => { if (node.isMesh) castAndReceive(node); });
+                    group.visible = false; scene.add(group); monsters[index].group = group;
                     if (gltf.animations && gltf.animations.length > 0) {
-                        monsters[index].mixer = new THREE.AnimationMixer(group);
-                        monsters[index].mixer.clipAction(gltf.animations[0]).play();
-                        console.log(`Монстр ${index+1} загружен с анимациями`);
-                    } else {
-                        monsters[index].useCustomAnimation = true;
-                        console.log(`Монстр ${index+1} загружен без анимаций, будет использована программная анимация`);
-                    }
-                },
-                undefined,
-                function (error) {
-                    console.error(`Ошибка загрузки модели монстра ${index+1}. Используется запасная модель.`, error);
-                    createFallbackMonster(index, fallbackColor);
-                }
+                        monsters[index].mixer = new THREE.AnimationMixer(group); monsters[index].mixer.clipAction(gltf.animations[0]).play();
+                    } else { monsters[index].useCustomAnimation = true; }
+                }, undefined, function () { createFallbackMonster(index, fallbackColor); }
             );
         }
 
         function createFallbackMonster(index, color) {
-            const group = new THREE.Group();
-            const skinMat = new THREE.MeshStandardMaterial({ color: color, emissive: 0x220000 });
-            const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x550000 });
-            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat);
-            torso.position.y = 0.9; group.add(torso);
-            const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), skinMat);
-            head.position.y = 2.0; group.add(head);
-            const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
-            eyeL.position.set(-0.1, 2.0, 0.18); group.add(eyeL);
-            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat);
-            eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
-            group.visible = false;
-            scene.add(group);
-            monsters[index].group = group;
-            monsters[index].useCustomAnimation = true;
-            console.log(`Запасная модель для монстра ${index+1} создана`);
+            const group = new THREE.Group(); const skinMat = new THREE.MeshStandardMaterial({ color: color, emissive: 0x220000 }); const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff0000, emissiveIntensity: 2 });
+            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat); torso.position.y = 0.9; castAndReceive(torso); group.add(torso);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), skinMat); head.position.y = 2.0; castAndReceive(head); group.add(head);
+            const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeL.position.set(-0.1, 2.0, 0.18); group.add(eyeL);
+            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
+            group.visible = false; scene.add(group); monsters[index].group = group; monsters[index].useCustomAnimation = true;
         }
+        loadMonster(0, 0xff0000); loadMonster(1, 0x00ff00); loadMonster(2, 0x0000ff);
 
-        // Загружаем всех трёх монстров (с разными цветами для запасных)
-        loadMonster(0, 0xff0000);
-        loadMonster(1, 0x00ff00);
-        loadMonster(2, 0x0000ff);
+        let idleTimer = 0; const IDLE_TIME = 10; 
 
-        // Таймер бездействия
-        let idleTimer = 0;
-        const IDLE_TIME = 10; // секунд
-
-        // ========== ЭФФЕКТ ПОМЕХ ==========
-        const noiseCanvas = document.createElement('canvas');
-        noiseCanvas.id = 'noise-canvas';
-        Object.assign(noiseCanvas.style, {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            zIndex: 7,
-            opacity: 0,
-            mixBlendMode: 'screen'
-        });
-        document.body.appendChild(noiseCanvas);
-        const noiseCtx = noiseCanvas.getContext('2d');
-        let noiseOpacity = 0;
+        const noiseCanvas = document.createElement('canvas'); noiseCanvas.id = 'noise-canvas';
+        Object.assign(noiseCanvas.style, { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 7, opacity: 0, mixBlendMode: 'screen' });
+        document.body.appendChild(noiseCanvas); const noiseCtx = noiseCanvas.getContext('2d'); let noiseOpacity = 0;
 
         function updateNoise() {
-            if (!noiseCanvas || noiseOpacity <= 0) {
-                noiseCanvas.style.opacity = '0';
-                return;
+            requestAnimationFrame(updateNoise); 
+            if (!noiseCanvas) return;
+            if (noiseOpacity <= 0) { noiseCanvas.style.opacity = '0'; return; }
+            
+            const w = 256; const h = 256; 
+            noiseCanvas.width = w; noiseCanvas.height = h;
+            
+            const imageData = noiseCtx.createImageData(w, h); const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) { 
+                const val = Math.random() * 255; data[i] = val; data[i+1] = val; data[i+2] = val; data[i+3] = 200; 
             }
-            const w = noiseCanvas.width = window.innerWidth;
-            const h = noiseCanvas.height = window.innerHeight;
-            const imageData = noiseCtx.createImageData(w, h);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                const val = Math.random() * 255;
-                data[i] = val;
-                data[i+1] = val;
-                data[i+2] = val;
-                data[i+3] = 200;
-            }
-            noiseCtx.putImageData(imageData, 0, 0);
-            noiseCanvas.style.opacity = noiseOpacity;
-            requestAnimationFrame(updateNoise);
+            noiseCtx.putImageData(imageData, 0, 0); noiseCanvas.style.opacity = noiseOpacity; 
         }
-        updateNoise();
+        updateNoise(); 
 
-        // ========== ЛОГИКА ПОЯВЛЕНИЯ МОНСТРОВ ==========
         function spawnMonster(index) {
-            if (monsters[index].spawned) return;
-            monsters[index].spawned = true;
-            monsters[index].active = true;
-            const lookDir = new THREE.Vector3();
-            camera.getWorldDirection(lookDir);
-            lookDir.y = 0;
-            lookDir.normalize();
-            let spawnX = camera.position.x - (lookDir.x * 5);
-            let spawnZ = camera.position.z - (lookDir.z * 5);
-            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
-            spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
-            monsters[index].group.position.set(spawnX, 0, spawnZ);
-            monsters[index].group.visible = true;
-            playSound(monsterSpawnBuffer, 0.4);
-            console.log(`Монстр ${index+1} появился`);
-        }
-
-        function checkMonsterCollision() {
-            for (let i = 0; i < monsters.length; i++) {
-                if (monsters[i].active && monsters[i].group.visible) {
-                    const dist = camera.position.distanceTo(monsters[i].group.position);
-                    if (dist < 1.5) return true;
-                }
-            }
-            return false;
+            if (monsters[index].spawned) return; monsters[index].spawned = true; monsters[index].active = true;
+            const lookDir = new THREE.Vector3(); camera.getWorldDirection(lookDir); lookDir.y = 0; lookDir.normalize();
+            let spawnX = camera.position.x - (lookDir.x * 5); let spawnZ = camera.position.z - (lookDir.z * 5);
+            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX)); spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
+            monsters[index].group.position.set(spawnX, 0, spawnZ); monsters[index].group.visible = true; playSound(monsterSpawnBuffer, 0.4);
         }
 
         function gameOver() {
-            gameEnded = true;
-            gameWin = false;
-            if (currentPlatform === 'pc') {
-                controls.unlock();
-            } else {
-                blocker.style.display = 'flex';
-                bodycamUI.style.display = 'none';
-                mobileControls.style.display = 'none';
-            }
-            const t = translations[currentLanguage];
-            blocker.style.backgroundColor = "rgba(0,0,0,1)";
-            startText.innerHTML = t.endLose;
-            startText.style.color = "#ff0000";
-            startText.style.fontSize = "24px";
-            blocker.style.display = 'flex';
+            gameEnded = true; gameWin = false;
+            if (currentPlatform === 'pc') controls.unlock(); else { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
+            const t = translations[currentLanguage]; blocker.style.backgroundColor = "rgba(100,0,0,0.9)";
+            startText.innerHTML = t.endLose; startText.style.color = "#ff0000"; startText.style.fontSize = "24px"; blocker.style.display = 'flex';
             playSound(deathBuffer, 0.6);
         }
 
-        // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
         function triggerBlackout() {
-            if (isBlackout) return; 
-            isBlackout = true;
+            if (isBlackout) return; isBlackout = true;
             scene.remove(mainAmbient); hemiLight.intensity = 0.05; 
-            ledTopMat.color.setHex(0x000022); ledBotMat.color.setHex(0x000022); rgbLedStripMat.color.setHex(0x220000); 
-            
-            flBody.visible = true; flLens.visible = true; 
-            interactables.push(flBody, flLens); 
-
+            ledTopMat.emissive.setHex(0x000022); ledBotMat.emissive.setHex(0x000022); rgbLedStripMat.emissive.setHex(0x220000); 
+            flBody.visible = true; flLens.visible = true; interactables.push(flBody, flLens); 
             if (blackoutBuffer) {
-                const source = audioContext.createBufferSource();
-                source.buffer = blackoutBuffer;
-                source.loop = true;
-                const gainNode = audioContext.createGain();
-                gainNode.gain.value = 0.3;
-                source.connect(gainNode).connect(audioContext.destination);
-                source.start();
-                window.blackoutLoop = source;
+                const source = audioContext.createBufferSource(); source.buffer = blackoutBuffer; source.loop = true;
+                const gainNode = audioContext.createGain(); gainNode.gain.value = 0.3; source.connect(gainNode).connect(audioContext.destination); source.start(); window.blackoutLoop = source;
             }
-
             updateUI();
         }
 
         function pickupFlashlight() {
-            hasFlashlight = true;
-            flBody.visible = false; flLens.visible = false; 
-            interactables = interactables.filter(item => item !== flBody && item !== flLens);
-            
-            camera.add(playerFlashlight); camera.add(playerFlashlight.target);
-
-            uiInventory.style.display = "block"; 
-
-            if (window.blackoutLoop) {
-                window.blackoutLoop.stop();
-                window.blackoutLoop = null;
-            }
-
+            hasFlashlight = true; flBody.visible = false; flLens.visible = false; interactables = interactables.filter(item => item !== flBody && item !== flLens);
+            camera.add(playerFlashlight); camera.add(playerFlashlight.target); uiInventory.style.display = "block"; 
+            if (window.blackoutLoop) { window.blackoutLoop.stop(); window.blackoutLoop = null; }
             updateUI();
         }
 
-        function updateUI() {
+        setInterval(() => {
+            if (gameEnded) return;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU', { hour12: false });
             const t = translations[currentLanguage];
             
-            recElement.textContent = t.rec;
+            if (!isBlackout) uiTime.innerHTML = `${timeStr} <br> ${t.sysOnline}`;
+            else if (!hasFlashlight) uiTime.innerHTML = `${timeStr} <br> <span style="color:#ff0000">${t.powerFail}</span>`;
+            else uiTime.innerHTML = `${timeStr} <br> <span style="color:#ffaa00">${t.backupPower}</span>`;
+        }, 1000);
 
+        function updateUI() {
+            const t = translations[currentLanguage]; recElement.textContent = t.rec;
             const allTasksDone = monitorsTurnedOff >= 20 && trashCollected >= totalTrash;
 
+            let pcText = monitorsTurnedOff >= 20 ? t.taskPCDone : t.taskPC.replace('{current}', monitorsTurnedOff);
+            let trashText = trashCollected >= totalTrash ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
+            
             if (!isBlackout) {
-                uiTime.innerHTML = t.timeOnline;
-                uiTime.style.color = "white";
-                let pcText = monitorsTurnedOff >= 20 
-                    ? t.taskPCDone 
-                    : t.taskPC.replace('{current}', monitorsTurnedOff);
-                let trashText = trashCollected >= totalTrash 
-                    ? t.taskTrashDone.replace('{total}', totalTrash)
-                    : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
-                uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`;
-                uiTask.style.color = "#00ffaa";
+                uiTime.style.color = "white"; uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; uiTask.style.color = "#00ffaa";
             } else {
                 if (!hasFlashlight) {
-                    uiTime.innerHTML = t.timePowerFail;
-                    uiTime.style.color = "#ff0000";
-                    uiTask.innerHTML = t.taskBlackout;
-                    uiTask.style.color = "#ff0000";
+                    uiTime.style.color = "#ff0000"; uiTask.innerHTML = t.taskBlackout; uiTask.style.color = "#ff0000";
                 } else {
-                    uiTime.innerHTML = t.timeBackup;
                     uiTime.style.color = "#ffaa00";
-                    
                     if (allTasksDone) {
-                        uiTask.innerHTML = t.taskComplete;
-                        uiTask.style.color = "#00ff00";
-                        if (!exitDoor.userData.isOpenable) {
-                            doorMat.color.setHex(0x00ff00);
-                            exitDoor.userData.isOpenable = true;
-                        }
+                        uiTask.innerHTML = t.taskComplete; uiTask.style.color = "#00ff00";
+                        if (!exitDoor.userData.isOpenable) { doorMat.color.setHex(0x00ff00); exitDoor.userData.isOpenable = true; }
                     } else {
-                        let pcText = monitorsTurnedOff >= 20 
-                            ? t.taskPCDone 
-                            : t.taskPC.replace('{current}', monitorsTurnedOff);
-                        let trashText = trashCollected >= totalTrash 
-                            ? t.taskTrashDone.replace('{total}', totalTrash)
-                            : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
-                        uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`;
-                        uiTask.style.color = "#00ffaa";
+                        uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; uiTask.style.color = "#00ffaa";
                     }
                 }
             }
-
-            if (hasFlashlight) {
-                uiInventory.innerHTML = t.inventory.replace('{current}', currentInventory).replace('{max}', MAX_INVENTORY);
-                uiInventory.style.color = "#ffaa00";
-            } else {
-                uiInventory.style.display = "none";
-            }
+            if (hasFlashlight) { uiInventory.innerHTML = t.inventory.replace('{current}', currentInventory).replace('{max}', MAX_INVENTORY); uiInventory.style.color = "#ffaa00"; } else { uiInventory.style.display = "none"; }
+            
+            uiStats.innerHTML = t.stats.replace('{hp}', Math.floor(health)).replace('{stm}', Math.floor(stamina));
+            if (health < 40) uiStats.style.color = "#ff3333"; else uiStats.style.color = "#00ffaa";
         }
 
         const raycaster = new THREE.Raycaster();
-        document.addEventListener('mousedown', (e) => {
-            if (currentPlatform !== 'pc') return;
-            if (!controls.isLocked || gameEnded) return;
-            handleInteraction();
-        });
+        document.addEventListener('mousedown', (e) => { if (currentPlatform === 'pc' && controls.isLocked && !gameEnded) handleInteraction(); });
 
         function handleInteraction() {
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
@@ -894,96 +751,66 @@
             
             if (intersects.length > 0) {
                 const obj = intersects[0].object;
-                
                 if (!isBlackout && (obj.userData.isPC || obj.userData.isTrash)) triggerBlackout();
-
-                if (obj.userData.isFlashlightItem) {
-                    pickupFlashlight();
-                    playSound(pickupBuffer, 0.3);
-                }
+                if (obj.userData.isFlashlightItem) { pickupFlashlight(); playSound(pickupBuffer, 0.3); }
                 
                 if (obj.userData.isPC && obj.userData.isOn) {
-                    obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++;
-                    playSound(pcOffBuffer, 0.2);
-                    // Проверка условия для монстра 2 (7 ПК)
-                    if (monitorsTurnedOff >= 7 && !monsters[1].spawned) {
-                        spawnMonster(1);
+                    if (obj.userData.isSpooky) {
+                        obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2); 
+                        spookyLight.intensity = 0; updateUI();
+                    } else {
+                        obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2);
+                        if (monitorsTurnedOff >= 7 && !monsters[1].spawned) spawnMonster(1);
+                        
+                        if (monitorsTurnedOff === 20 && !spookyEventTriggered) {
+                            spookyEventTriggered = true;
+                            setTimeout(() => {
+                                const randomPC = allPCScreens[Math.floor(Math.random() * allPCScreens.length)];
+                                randomPC.material = pcScreenMatSpooky; randomPC.userData.isOn = true; randomPC.userData.isSpooky = true;
+                                monitorsTurnedOff--; playSound(jumpscareBuffer, 1.0);
+                                const pos = new THREE.Vector3(); randomPC.getWorldPosition(pos); const dir = new THREE.Vector3(); randomPC.getWorldDirection(dir);
+                                spookyLight.position.copy(pos).add(dir.multiplyScalar(0.4)); updateUI();
+                            }, 1000);
+                        }
+                        updateUI();
                     }
-                    updateUI();
                 }
 
                 if (obj.userData.isTrash) {
                     if (currentInventory < MAX_INVENTORY) {
-                        obj.parent.remove(obj); interactables = interactables.filter(item => item !== obj); currentInventory++; 
-                        playSound(pickupBuffer, 0.2);
-                        updateUI();
+                        obj.parent.remove(obj); interactables = interactables.filter(item => item !== obj); currentInventory++; playSound(pickupBuffer, 0.2); updateUI();
                     } else if (hasFlashlight) {
-                        const t = translations[currentLanguage];
-                        uiInventory.innerHTML = t.inventoryFull; uiInventory.style.color = "#ff3333"; setTimeout(updateUI, 2000);
+                        const t = translations[currentLanguage]; uiInventory.innerHTML = t.inventoryFull; uiInventory.style.color = "#ff3333"; setTimeout(updateUI, 2000);
                     }
                 }
 
                 if (obj.userData.isTrashBin) {
                     if (currentInventory > 0) { 
-                        trashCollected += currentInventory; 
-                        currentInventory = 0; 
-                        // Проверка условия для монстра 1 (4 бутылки)
-                        if (trashCollected >= 4 && !monsters[0].spawned) {
-                            spawnMonster(0);
-                        }
-                        updateUI(); 
+                        trashCollected += currentInventory; currentInventory = 0; 
+                        if (trashCollected >= 4 && !monsters[0].spawned) spawnMonster(0); updateUI(); 
                     }
                 }
 
                 if (obj.userData.isDoor && obj.userData.isOpenable) {
-                    gameEnded = true;
-                    gameWin = true;
-                    if (currentPlatform === 'pc') {
-                        controls.unlock();
-                    } else {
-                        blocker.style.display = 'flex';
-                        bodycamUI.style.display = 'none';
-                        mobileControls.style.display = 'none';
-                    }
-                    const t = translations[currentLanguage];
-                    blocker.style.backgroundColor = "rgba(0,0,0,1)";
-                    startText.innerHTML = t.endWin;
-                    startText.style.color = "#00ff00";
-                    startText.style.fontSize = "24px";
-                    blocker.style.display = 'flex';
-                    playSound(doorOpenBuffer, 0.4);
+                    gameEnded = true; gameWin = true;
+                    if (currentPlatform === 'pc') controls.unlock(); else { blocker.style.display = 'flex'; bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
+                    const t = translations[currentLanguage]; blocker.style.backgroundColor = "rgba(0,0,0,1)";
+                    startText.innerHTML = t.endWin; startText.style.color = "#00ff00"; startText.style.fontSize = "24px"; blocker.style.display = 'flex'; playSound(doorOpenBuffer, 0.4);
                 }
             }
         }
 
-        scene.add(camera); camera.position.set(-4.5, 1.7, 2);
-        // Для мобильных установим начальные углы
-        yaw = camera.rotation.y;
-        pitch = camera.rotation.x;
-
-        const obstacles = [
-            { minX: -3.5, maxX: 7.5, minZ: -0.25, maxZ: 0.25 },
-            { minX: -2.0, maxX: 6.0, minZ: -4.3, maxZ: -2.7 },
-            { minX: -2.0, maxX: 6.0, minZ: 2.7, maxZ: 4.3 },
-            { minX: -6.75, maxX: -5.25, minZ: -4.0, maxZ: 0.0 },
-            { minX: -9.0, maxX: -6.0, minZ: -1.5, maxZ: 0.0 }
-        ];
+        scene.add(camera); camera.position.set(-4.5, 1.7, 2); yaw = camera.rotation.y; pitch = camera.rotation.x;
+        const obstacles = [ { minX: -3.5, maxX: 7.5, minZ: -0.25, maxZ: 0.25 }, { minX: -2.0, maxX: 6.0, minZ: -4.3, maxZ: -2.7 }, { minX: -2.0, maxX: 6.0, minZ: 2.7, maxZ: 4.3 }, { minX: -6.75, maxX: -5.25, minZ: -4.0, maxZ: 0.0 }, { minX: -9.0, maxX: -6.0, minZ: -1.5, maxZ: 0.0 } ];
 
         function checkCollision(x, z) {
-            const r = 0.3; 
-            const limitX = roomW/2 - r; const limitZ = roomD/2 - r; 
+            const r = 0.3; const limitX = roomW/2 - r; const limitZ = roomD/2 - r; 
             if (x < -limitX || x > limitX || z < -limitZ || z > limitZ) return true; 
-
-            for (let obs of obstacles) {
-                if (x > obs.minX - r && x < obs.maxX + r && z > obs.minZ - r && z < obs.maxZ + r) {
-                    return true; 
-                }
-            }
+            for (let obs of obstacles) if (x > obs.minX - r && x < obs.maxX + r && z > obs.minZ - r && z < obs.maxZ + r) return true; 
             return false;
         }
 
-        let prevTime = performance.now(); const clock = new THREE.Clock(); 
-        let stepAccum = 0;
+        let prevTime = performance.now(); const clock = new THREE.Clock(); let stepAccum = 0;
 
         function animate() {
             requestAnimationFrame(animate);
@@ -991,148 +818,158 @@
             if ((controls.isLocked || currentPlatform === 'mobile') && !gameEnded) {
                 const time = performance.now(); const delta = (time - prevTime) / 1000;
                 velocity.x -= velocity.x * 10.0 * delta; velocity.z -= velocity.z * 10.0 * delta;
-                direction.z = Number(moveForward) - Number(moveBackward); direction.x = Number(moveRight) - Number(moveLeft); direction.normalize();
+                
+                let isInputActive = false;
 
-                const speed = 13.0; 
-                if (moveForward || moveBackward) velocity.z -= direction.z * speed * delta;
-                if (moveLeft || moveRight) velocity.x -= direction.x * speed * delta;
-
-                const oldX = camera.position.x;
-                const oldZ = camera.position.z;
-
-                // Для мобильных двигаем камеру напрямую, для ПК через controls
                 if (currentPlatform === 'pc') {
-                    controls.moveRight(-velocity.x * delta); 
-                    controls.moveForward(-velocity.z * delta);
+                    direction.z = Number(moveForward) - Number(moveBackward); 
+                    direction.x = Number(moveRight) - Number(moveLeft); 
+                    direction.normalize();
+                    isInputActive = (moveForward || moveBackward || moveLeft || moveRight);
                 } else {
-                    // Движение в направлении взгляда
-                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                    direction.x = joystickVector.x;
+                    direction.z = -joystickVector.y; // Джойстик ВВЕРХ это отрицательный Y на экране, но положительный вектор движения
+                    isInputActive = (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1);
+                }
+
+                let currentSpeed = 13.0;
+                if (isInputActive) {
+                    if (isSprinting && stamina > 0) {
+                        currentSpeed = 22.0; 
+                        stamina -= delta * 25; 
+                    } else {
+                        stamina += delta * 10; 
+                        if (stamina <= 0 && isSprintToggledMobile) {
+                            isSprintToggledMobile = false; isSprinting = false; sprintBtn.classList.remove('sprint-active');
+                        }
+                    }
+                } else {
+                    stamina += delta * 20; 
+                }
+                stamina = Math.max(0, Math.min(100, stamina));
+                
+                if (isInputActive || velocity.length() > 0.1) {
+                    velocity.z -= direction.z * currentSpeed * delta;
+                    velocity.x -= direction.x * currentSpeed * delta;
+                }
+
+                const oldX = camera.position.x; const oldZ = camera.position.z;
+
+                if (currentPlatform === 'pc') {
+                    controls.moveRight(-velocity.x * delta); controls.moveForward(-velocity.z * delta);
+                } else {
+                    // Для телефона движение относительно взгляда
+                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); 
                     const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-                    forward.y = 0; forward.normalize();
-                    right.y = 0; right.normalize();
-                    camera.position.addScaledVector(forward, -velocity.z * delta);
+                    forward.y = 0; forward.normalize(); right.y = 0; right.normalize();
+                    camera.position.addScaledVector(forward, -velocity.z * delta); 
                     camera.position.addScaledVector(right, -velocity.x * delta);
                 }
 
-                const newX = camera.position.x;
-                const newZ = camera.position.z;
+                const newX = camera.position.x; const newZ = camera.position.z;
+                let colX = checkCollision(newX, oldZ); let colZ = checkCollision(oldX, newZ); let colBoth = checkCollision(newX, newZ);
 
-                let colX = checkCollision(newX, oldZ);
-                let colZ = checkCollision(oldX, newZ);
-                let colBoth = checkCollision(newX, newZ);
-
-                if (colX) camera.position.x = oldX;
-                if (colZ) camera.position.z = oldZ;
-                if (!colX && !colZ && colBoth) {
-                    camera.position.x = oldX;
-                    camera.position.z = oldZ;
-                }
-
+                if (colX) camera.position.x = oldX; if (colZ) camera.position.z = oldZ;
+                if (!colX && !colZ && colBoth) { camera.position.x = oldX; camera.position.z = oldZ; }
                 camera.position.y = 1.7; 
 
-                // Шаги игрока и таймер бездействия
-                const isMoving = (moveForward || moveBackward || moveLeft || moveRight) && (velocity.length() > 0.1);
-                if (isMoving) {
-                    stepAccum += delta;
-                    if (stepAccum > 0.4) {
-                        playFootstep();
-                        stepAccum = 0;
-                    }
-                    idleTimer = 0; // сброс таймера при движении
+                if (isInputActive) {
+                    stepAccum += delta; 
+                    const stepThreshold = (currentSpeed > 15) ? 0.3 : 0.5; 
+                    if (stepAccum > stepThreshold) { playFootstep(currentSpeed > 15); stepAccum = 0; } 
+                    idleTimer = 0;
                 } else {
-                    stepAccum = 0;
-                    idleTimer += delta;
-                    // Проверка условия для монстра 3 (10 секунд бездействия)
-                    if (idleTimer >= IDLE_TIME && !monsters[2].spawned) {
-                        spawnMonster(2);
-                    }
+                    stepAccum = 0; idleTimer += delta; if (idleTimer >= IDLE_TIME && !monsters[2].spawned) spawnMonster(2);
                 }
 
-                // RGB лента
                 if (!isBlackout) {
-                    const elapsedTime = clock.getElapsedTime();
-                    const r = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5;
-                    const g = Math.sin(elapsedTime * 0.5 + Math.PI/2) * 0.5 + 0.5;
-                    const b = Math.sin(elapsedTime * 0.5 + Math.PI) * 0.5 + 0.5;
-                    rgbLedStripMat.color.setRGB(r, g, b);
+                    const elapsedTime = clock.getElapsedTime(); const r = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5; const g = Math.sin(elapsedTime * 0.5 + Math.PI/2) * 0.5 + 0.5; const b = Math.sin(elapsedTime * 0.5 + Math.PI) * 0.5 + 0.5;
+                    rgbLedStripMat.emissive.setRGB(r, g, b); 
                 } else if (isBlackout && hasFlashlight) {
-                    const elapsedTime = clock.getElapsedTime();
-                    const flicker = Math.sin(elapsedTime * 20) * 0.2 + 0.8;
-                    playerFlashlight.intensity = 1.6 * flicker;
+                    const elapsedTime = clock.getElapsedTime(); const flicker = Math.sin(elapsedTime * 20) * 0.2 + 0.8;
+                    playerFlashlight.intensity = 2.5 * flicker;
                 }
 
-                // ========== ЛОГИКА МОНСТРОВ ==========
+                if (spookyEventTriggered && monitorsTurnedOff < 20) {
+                    spookyFrameTimer += delta;
+                    if (spookyFrameTimer > 0.05) {
+                        spookyFrameTimer = 0; currentSpookyFrame = (currentSpookyFrame + 1) % spookyFrames.length;
+                        pcScreenMatSpooky.map = spookyFrames[currentSpookyFrame]; pcScreenMatSpooky.emissiveMap = spookyFrames[currentSpookyFrame];
+                    }
+                    spookyLight.intensity = 1.5 + Math.random() * 2.0; 
+                }
+
+                let isTakingDamage = false;
+                
                 for (let i = 0; i < monsters.length; i++) {
                     const m = monsters[i];
                     if (m.active && m.group.visible) {
                         const elapsed = clock.getElapsedTime();
-                        
-                        // Программная анимация (если нет встроенной)
                         if (m.useCustomAnimation) {
-                            m.group.position.y = Math.sin(elapsed * 3 + i) * 0.1;
-                            m.group.rotation.z = Math.sin(elapsed * 2 + i) * 0.05;
-                            const scale = 1.0 + Math.sin(elapsed * 5 + i) * 0.02;
-                            m.group.scale.set(scale, scale, scale);
+                            m.group.position.y = Math.sin(elapsed * 3 + i) * 0.1; m.group.rotation.z = Math.sin(elapsed * 2 + i) * 0.05;
+                            const scale = 1.0 + Math.sin(elapsed * 5 + i) * 0.02; m.group.scale.set(scale, scale, scale);
                         }
                         
-                        // Проверка взгляда игрока на этого монстра
-                        const lookRay = new THREE.Raycaster(camera.position, camera.getWorldDirection(new THREE.Vector3()));
-                        const parts = m.group.children;
-                        const intersectsLook = lookRay.intersectObjects(parts, true);
-                        if (intersectsLook.length > 0) {
-                            m.group.visible = false;
-                            m.lookAwayTimer = 2.0;
-                        } else {
-                            // Движение к игроку
-                            const directionToPlayer = new THREE.Vector3().subVectors(camera.position, m.group.position);
-                            directionToPlayer.y = 0;
-                            const distance = directionToPlayer.length();
-                            if (distance > 1.5) {
-                                directionToPlayer.normalize();
-                                m.group.position.x += directionToPlayer.x * m.speed * delta;
-                                m.group.position.z += directionToPlayer.z * m.speed * delta;
-                                m.group.lookAt(camera.position.x, 0, camera.position.z);
-                                
-                                if (Math.random() < delta * 2) {
-                                    playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
-                                }
+                        const dirToMonster = new THREE.Vector3().subVectors(m.group.position, camera.position);
+                        dirToMonster.y = 0; 
+                        const distance = dirToMonster.length();
+                        dirToMonster.normalize();
+                        
+                        const lookDir = camera.getWorldDirection(new THREE.Vector3());
+                        lookDir.y = 0; lookDir.normalize();
+                        
+                        const isLookingAtMonster = (lookDir.angleTo(dirToMonster) < 0.5) && (distance < 15.0);
+
+                        if (isLookingAtMonster) {
+                            m.stareTime += delta;
+                            noiseOpacity = Math.max(noiseOpacity, 0.2 + m.stareTime * 0.5); 
+                            
+                            if (m.stareTime > 0.8) {
+                                m.group.visible = false; 
+                                m.lookAwayTimer = 3.0 + Math.random() * 3.0; 
+                                m.stareTime = 0;
+                                playSound(monsterSpawnBuffer, 0.2, 1.5); 
                             }
-                            noiseOpacity = Math.min(0.7, 0.3 + 0.4 * (1 - Math.min(1, distance / 5)));
+                        } else {
+                            m.stareTime = 0;
+                            if (distance > 2.0) {
+                                m.group.position.x += dirToMonster.x * m.speed * delta;
+                                m.group.position.z += dirToMonster.z * m.speed * delta;
+                                m.group.lookAt(camera.position.x, 0, camera.position.z);
+                                if (Math.random() < delta * 2) playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
+                            } else {
+                                isTakingDamage = true; health -= delta * 35; noiseOpacity = Math.max(noiseOpacity, 0.85); 
+                            }
                         }
                     } else if (m.lookAwayTimer > 0) {
                         m.lookAwayTimer -= delta;
                         if (m.lookAwayTimer <= 0) {
-                            const lookDir = camera.getWorldDirection(new THREE.Vector3());
-                            lookDir.y = 0; lookDir.normalize();
-                            let spawnX = camera.position.x - (lookDir.x * 5);
-                            let spawnZ = camera.position.z - (lookDir.z * 5);
-                            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
-                            spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
-                            m.group.position.set(spawnX, 0, spawnZ);
-                            m.group.visible = true;
-                            m.lookAwayTimer = 0;
-                            playSound(monsterSpawnBuffer, 0.3);
+                            const lookDir = camera.getWorldDirection(new THREE.Vector3()); lookDir.y = 0; lookDir.normalize();
+                            let spawnX = camera.position.x - (lookDir.x * 5); let spawnZ = camera.position.z - (lookDir.z * 5);
+                            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX)); spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
+                            m.group.position.set(spawnX, 0, spawnZ); m.group.visible = true; m.lookAwayTimer = 0; playSound(monsterSpawnBuffer, 0.3);
                         }
                     }
                 }
-
-                if (checkMonsterCollision()) {
-                    gameOver();
+                
+                if (isTakingDamage) {
+                    bodycamUI.style.boxShadow = "inset 0 0 150px rgba(255, 0, 0, 0.8)";
+                } else {
+                    bodycamUI.style.boxShadow = "inset 0 0 100px rgba(0, 0, 0, 0.8)";
+                    if (noiseOpacity > 0 && !spookyEventTriggered) noiseOpacity -= delta * 2; 
                 }
+                
+                if (health <= 0) { health = 0; gameOver(); }
 
+                updateUI(); 
                 prevTime = time;
             }
-            // Обновление анимаций для всех монстров
-            for (let m of monsters) {
-                if (m.mixer) m.mixer.update(clock.getDelta());
-            }
+            for (let m of monsters) if (m.mixer) m.mixer.update(clock.getDelta());
             renderer.render(scene, camera);
         }
         animate();
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
     </script>
 </body>
 </html>
