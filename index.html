@@ -227,6 +227,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.0/umd/index.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
 
     <script>
         const translations = {
@@ -742,13 +744,16 @@
         }
         createLongTable(-1.5, -3.5); createLongTable(-1.5, 3.5);
 
+        const loader = new THREE.GLTFLoader();
+        // Добавляем FBX загрузчик
+        const fbxLoader = new THREE.FBXLoader();
+
         const monsters = [
             { path: 'model1.glb', color: 0xff0000, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.2 },
             { path: 'model2.glb', color: 0x00ff00, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.5 },
             { path: 'model3.glb', color: 0x0000ff, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.0 }
         ];
 
-        const loader = new THREE.GLTFLoader();
         function loadMonster(index, fallbackColor) {
             loader.load( monsters[index].path, function (gltf) {
                     const group = gltf.scene; group.scale.set(1.2, 1.2, 1.2); group.rotation.y = Math.PI; group.traverse(node => { if (node.isMesh) castAndReceive(node); });
@@ -831,16 +836,18 @@
                 walkAction: null  
             };
 
-            loader.load('client.glb', function (gltf) {
-                const model = gltf.scene;
-                // ИСПРАВЛЕНИЕ: Уменьшаем модель в 2 раза
-                model.scale.set(0.5, 0.5, 0.5); 
-                model.traverse(node => { if (node.isMesh) castAndReceive(node); });
-                clientObj.mesh.add(model);
+            // ИСПРАВЛЕНИЕ: Загружаем FBX модель
+            fbxLoader.load('client.fbx', function (object) {
+                
+                // ИСПРАВЛЕНИЕ: Масштаб FBX-моделей (уменьшаем со 100% до 0.7%)
+                object.scale.set(0.007, 0.007, 0.007); 
+                
+                object.traverse(node => { if (node.isMesh) castAndReceive(node); });
+                clientObj.mesh.add(object);
 
-                if (gltf.animations && gltf.animations.length > 0) {
-                    clientObj.mixer = new THREE.AnimationMixer(model);
-                    clientObj.walkAction = clientObj.mixer.clipAction(gltf.animations[0]);
+                if (object.animations && object.animations.length > 0) {
+                    clientObj.mixer = new THREE.AnimationMixer(object);
+                    clientObj.walkAction = clientObj.mixer.clipAction(object.animations[0]);
                     clientObj.walkAction.play();
                 }
             }, undefined, function () {
@@ -1009,6 +1016,8 @@
         }
 
         let prevTime = performance.now(); const clock = new THREE.Clock(); let stepAccum = 0;
+        
+        const turnDummy = new THREE.Object3D();
 
         function animate() {
             requestAnimationFrame(animate);
@@ -1039,7 +1048,6 @@
                         const chairPos = new THREE.Vector3().copy(monitorPos).addScaledVector(directionToChair, 0.5);
 
                         function processMovement(targetPos, onReach) {
-                            // ИСПРАВЛЕНИЕ: Возобновляем анимацию при движении
                             if (c.walkAction) {
                                 c.walkAction.paused = false;
                                 if (!c.walkAction.isRunning()) c.walkAction.play();
@@ -1056,15 +1064,21 @@
                             const currentTarget = c.waypoints[0];
                             const dir = new THREE.Vector3().subVectors(currentTarget, c.mesh.position);
                             dir.y = 0;
+                            
                             if (dir.length() > 0.15) {
                                 dir.normalize();
                                 c.mesh.position.addScaledVector(dir, c.speed * delta);
-                                c.mesh.lookAt(currentTarget.x, 0, currentTarget.z);
+                                
+                                // ИСПРАВЛЕНИЕ: Плавный поворот тела к цели
+                                turnDummy.position.copy(c.mesh.position);
+                                turnDummy.lookAt(currentTarget.x, c.mesh.position.y, currentTarget.z);
+                                c.mesh.quaternion.slerp(turnDummy.quaternion, 10 * delta);
+
                                 c.mesh.position.y = 0; 
                             } else {
                                 c.waypoints.shift();
                                 if (c.waypoints.length === 0) {
-                                    // ИСПРАВЛЕНИЕ: Ставим на паузу вместо stop(), чтобы избежать Т-позы
+                                    // ИСПРАВЛЕНИЕ: Избавляемся от Т-позы при помощи паузы
                                     if (c.walkAction) c.walkAction.paused = true;
                                     onReach();
                                 }
