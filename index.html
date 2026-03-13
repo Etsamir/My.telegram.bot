@@ -75,7 +75,6 @@
             text-align: center; line-height: 1.6;
         }
 
-        /* Кнопка рестарта */
         #restart-btn {
             position: relative; z-index: 1; margin-top: 15px; padding: 15px; font-size: 20px; 
             font-family: 'Courier New', monospace; background: #222; color: #fff; border: 1px solid #777; 
@@ -83,8 +82,6 @@
             letter-spacing: 4px; text-transform: uppercase;
         }
         #restart-btn:hover { background: #eee; color: #000; box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
-
-        /* ======================================================= */
 
         #crosshair {
             position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
@@ -239,12 +236,12 @@
                 taskTrash: '[ ] Выбросить мусор: {current}/{total}', taskTrashDone: '[✓] Мусор выброшен ({total}/{total})', 
                 taskBlackout: 'СБОЙ ПИТАНИЯ!<br>НАЙДИТЕ ФОНАРИК НА СТОЛЕ АДМИНА!', taskComplete: 'СИСТЕМА СБРОШЕНА.<br>ПОКИНЬТЕ КЛУБ!', 
                 stats: 'HP: {hp}% | STM: {stm}%', inventory: 'В РУКАХ: {current} / {max}', inventoryFull: 'ИНВЕНТАРЬ ПОЛОН! НЕСИ В БАК.', 
-                startBtn: 'Начать запись', startText: 'Смена началась. Будьте осторожны.<br>Shift - Бег. E - Взаимодействие.', 
+                startBtn: 'Начать запись', startText: 'Смена началась. Следите за клиентами и убирайте мусор.<br>Shift - Бег. E - Взаимодействие.', 
                 winTitle: 'СМЕНА ОКОНЧЕНА', winDesc: 'ВЫ УСПЕШНО ВЫЖИЛИ.', 
                 loseTitle: 'СВЯЗЬ ПОТЕРЯНА', loseDesc: 'ЖИЗНЕННЫЕ ПОКАЗАТЕЛИ: 0', restartBtn: 'ПОВТОРИТЬ СМЕНУ',
                 diffEasy: 'Мирная', diffMedium: 'Средняя', diffHard: 'Кошмар',
                 gfxLow: 'Мин', gfxMedium: 'Сред', gfxHigh: 'Макс',
-                lblLang: 'ЯЗЫК СИСТЕМЫ', lblPlatform: 'ПЛАТФОРМА', lblDiff: 'УРОВЕНЬ УГРОЗЫ', lblGfx: 'КАЧЕСТВО ВИДЕО'
+                lblLang: 'ЯЗЫК СИСТЕМЫ', lblPlatform: 'ПЛАТФОРМА', lblDiff: 'УРОВЕНЬ УГРОЗЫ', lblGfx: 'КАЧЕСТВО ВИДЕО', rec: '● REC'
             },
             uz: { 
                 sysOnline: 'TIZIM: ISHLASH', powerFail: 'QUVVAT UZILDI', backupPower: 'ZAXIRA QUVVAT',
@@ -257,7 +254,7 @@
                 loseTitle: 'ALOQA UZILDI', loseDesc: 'HAYOTIY KO\'RSATKICHLAR: 0', restartBtn: 'SMENANI QAYTA BOSHLASH',
                 diffEasy: 'Tinch', diffMedium: "O'rta", diffHard: 'Dahshat',
                 gfxLow: 'Past', gfxMedium: 'O\'rta', gfxHigh: 'Yuqori',
-                lblLang: 'TIZIM TILI', lblPlatform: 'QURILMA', lblDiff: 'XAVF DARAJASI', lblGfx: 'VIDEO SIFATI'
+                lblLang: 'TIZIM TILI', lblPlatform: 'QURILMA', lblDiff: 'XAVF DARAJASI', lblGfx: 'VIDEO SIFATI', rec: '● REC'
             },
             en: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'POWER FAILURE', backupPower: 'BACKUP POWER',
@@ -270,7 +267,7 @@
                 loseTitle: 'CONNECTION LOST', loseDesc: 'VITALS: 0', restartBtn: 'RESTART SHIFT',
                 diffEasy: 'Safe', diffMedium: 'Normal', diffHard: 'Nightmare',
                 gfxLow: 'Low', gfxMedium: 'Med', gfxHigh: 'High',
-                lblLang: 'SYSTEM LANGUAGE', lblPlatform: 'DEVICE PLATFORM', lblDiff: 'THREAT LEVEL', lblGfx: 'VIDEO GRAPHICS'
+                lblLang: 'SYSTEM LANGUAGE', lblPlatform: 'DEVICE PLATFORM', lblDiff: 'THREAT LEVEL', lblGfx: 'VIDEO GRAPHICS', rec: '● REC'
             }
         };
 
@@ -432,10 +429,7 @@
             } 
         });
         
-        // Кнопка полного рестарта
-        restartBtn.addEventListener('click', () => {
-            window.location.reload();
-        });
+        restartBtn.addEventListener('click', () => { window.location.reload(); });
 
         function startMobileGame() { 
             blocker.style.display = 'none'; bodycamUI.style.display = 'block'; mobileControls.style.display = 'flex'; 
@@ -589,7 +583,7 @@
 
         const ledTopMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x2255ff, emissiveIntensity: 2 }); 
         const ledBotMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ffff, emissiveIntensity: 2 }); 
-        function createLedStrip(w, d, x, y, z, material) { const strip = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), material); strip.position.set(x, y, z); scene.add(strip); }
+        function createLedStrip(w, d, x, y, z, material) { const strip = new THREE.Mesh(new THREE.BoxGeometry(w, d, 0.05), material); strip.position.set(x, y, z); scene.add(strip); }
         createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, -roomD/2 + 0.025, ledTopMat); createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, roomD/2 - 0.025, ledTopMat);  
         createLedStrip(0.05, roomD - 0.2, -roomW/2 + 0.025, roomH - 0.025, 0, ledTopMat); createLedStrip(0.05, roomD - 0.2, roomW/2 - 0.025, roomH - 0.025, 0, ledTopMat);  
         createLedStrip(roomW - 0.2, 0.05, 0, 0.025, -roomD/2 + 0.025, ledBotMat); createLedStrip(roomW - 0.2, 0.05, 0, 0.025, roomD/2 - 0.025, ledBotMat);  
@@ -647,6 +641,49 @@
         const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); castAndReceive(aLeg2); adminDeskShort.add(aLeg2);
         scene.add(adminDeskShort);
         
+        // ================= МУСОРНЫЙ БАК (У стола админа) =================
+        const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
+        const trashBin = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); 
+        trashBin.position.set(-8.5, 0.4, -2.0); 
+        trashBin.userData = { isTrashBin: true }; castAndReceive(trashBin); interactables.push(trashBin); scene.add(trashBin);
+
+        // ================= ХОЛОДИЛЬНИК С ЭНЕРГЕТИКАМИ (В дальнем углу) =================
+        const fridgeGroup = new THREE.Group();
+        fridgeGroup.position.set(-8.0, 0, -4.8); 
+
+        const fridgeBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.2, 1.0), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.5, metalness: 0.8}));
+        fridgeBody.position.y = 1.1;
+        fridgeBody.castShadow = true; fridgeBody.receiveShadow = true;
+        fridgeGroup.add(fridgeBody);
+
+        const fridgeGlass = new THREE.Mesh(new THREE.BoxGeometry(1.1, 2.0, 0.1), new THREE.MeshStandardMaterial({color: 0x00aaff, emissive: 0x0055aa, emissiveIntensity: 0.4, transparent: true, opacity: 0.2, roughness: 0.1}));
+        fridgeGlass.position.set(0, 1.1, 0.5);
+        fridgeGroup.add(fridgeGlass);
+
+        // Полочки и банки
+        for(let i=1; i<=4; i++) {
+            const shelfHeight = i * 0.45;
+            const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.02, 0.8), new THREE.MeshStandardMaterial({color: 0x444444}));
+            shelf.position.set(0, shelfHeight, 0);
+            fridgeGroup.add(shelf);
+            
+            for(let x=-0.3; x<=0.3; x+=0.3) {
+                for(let z=-0.2; z<=0.2; z+=0.2) {
+                    if (Math.random() > 0.3) {
+                        const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.12, 12), canMat);
+                        can.position.set(x, shelfHeight + 0.07, z);
+                        fridgeGroup.add(can);
+                    }
+                }
+            }
+        }
+
+        const fridgeLight = new THREE.PointLight(0x00aaff, 0.8, 3);
+        fridgeLight.position.set(0, 1.1, 0.4);
+        fridgeGroup.add(fridgeLight);
+        scene.add(fridgeGroup);
+        // ==============================================================
+        
         const adminPCGeo = new THREE.BoxGeometry(0.6, 0.4, 0.05);
         const adminPC = new THREE.Mesh(adminPCGeo, new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 1 })); adminPC.position.set(-6, 1.2, -2); adminPC.rotation.y = Math.PI/2; castAndReceive(adminPC); scene.add(adminPC);
         const adminPCBack = new THREE.Mesh(adminPCGeo, new THREE.MeshStandardMaterial({ color: 0x111111 })); adminPCBack.position.set(-5.97, 1.2, -2); adminPCBack.rotation.y = Math.PI/2; castAndReceive(adminPCBack); scene.add(adminPCBack);
@@ -656,9 +693,6 @@
         flBody.rotation.x = Math.PI / 2; flBody.position.set(-6.2, 1.05, -2.5); flBody.rotation.y = Math.PI / 4; flBody.userData = { isFlashlightItem: true }; flBody.visible = false; castAndReceive(flBody); scene.add(flBody);
         const flLens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16), new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0xffffff, emissiveIntensity: 5}));
         flLens.rotation.x = Math.PI / 2; flLens.position.set(-6.1, 1.05, -2.6); flLens.rotation.y = Math.PI / 4; flLens.userData = { isFlashlightItem: true }; flLens.visible = false; scene.add(flLens);
-
-        const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
-        const trashBin = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); trashBin.position.set(-8.0, 0.4, -4.8); trashBin.userData = { isTrashBin: true }; castAndReceive(trashBin); interactables.push(trashBin); scene.add(trashBin);
 
         const doorFrameMat = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.9});
         const doorFrame1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.6, 0.1), doorFrameMat); doorFrame1.position.set(-roomW/2 + 0.05, 1.3, 2.45); castAndReceive(doorFrame1); scene.add(doorFrame1);
@@ -678,7 +712,8 @@
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
             const monitorGroup = new THREE.Group();
-            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOn); screen.position.set(0, 0.22, 0.01); screen.userData = { isOn: true, isPC: true, isSpooky: false }; castAndReceive(screen); interactables.push(screen); monitorGroup.add(screen); allPCScreens.push(screen); 
+            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOff); 
+            screen.position.set(0, 0.22, 0.01); screen.userData = { isOn: false, isPC: true, isSpooky: false, deskGroup: group }; castAndReceive(screen); interactables.push(screen); monitorGroup.add(screen); allPCScreens.push(screen); 
             const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); bezel.position.set(0, 0.22, -0.01); castAndReceive(bezel); monitorGroup.add(bezel);
             const standNeck = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.02), pcBodyMat); standNeck.position.set(0, 0.1, -0.03); standNeck.rotation.x = -0.15; castAndReceive(standNeck); monitorGroup.add(standNeck);
             const standBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.15), pcBodyMat); standBase.position.set(0, 0.005, -0.02); castAndReceive(standBase); monitorGroup.add(standBase); group.add(monitorGroup);
@@ -695,10 +730,6 @@
             const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 8), rgbLedStripMat); wheel.rotation.z = Math.PI / 2; wheel.position.set(0, 0.022, -0.035); mouseGroup.add(wheel);
             group.add(mouseGroup);
             const chairGroup = new THREE.Group(); chairGroup.position.set(0, -0.75, 0.4); chairGroup.rotation.y = Math.PI; buildChairMesh(chairGroup); group.add(chairGroup);
-            if (Math.random() < 0.6) {
-                const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), canMat); const sideX = Math.random() > 0.5 ? 0.45 : -0.45; const offsetZ = Math.random() * 0.2; 
-                can.position.set(sideX, 0.075, offsetZ); can.userData = { isTrash: true }; castAndReceive(can); interactables.push(can); group.add(can); totalTrash++; 
-            }
             scene.add(group);
         }
 
@@ -761,7 +792,74 @@
             monsters[index].group.position.set(spawnX, 0, spawnZ); monsters[index].group.visible = true; playSound(monsterSpawnBuffer, 0.4);
         }
 
-        // ================= ФУНКЦИЯ ОКОНЧАНИЯ ИГРЫ =================
+        // ================= ИИ КЛИЕНТОВ КЛУБА =================
+        const clients = [];
+        const clientMat = new THREE.MeshStandardMaterial({color: 0x445566, roughness: 0.9}); 
+        let clientSpawnTimer = 5.0; 
+
+        function spawnTrashAt(deskGroup) {
+            const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), canMat);
+            const sideX = Math.random() > 0.5 ? 0.45 : -0.45;
+            const offsetZ = Math.random() * 0.2;
+            can.position.set(sideX, 0.075, offsetZ);
+            can.userData = { isTrash: true };
+            can.castShadow = true; can.receiveShadow = true;
+            interactables.push(can);
+            deskGroup.add(can);
+            totalTrash++;
+            updateUI();
+        }
+
+        function spawnClient() {
+            const availablePCs = allPCScreens.filter(pc => !pc.userData.isOn && !pc.userData.reserved);
+            if (availablePCs.length === 0) return;
+
+            const targetPC = availablePCs[Math.floor(Math.random() * availablePCs.length)];
+            targetPC.userData.reserved = true; 
+
+            const wantsDrink = Math.random() > 0.2; 
+
+            const clientObj = {
+                mesh: new THREE.Group(),
+                state: wantsDrink ? 'going_to_fridge' : 'going_to_pc',
+                targetPC: targetPC,
+                wantsDrink: wantsDrink,
+                timer: 0,
+                speed: 1.5 + Math.random() * 0.8, 
+                waypoints: [],
+                mixer: null,      
+                walkAction: null  
+            };
+
+            loader.load('client.glb', function (gltf) {
+                const model = gltf.scene;
+                model.scale.set(1.0, 1.0, 1.0); 
+                model.traverse(node => { if (node.isMesh) castAndReceive(node); });
+                clientObj.mesh.add(model);
+
+                if (gltf.animations && gltf.animations.length > 0) {
+                    clientObj.mixer = new THREE.AnimationMixer(model);
+                    clientObj.walkAction = clientObj.mixer.clipAction(gltf.animations[0]);
+                    clientObj.walkAction.play();
+                }
+            }, undefined, function () {
+                const fallbackGroup = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.3, 12), clientMat);
+                body.position.y = 0.65;
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), new THREE.MeshStandardMaterial({color: 0xffccaa}));
+                head.position.y = 1.4;
+                fallbackGroup.add(body); fallbackGroup.add(head);
+                clientObj.mesh.add(fallbackGroup);
+            });
+
+            clientObj.mesh.position.set(-roomW/2 + 0.5, 0, 3.5);
+            scene.add(clientObj.mesh);
+            playSound(doorOpenBuffer, 0.4);
+
+            clients.push(clientObj);
+        }
+        // =====================================================
+
         function endGame(isWin) {
             gameEnded = true; gameWin = isWin;
             if (currentPlatform === 'pc') controls.unlock(); 
@@ -792,7 +890,6 @@
                 playSound(deathBuffer, 0.6);
             }
         }
-        // ==========================================================
 
         function triggerBlackout() {
             if (isBlackout) return; isBlackout = true;
@@ -823,10 +920,10 @@
 
         function updateUI() {
             const t = translations[currentLanguage]; recElement.textContent = t.rec;
-            const allTasksDone = monitorsTurnedOff >= 20 && trashCollected >= totalTrash;
+            const allTasksDone = monitorsTurnedOff >= 20 && trashCollected >= totalTrash && totalTrash > 0;
 
             let pcText = monitorsTurnedOff >= 20 ? t.taskPCDone : t.taskPC.replace('{current}', monitorsTurnedOff);
-            let trashText = trashCollected >= totalTrash ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
+            let trashText = trashCollected >= totalTrash && totalTrash > 0 ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
             
             if (!isBlackout) {
                 uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; 
@@ -860,6 +957,9 @@
                 if (obj.userData.isFlashlightItem) { pickupFlashlight(); playSound(pickupBuffer, 0.3); }
                 
                 if (obj.userData.isPC && obj.userData.isOn) {
+                    
+                    if (obj.userData.reserved) return; 
+
                     if (obj.userData.isSpooky) {
                         obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2); 
                         spookyLight.intensity = 0; updateUI();
@@ -892,7 +992,7 @@
                 }
 
                 if (obj.userData.isDoor && obj.userData.isOpenable) {
-                    endGame(true); // Вызываем новую функцию победы
+                    endGame(true); 
                 }
             }
         }
@@ -914,6 +1014,107 @@
 
             if ((controls.isLocked || currentPlatform === 'mobile') && !gameEnded) {
                 const time = performance.now(); const delta = (time - prevTime) / 1000;
+                
+                // === ОБНОВЛЕНИЕ КЛИЕНТОВ ===
+                if (!gameEnded && !isBlackout) {
+                    clientSpawnTimer -= delta;
+                    if (clientSpawnTimer <= 0) {
+                        spawnClient();
+                        clientSpawnTimer = 8 + Math.random() * 12; 
+                    }
+
+                    for (let i = clients.length - 1; i >= 0; i--) {
+                        const c = clients[i];
+                        
+                        if (c.mixer) c.mixer.update(delta);
+
+                        const monitorPos = new THREE.Vector3();
+                        c.targetPC.getWorldPosition(monitorPos);
+                        monitorPos.y = 0;
+
+                        const deskRotation = c.targetPC.userData.deskGroup.rotation.y;
+                        const directionToChair = new THREE.Vector3(0, 0, 1);
+                        directionToChair.applyAxisAngle(new THREE.Vector3(0, 1, 0), deskRotation);
+                        const chairPos = new THREE.Vector3().copy(monitorPos).addScaledVector(directionToChair, 0.5);
+
+                        function processMovement(targetPos, onReach) {
+                            if (c.walkAction && !c.walkAction.isRunning()) c.walkAction.play();
+
+                            if (c.waypoints.length === 0) {
+                                const aisleX = -4.5;
+                                c.waypoints = [
+                                    new THREE.Vector3(aisleX, 0, c.mesh.position.z),
+                                    new THREE.Vector3(aisleX, 0, targetPos.z),
+                                    new THREE.Vector3(targetPos.x, 0, targetPos.z)
+                                ];
+                            }
+                            const currentTarget = c.waypoints[0];
+                            const dir = new THREE.Vector3().subVectors(currentTarget, c.mesh.position);
+                            dir.y = 0;
+                            if (dir.length() > 0.15) {
+                                dir.normalize();
+                                c.mesh.position.addScaledVector(dir, c.speed * delta);
+                                c.mesh.lookAt(currentTarget.x, 0, currentTarget.z);
+                                c.mesh.position.y = 0; 
+                            } else {
+                                c.waypoints.shift();
+                                if (c.waypoints.length === 0) {
+                                    if (c.walkAction) c.walkAction.stop();
+                                    onReach();
+                                }
+                            }
+                        }
+
+                        if (c.state === 'going_to_fridge') {
+                            const fridgePos = new THREE.Vector3(-7.2, 0, -4.8);
+                            processMovement(fridgePos, () => {
+                                c.state = 'getting_drink';
+                                c.timer = 2.0; 
+                                c.mesh.position.y = 0;
+                                playSound(pickupBuffer, 0.3);
+                            });
+                        } 
+                        else if (c.state === 'getting_drink') {
+                            c.timer -= delta;
+                            if (c.timer <= 0) {
+                                c.state = 'going_to_pc';
+                                c.waypoints = []; 
+                            }
+                        } 
+                        else if (c.state === 'going_to_pc') {
+                            processMovement(chairPos, () => {
+                                c.state = 'sitting';
+                                c.timer = 10 + Math.random() * 10; 
+                                c.targetPC.material = pcScreenMatOn; 
+                                c.targetPC.userData.isOn = true;
+                                c.mesh.position.copy(chairPos);
+                                c.mesh.position.y = 0; 
+                                c.mesh.rotation.y = deskRotation + Math.PI; 
+                                updateUI();
+                            });
+                        } 
+                        else if (c.state === 'sitting') {
+                            c.timer -= delta;
+                            if (c.timer <= 0) {
+                                c.state = 'leaving';
+                                c.waypoints = []; 
+                                c.mesh.position.y = 0; 
+                                c.targetPC.userData.reserved = false; 
+                                if (c.wantsDrink) spawnTrashAt(c.targetPC.userData.deskGroup); 
+                            }
+                        } 
+                        else if (c.state === 'leaving') {
+                            const doorPos = new THREE.Vector3(-roomW/2 + 0.5, 0, 3.5);
+                            processMovement(doorPos, () => {
+                                scene.remove(c.mesh);
+                                clients.splice(i, 1);
+                                playSound(doorOpenBuffer, 0.4);
+                            });
+                        }
+                    }
+                }
+                // === КОНЕЦ БЛОКА КЛИЕНТОВ ===
+
                 velocity.x -= velocity.x * 10.0 * delta; velocity.z -= velocity.z * 10.0 * delta;
                 
                 let isInputActive = false;
@@ -1015,7 +1216,7 @@
                             m.stareTime += delta;
                             noiseOpacity = Math.max(noiseOpacity, 0.2 + m.stareTime * 0.5); 
                             if (m.stareTime > 0.8) {
-                                m.group.visible = false; m.lookAwayTimer = 3.0 + Math.random() * 3.0; m.stareTime = 0;
+                                m.group.visible = false; m.lookAwayTimer = 10.0 + Math.random() * 3.0; m.stareTime = 0;
                                 playSound(monsterSpawnBuffer, 0.2, 1.5); 
                             }
                         } else {
@@ -1043,7 +1244,7 @@
                 if (isTakingDamage) { bodycamUI.style.boxShadow = "inset 0 0 150px rgba(255, 0, 0, 0.8)"; } 
                 else { bodycamUI.style.boxShadow = "inset 0 0 150px rgba(0, 0, 0, 0.9)"; if (noiseOpacity > 0 && !spookyEventTriggered) noiseOpacity -= delta * 2; }
                 
-                if (health <= 0) { health = 0; endGame(false); } // Вызываем поражение
+                if (health <= 0) { health = 0; endGame(false); }
 
                 updateUI(); 
                 prevTime = time;
