@@ -833,7 +833,8 @@
 
             loader.load('client.glb', function (gltf) {
                 const model = gltf.scene;
-                model.scale.set(1.0, 1.0, 1.0); 
+                // ИСПРАВЛЕНИЕ: Уменьшаем модель в 2 раза
+                model.scale.set(0.5, 0.5, 0.5); 
                 model.traverse(node => { if (node.isMesh) castAndReceive(node); });
                 clientObj.mesh.add(model);
 
@@ -1038,7 +1039,11 @@
                         const chairPos = new THREE.Vector3().copy(monitorPos).addScaledVector(directionToChair, 0.5);
 
                         function processMovement(targetPos, onReach) {
-                            if (c.walkAction && !c.walkAction.isRunning()) c.walkAction.play();
+                            // ИСПРАВЛЕНИЕ: Возобновляем анимацию при движении
+                            if (c.walkAction) {
+                                c.walkAction.paused = false;
+                                if (!c.walkAction.isRunning()) c.walkAction.play();
+                            }
 
                             if (c.waypoints.length === 0) {
                                 const aisleX = -4.5;
@@ -1059,7 +1064,8 @@
                             } else {
                                 c.waypoints.shift();
                                 if (c.waypoints.length === 0) {
-                                    if (c.walkAction) c.walkAction.stop();
+                                    // ИСПРАВЛЕНИЕ: Ставим на паузу вместо stop(), чтобы избежать Т-позы
+                                    if (c.walkAction) c.walkAction.paused = true;
                                     onReach();
                                 }
                             }
