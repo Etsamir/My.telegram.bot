@@ -131,6 +131,9 @@
         // ================= ПОЛЬЗОВАТЕЛЬСКИЕ НАСТРОЙКИ МОДЕЛЕЙ И МАСШТАБА =================
         const CLIENT_MODEL_PATH = 'client.glb'; 
         const CLIENT_MODEL_SCALE = 1.0; 
+
+        const PC_MODEL_PATH = 'pc.glb'; 
+        const PC_MODEL_SCALE = 0.8; 
         
         const CHAIR_MODEL_PATH = 'kreslo.glb';
         const CHAIR_MODEL_SCALE = 0.100; 
@@ -140,7 +143,7 @@
 
         // Настройка для клавиатуры
         const KLAVA_MODEL_PATH = 'klava.glb';
-        const KLAVA_MODEL_SCALE = 0.4; // ИЗМЕНЕНО НА 0.4 ПО ПРОСЬБЕ
+        const KLAVA_MODEL_SCALE = 0.2; // ИЗМЕНЕНО НА 0.2 ПО ПРОСЬБЕ
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -601,7 +604,7 @@
             
             // --- ЗАМЕНА КЛАВИАТУРЫ ---
             const klavaContainer = new THREE.Group();
-            klavaContainer.position.set(-0.12, 0.01, 0.22); // Позиция на столе
+            klavaContainer.position.set(-0.12, 0.026, 0.22); // Позиция на столе (чуть приподнята)
             
             const fallbackKbdGroup = new THREE.Group(); fallbackKbdGroup.rotation.x = 0.05; 
             const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); fallbackKbdGroup.add(kbdBase);
