@@ -131,9 +131,6 @@
         // ================= ПОЛЬЗОВАТЕЛЬСКИЕ НАСТРОЙКИ МОДЕЛЕЙ И МАСШТАБА =================
         const CLIENT_MODEL_PATH = 'client.glb'; 
         const CLIENT_MODEL_SCALE = 1.0; 
-
-        const PC_MODEL_PATH = 'pc.glb'; 
-        const PC_MODEL_SCALE = 0.8; 
         
         const CHAIR_MODEL_PATH = 'kreslo.glb';
         const CHAIR_MODEL_SCALE = 0.100; 
@@ -141,9 +138,9 @@
         const REDBULL_MODEL_PATH = 'redbull.glb'; 
         const REDBULL_MODEL_SCALE = 0.5; 
 
-        // ДОБАВЛЕНО: Настройка для клавиатуры
+        // Настройка для клавиатуры
         const KLAVA_MODEL_PATH = 'klava.glb';
-        const KLAVA_MODEL_SCALE = 1.0; // <-- МЕНЯТЬ ТУТ, если клавиатура будет огромной/маленькой
+        const KLAVA_MODEL_SCALE = 0.4; // ИЗМЕНЕНО НА 0.4 ПО ПРОСЬБЕ
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -582,7 +579,7 @@
         const playerFlashlight = new THREE.SpotLight(0xffeedd, 2.5, 25, Math.PI/6, 0.5, 1);
         playerFlashlight.position.set(0.2, -0.2, 0); playerFlashlight.target.position.set(0, 0, -1); playerFlashlight.castShadow = true; playerFlashlight.shadow.mapSize.width = 1024; playerFlashlight.shadow.mapSize.height = 1024; playerFlashlight.shadow.camera.near = 0.5; playerFlashlight.shadow.camera.far = 25; playerFlashlight.shadow.bias = -0.001;
 
-        // Создание компьютеров и кресел
+        // Создание компьютеров (стандартные) и кресел (с фоллбэком)
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
             
@@ -657,7 +654,7 @@
                 const clone = redbullModelTemplate.clone();
                 clone.traverse(child => { if (child.isMesh) { child.userData = { isTrash: true }; castAndReceive(child); } });
                 canGrp.add(clone);
-                if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; 
+                if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; // Прячем стандартную банку
             });
         }, undefined, function() { console.log('3D Модель банки не найдена, используем стандартные цилиндры'); });
 
@@ -672,7 +669,7 @@
             });
         }, undefined, function() { console.log('3D Модель Кресла не найдена, используем стандартное'); });
 
-        // ДОБАВЛЕНО: Загрузка кастомной клавиатуры
+        // Загрузка кастомной клавиатуры
         loader.load(KLAVA_MODEL_PATH, function(gltf) {
             klavaModelTemplate = gltf.scene;
             klavaModelTemplate.scale.set(KLAVA_MODEL_SCALE, KLAVA_MODEL_SCALE, KLAVA_MODEL_SCALE);
