@@ -131,15 +131,12 @@
         // ================= ПОЛЬЗОВАТЕЛЬСКИЕ НАСТРОЙКИ МОДЕЛЕЙ И МАСШТАБА =================
         const CLIENT_MODEL_PATH = 'client.glb'; 
         const CLIENT_MODEL_SCALE = 1.0; 
-
-        const PC_MODEL_PATH = 'pc.glb'; 
-        const PC_MODEL_SCALE = 0.8; // УМЕНЬШЕНО (было 1.0)
         
         const CHAIR_MODEL_PATH = 'kreslo.glb';
-        const CHAIR_MODEL_SCALE = 0.045; // УВЕЛИЧЕНО (было 0.025)
+        const CHAIR_MODEL_SCALE = 0.100; // ИЗМЕНЕНО ПО ПРОСЬБЕ
         
         const REDBULL_MODEL_PATH = 'redbull.glb'; 
-        const REDBULL_MODEL_SCALE = 0.5; // <-- МЕНЯТЬ ТУТ ДЛЯ БАНКИ
+        const REDBULL_MODEL_SCALE = 0.5;
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -488,8 +485,8 @@
         let isBlackout = false; let hasFlashlight = false; let allPCScreens = []; let spookyEventTriggered = false;
         let blackoutTimer = 45 + Math.random() * 30; 
         
-        let pcModelTemplate = null; let chairModelTemplate = null; let redbullModelTemplate = null;
-        let pendingPCs = []; let pendingChairs = []; let pendingCans = [];
+        let chairModelTemplate = null; let redbullModelTemplate = null;
+        let pendingChairs = []; let pendingCans = [];
 
         // ================= СТАБИЛИЗАТОР =================
         const stabGeo = new THREE.BoxGeometry(0.5, 0.8, 0.15);
@@ -578,20 +575,20 @@
         const playerFlashlight = new THREE.SpotLight(0xffeedd, 2.5, 25, Math.PI/6, 0.5, 1);
         playerFlashlight.position.set(0.2, -0.2, 0); playerFlashlight.target.position.set(0, 0, -1); playerFlashlight.castShadow = true; playerFlashlight.shadow.mapSize.width = 1024; playerFlashlight.shadow.mapSize.height = 1024; playerFlashlight.shadow.camera.near = 0.5; playerFlashlight.shadow.camera.far = 25; playerFlashlight.shadow.bias = -0.001;
 
-        // Создание компьютеров и кресел
+        // Создание компьютеров (стандартные) и кресел (с фоллбэком)
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
             
             // --- ЭКРАН (НЕОБХОДИМ ДЛЯ ИГРЫ) ---
             const screen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOff); 
-            screen.position.set(0, 0.22, 0.01); // <-- ЕСЛИ ЭКРАН ВИСИТ В ВОЗДУХЕ, МЕНЯЙ ЗДЕСЬ X, Y, Z
+            screen.position.set(0, 0.22, 0.01); 
             screen.userData = { isOn: false, isPC: true, isSpooky: false, deskGroup: group }; 
             castAndReceive(screen); interactables.push(screen); allPCScreens.push(screen); 
             group.add(screen);
 
             const table = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.8), deskMat); table.position.set(0, 0, 0); group.add(table);
             
-            // --- ФОЛЛБЭК ПК (Квадратный) ---
+            // --- СТАНДАРТНЫЙ ПК ---
             const fallbackPCGroup = new THREE.Group();
             const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); bezel.position.set(0, 0.22, -0.01); castAndReceive(bezel); fallbackPCGroup.add(bezel);
             const standNeck = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.02), pcBodyMat); standNeck.position.set(0, 0.1, -0.03); standNeck.rotation.x = -0.15; castAndReceive(standNeck); fallbackPCGroup.add(standNeck);
@@ -609,16 +606,9 @@
             const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 8), rgbLedStripMat); wheel.rotation.z = Math.PI / 2; wheel.position.set(0, 0.022, -0.035); mouseGroup.add(wheel);
             fallbackPCGroup.add(mouseGroup);
             
-            // Чтобы клик по квадратному компу тоже выключал монитор
             fallbackPCGroup.userData = { isCustomPCBox: true, screenRef: screen };
             fallbackPCGroup.traverse(child => { if (child.isMesh) child.userData = fallbackPCGroup.userData; });
-            
-            // --- ГРУППА ДЛЯ КАСТОМНОГО ПК ---
-            const customPCGroup = new THREE.Group();
-            customPCGroup.add(fallbackPCGroup);
-            customPCGroup.userData = { isCustomPCBox: true, screenRef: screen, fallback: fallbackPCGroup };
-            pendingPCs.push(customPCGroup);
-            group.add(customPCGroup);
+            group.add(fallbackPCGroup);
 
             // --- КРЕСЛО ---
             const chairGroup = new THREE.Group(); chairGroup.position.set(0, -0.75, 0.4); chairGroup.rotation.y = Math.PI; 
@@ -649,20 +639,9 @@
                 const clone = redbullModelTemplate.clone();
                 clone.traverse(child => { if (child.isMesh) { child.userData = { isTrash: true }; castAndReceive(child); } });
                 canGrp.add(clone);
-                if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; // Прячем стандартную банку
+                if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; 
             });
         }, undefined, function() { console.log('3D Модель банки не найдена, используем стандартные цилиндры'); });
-
-        loader.load(PC_MODEL_PATH, function(gltf) {
-            pcModelTemplate = gltf.scene;
-            pcModelTemplate.scale.set(PC_MODEL_SCALE, PC_MODEL_SCALE, PC_MODEL_SCALE);
-            pendingPCs.forEach(pcGrp => {
-                const clone = pcModelTemplate.clone();
-                clone.traverse(child => { if (child.isMesh) { child.userData = pcGrp.userData; castAndReceive(child); } });
-                pcGrp.add(clone);
-                if (pcGrp.userData.fallback) pcGrp.userData.fallback.visible = false; // Прячем квадратный ПК
-            });
-        }, undefined, function() { console.log('3D Модель ПК не найдена, используем стандартную коробку'); });
 
         loader.load(CHAIR_MODEL_PATH, function(gltf) {
             chairModelTemplate = gltf.scene;
@@ -671,7 +650,7 @@
                 const clone = chairModelTemplate.clone();
                 clone.traverse(child => { if (child.isMesh) castAndReceive(child); });
                 chairGrp.add(clone);
-                if (chairGrp.userData.fallback) chairGrp.userData.fallback.visible = false; // Прячем квадратное кресло
+                if (chairGrp.userData.fallback) chairGrp.userData.fallback.visible = false; 
             });
         }, undefined, function() { console.log('3D Модель Кресла не найдена, используем стандартное'); });
 
