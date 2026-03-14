@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Night Shift - Bodycam Horror</title>
+    <title>Night Shift - Bodycam Horror (исправлено)</title>
     <style>
+        /* --- Все стили без изменений (как в вашем коде) --- */
         body { margin: 0; overflow: hidden; background-color: #000; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
         
-        /* ================= СТРАШНОЕ МЕНЮ (VHS / BODYCAM) ================= */
         #blocker {
             position: absolute; width: 100%; height: 100%; 
             background: #000; 
@@ -159,7 +159,7 @@
 <body>
     <div id="blocker">
         <div class="menu-container" id="main-menu">
-            <h1 class="menu-title">NIGHT SHIFT</h1>
+            <h1 class="menu-title">AXON BODY 3</h1>
             
             <div class="settings-group">
                 <div class="settings-title" id="lbl-lang">System Language</div>
@@ -229,6 +229,15 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
+        // ================= ПОЛЬЗОВАТЕЛЬСКИЕ НАСТРОЙКИ =================
+        // Укажите правильный путь к вашей модели client.glb.
+        // По умолчанию файл должен лежать в той же папке, что и этот HTML.
+        const CLIENT_MODEL_PATH = 'client.glb'; // Или, например, '/models/client.glb'
+        // Масштаб модели клиента. Если модель в метрах, оставьте 1.0.
+        // Если модель в сантиметрах, используйте 0.01.
+        const CLIENT_MODEL_SCALE = 1.0; // ИЗМЕНЕНО: было 0.01, теперь 1.0. Если модель слишком мала/велика, подберите значение.
+
+        // ================= ПЕРЕВОДЫ =================
         const translations = {
             ru: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'СБОЙ ПИТАНИЯ', backupPower: 'РЕЗЕРВНОЕ ПИТАНИЕ',
@@ -276,6 +285,7 @@
         let currentDifficulty = 'medium';
         let currentGraphics = 'high';
 
+        // ... (код для радиокнопок и обновления языка оставляем без изменений, он уже был в вашем файле) ...
         const langLabels = document.querySelectorAll('.language-selector label'); const langRadios = document.querySelectorAll('input[name="lang"]'); 
         const platformLabels = document.querySelectorAll('.platform-selector label'); const platformRadios = document.querySelectorAll('input[name="platform"]'); 
         const diffLabels = document.querySelectorAll('.difficulty-selector label'); const diffRadios = document.querySelectorAll('input[name="difficulty"]'); 
@@ -323,6 +333,7 @@
         setupRadioButtons(gfxRadios, gfxLabels, (val) => { currentGraphics = val; });
         updateUILanguage();
 
+        // ================= АУДИО (без изменений) =================
         let audioContext = null; let footstepsBuffer = null; let pickupBuffer = null; let pcOffBuffer = null; let blackoutBuffer = null; let monsterSpawnBuffer = null; let monsterFootstepBuffer = null; let doorOpenBuffer = null; let deathBuffer = null; let jumpscareBuffer = null;
 
         function initAudio() {
@@ -365,6 +376,7 @@
 
         let stepTimer = 0; function playFootstep(isSprint) { if (gameEnded) return; playSound(footstepsBuffer, isSprint ? 0.3 : 0.2, isSprint ? 1.2 : 0.8 + Math.random()*0.4); }
 
+        // ================= ОСНОВНАЯ СЦЕНА =================
         const scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x050505, 0.08); 
 
@@ -471,6 +483,7 @@
             }, { passive: false });
         }
 
+        // ... (код для touch-событий без изменений) ...
         document.addEventListener('touchstart', (e) => {
             if (currentPlatform !== 'mobile' || gameEnded || blocker.style.display !== 'none') return;
             if (e.target.closest('.ctrl-btn')) return; 
@@ -519,6 +532,7 @@
         };
         document.addEventListener('touchend', handleTouchEnd); document.addEventListener('touchcancel', handleTouchEnd);
 
+        // ================= ГЕНЕРАЦИЯ ТЕКСТУР =================
         function createTileTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#111'; ctx.fillRect(0,0,256,256); ctx.strokeStyle = '#222'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
@@ -641,13 +655,13 @@
         const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); castAndReceive(aLeg2); adminDeskShort.add(aLeg2);
         scene.add(adminDeskShort);
         
-        // ================= МУСОРНЫЙ БАК (У стола админа) =================
+        // ================= МУСОРНЫЙ БАК =================
         const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
         const trashBin = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); 
         trashBin.position.set(-8.5, 0.4, -2.0); 
         trashBin.userData = { isTrashBin: true }; castAndReceive(trashBin); interactables.push(trashBin); scene.add(trashBin);
 
-        // ================= ХОЛОДИЛЬНИК С ЭНЕРГЕТИКАМИ (В дальнем углу) =================
+        // ================= ХОЛОДИЛЬНИК С ЭНЕРГЕТИКАМИ =================
         const fridgeGroup = new THREE.Group();
         fridgeGroup.position.set(-8.0, 0, -4.8); 
 
@@ -682,7 +696,6 @@
         fridgeLight.position.set(0, 1.1, 0.4);
         fridgeGroup.add(fridgeLight);
         scene.add(fridgeGroup);
-        // ==============================================================
         
         const adminPCGeo = new THREE.BoxGeometry(0.6, 0.4, 0.05);
         const adminPC = new THREE.Mesh(adminPCGeo, new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 1 })); adminPC.position.set(-6, 1.2, -2); adminPC.rotation.y = Math.PI/2; castAndReceive(adminPC); scene.add(adminPC);
@@ -742,7 +755,7 @@
         }
         createLongTable(-1.5, -3.5); createLongTable(-1.5, 3.5);
 
-        // ИСПОЛЬЗУЕМ ОБЫЧНЫЙ GLTF ЗАГРУЗЧИК ДЛЯ ФАЙЛА client.glb
+        // ================= ЗАГРУЗКА МОДЕЛЕЙ МОНСТРОВ (без изменений) =================
         const loader = new THREE.GLTFLoader();
 
         const monsters = [
@@ -794,7 +807,7 @@
             monsters[index].group.position.set(spawnX, 0, spawnZ); monsters[index].group.visible = true; playSound(monsterSpawnBuffer, 0.4);
         }
 
-        // ================= ИИ КЛИЕНТОВ КЛУБА =================
+        // ================= ИИ КЛИЕНТОВ КЛУБА (ИСПРАВЛЕНО) =================
         const clients = [];
         const clientMat = new THREE.MeshStandardMaterial({color: 0x445566, roughness: 0.9}); 
         let clientSpawnTimer = 5.0; 
@@ -833,12 +846,14 @@
                 walkAction: null  
             };
 
-            // ИСПРАВЛЕНИЕ: Загружаем GLB модель
-            loader.load('client.glb', function (gltf) {
+            // Загружаем GLB модель клиента
+            console.log('Попытка загрузить модель клиента:', CLIENT_MODEL_PATH);
+            loader.load(CLIENT_MODEL_PATH, function (gltf) {
+                console.log('Модель клиента успешно загружена!');
                 const model = gltf.scene;
                 
-                // ИСПРАВЛЕНИЕ: Ставим масштаб 0.01 для модели в сантиметрах
-                model.scale.set(0.01, 0.01, 0.01); 
+                // Применяем масштаб из пользовательской настройки
+                model.scale.set(CLIENT_MODEL_SCALE, CLIENT_MODEL_SCALE, CLIENT_MODEL_SCALE); 
                 
                 model.traverse(node => { if (node.isMesh) castAndReceive(node); });
                 clientObj.mesh.add(model);
@@ -847,14 +862,36 @@
                     clientObj.mixer = new THREE.AnimationMixer(model);
                     clientObj.walkAction = clientObj.mixer.clipAction(gltf.animations[0]);
                     clientObj.walkAction.play();
+                    console.log('Анимация клиента запущена');
                 }
-            }, undefined, function () {
+            }, undefined, function (error) {
+                console.error('Ошибка загрузки модели клиента:', error);
+                console.warn('Используется запасная геометрия (примитивы)');
+                // Запасная геометрия: простой человечек из цилиндров и сфер
                 const fallbackGroup = new THREE.Group();
+                // Тело
                 const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.3, 12), clientMat);
                 body.position.y = 0.65;
+                body.castShadow = true; body.receiveShadow = true;
+                fallbackGroup.add(body);
+                // Голова
                 const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), new THREE.MeshStandardMaterial({color: 0xffccaa}));
                 head.position.y = 1.4;
-                fallbackGroup.add(body); fallbackGroup.add(head);
+                head.castShadow = true; head.receiveShadow = true;
+                fallbackGroup.add(head);
+                // Руки (примитивные)
+                const armMat = new THREE.MeshStandardMaterial({color: 0x445566});
+                const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.8, 8), armMat);
+                leftArm.position.set(-0.35, 1.0, 0);
+                leftArm.rotation.z = 0.2;
+                leftArm.castShadow = true; leftArm.receiveShadow = true;
+                fallbackGroup.add(leftArm);
+                const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.8, 8), armMat);
+                rightArm.position.set(0.35, 1.0, 0);
+                rightArm.rotation.z = -0.2;
+                rightArm.castShadow = true; rightArm.receiveShadow = true;
+                fallbackGroup.add(rightArm);
+                
                 clientObj.mesh.add(fallbackGroup);
             });
 
@@ -864,8 +901,8 @@
 
             clients.push(clientObj);
         }
-        // =====================================================
 
+        // ================= ЗАВЕРШЕНИЕ ИГРЫ =================
         function endGame(isWin) {
             gameEnded = true; gameWin = isWin;
             if (currentPlatform === 'pc') controls.unlock(); 
