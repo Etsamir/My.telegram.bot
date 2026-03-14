@@ -141,13 +141,11 @@
         const REDBULL_MODEL_PATH = 'redbull.glb'; 
         const REDBULL_MODEL_SCALE = 0.5; 
 
-        // Настройка для клавиатуры
         const KLAVA_MODEL_PATH = 'klava.glb';
-        const KLAVA_MODEL_SCALE = 0.2; 
+        const KLAVA_MODEL_SCALE = 0.4; 
 
-        // Настройка для мышки
         const MOUSE_MODEL_PATH = 'mouse.glb';
-        const MOUSE_MODEL_SCALE = 0.2; 
+        const MOUSE_MODEL_SCALE = 0.4; // ИЗМЕНЕНО: увеличил мышку до 0.4
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -608,7 +606,7 @@
             
             // --- ЗАМЕНА КЛАВИАТУРЫ ---
             const klavaContainer = new THREE.Group();
-            klavaContainer.position.set(-0.12, 0.040, 0.22); // ИЗМЕНЕНО: высота 0.040
+            klavaContainer.position.set(-0.12, 0.040, 0.22); // Высота 0.040
             
             const fallbackKbdGroup = new THREE.Group(); fallbackKbdGroup.rotation.x = 0.05; 
             const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); fallbackKbdGroup.add(kbdBase);
@@ -623,7 +621,7 @@
 
             // --- ЗАМЕНА МЫШКИ ---
             const mouseContainer = new THREE.Group();
-            mouseContainer.position.set(0.28, 0.040, 0.22); // ИЗМЕНЕНО: высота 0.040
+            mouseContainer.position.set(0.28, 0.040, 0.22); // Высота 0.040
             mouseContainer.rotation.y = -0.15;
             
             const fallbackMouseGroup = new THREE.Group(); 
