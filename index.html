@@ -131,6 +131,9 @@
         // ================= ПОЛЬЗОВАТЕЛЬСКИЕ НАСТРОЙКИ МОДЕЛЕЙ И МАСШТАБА =================
         const CLIENT_MODEL_PATH = 'client.glb'; 
         const CLIENT_MODEL_SCALE = 1.0; 
+
+        const PC_MODEL_PATH = 'pc.glb'; 
+        const PC_MODEL_SCALE = 0.8; 
         
         const CHAIR_MODEL_PATH = 'kreslo.glb';
         const CHAIR_MODEL_SCALE = 0.100; 
@@ -142,9 +145,9 @@
         const KLAVA_MODEL_PATH = 'klava.glb';
         const KLAVA_MODEL_SCALE = 0.2; 
 
-        // ДОБАВЛЕНО: Настройка для мышки
+        // Настройка для мышки
         const MOUSE_MODEL_PATH = 'mouse.glb';
-        const MOUSE_MODEL_SCALE = 0.2; // <-- Меняй этот масштаб, если мышка огромная
+        const MOUSE_MODEL_SCALE = 0.2; 
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -605,8 +608,7 @@
             
             // --- ЗАМЕНА КЛАВИАТУРЫ ---
             const klavaContainer = new THREE.Group();
-            // ИЗМЕНЕНО: чуть-чуть подняли клавиатуру, чтобы не застревала (0.026 -> 0.030)
-            klavaContainer.position.set(-0.12, 0.030, 0.22); 
+            klavaContainer.position.set(-0.12, 0.040, 0.22); // ИЗМЕНЕНО: высота 0.040
             
             const fallbackKbdGroup = new THREE.Group(); fallbackKbdGroup.rotation.x = 0.05; 
             const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); fallbackKbdGroup.add(kbdBase);
@@ -621,7 +623,7 @@
 
             // --- ЗАМЕНА МЫШКИ ---
             const mouseContainer = new THREE.Group();
-            mouseContainer.position.set(0.28, 0.026, 0.22); 
+            mouseContainer.position.set(0.28, 0.040, 0.22); // ИЗМЕНЕНО: высота 0.040
             mouseContainer.rotation.y = -0.15;
             
             const fallbackMouseGroup = new THREE.Group(); 
@@ -694,7 +696,7 @@
             });
         }, undefined, function() { console.log('3D Модель Клавиатуры не найдена, используем стандартную'); });
 
-        // ДОБАВЛЕНО: Загрузка кастомной мышки
+        // Загрузка кастомной мышки
         loader.load(MOUSE_MODEL_PATH, function(gltf) {
             mouseModelTemplate = gltf.scene;
             mouseModelTemplate.scale.set(MOUSE_MODEL_SCALE, MOUSE_MODEL_SCALE, MOUSE_MODEL_SCALE);
