@@ -141,18 +141,17 @@
         const MOUSE_MODEL_PATH = 'mouse.glb';
         const MOUSE_MODEL_SCALE = 0.6; 
 
-        // ИСПРАВЛЕННЫЕ МАСШТАБЫ ДЛЯ НОВЫХ МОДЕЛЕЙ
         const REDBULL_MODEL_PATH = 'redbull.glb'; 
-        const REDBULL_MODEL_SCALE = 0.5; // 0.5
+        const REDBULL_MODEL_SCALE = 0.5; 
 
         const FRIDGE_MODEL_PATH = 'xoladilnik.glb';
-        const FRIDGE_MODEL_SCALE = 30.0; // 30.0
+        const FRIDGE_MODEL_SCALE = 30.0; 
 
         const FLASHLIGHT_MODEL_PATH = 'fonar.glb';
-        const FLASHLIGHT_MODEL_SCALE = 0.05; // 0.05
+        const FLASHLIGHT_MODEL_SCALE = 0.05; 
 
         const TRASHBIN_MODEL_PATH = 'musorka.glb';
-        const TRASHBIN_MODEL_SCALE = 0.3; // 0.3
+        const TRASHBIN_MODEL_SCALE = 0.3; 
 
         const STABILIZER_MODEL_PATH = 'stabilizator.glb';
         const STABILIZER_MODEL_SCALE = 1.0;
@@ -564,7 +563,6 @@
         stabilizerGroup.rotation.y = Math.PI / 2;
         
         const stabFallback = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.15), new THREE.MeshStandardMaterial({color: 0x555555, roughness: 0.8}));
-        stabFallback.userData = { isStabilizer: true };
         stabilizerGroup.add(stabFallback);
 
         const stabLight = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.16), new THREE.MeshStandardMaterial({color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 2}));
@@ -573,7 +571,7 @@
 
         stabilizerGroup.userData = { fallback: stabFallback, isStabilizer: true };
         scene.add(stabilizerGroup);
-        interactables.push(stabFallback);
+        interactables.push(stabilizerGroup);
 
         // ================= МУСОРНЫЙ БАК =================
         const trashBinGroup = new THREE.Group();
@@ -582,13 +580,12 @@
         const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
         const trashBinFallback = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); 
         trashBinFallback.position.y = 0.4; 
-        trashBinFallback.userData = { isTrashBin: true }; 
         castAndReceive(trashBinFallback); 
         trashBinGroup.add(trashBinFallback);
         
         trashBinGroup.userData = { fallback: trashBinFallback, isTrashBin: true };
         scene.add(trashBinGroup);
-        interactables.push(trashBinFallback);
+        interactables.push(trashBinGroup);
 
         // ================= ХОЛОДИЛЬНИК =================
         const fridgeGroup = new THREE.Group(); 
@@ -663,11 +660,11 @@
         flashlightGroup.visible = true;
 
         const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.3, metalness: 0.8}));
-        flBody.rotation.x = Math.PI / 2; flBody.userData = { isFlashlightItem: true }; castAndReceive(flBody); 
+        flBody.rotation.x = Math.PI / 2; castAndReceive(flBody); 
         flashlightGroup.add(flBody);
 
         const flLens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16), new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0xffffff, emissiveIntensity: 5}));
-        flLens.rotation.x = Math.PI / 2; flLens.position.set(0, 0, -0.1); flLens.userData = { isFlashlightItem: true }; 
+        flLens.rotation.x = Math.PI / 2; flLens.position.set(0, 0, -0.1); 
         flashlightGroup.add(flLens);
 
         flashlightGroup.userData = { fallback: [flBody, flLens], isFlashlightItem: true };
@@ -745,7 +742,7 @@
         
         const doorMat = new THREE.MeshStandardMaterial({color: 0x440000, roughness: 0.8}); 
         const exitDoorFallback = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 2), doorMat); 
-        exitDoorFallback.userData = { isDoor: true, isOpenable: false }; castAndReceive(exitDoorFallback); 
+        castAndReceive(exitDoorFallback); 
         exitDoorGroup.add(exitDoorFallback);
 
         const doorHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2), new THREE.MeshStandardMaterial({color: 0x888888, metalness: 0.8}));
@@ -753,7 +750,7 @@
         exitDoorFallback.add(doorHandle);
 
         exitDoorGroup.userData = { fallback: exitDoorFallback, isDoor: true, isOpenable: false };
-        interactables.push(exitDoorFallback);
+        interactables.push(exitDoorGroup);
         scene.add(exitDoorGroup);
 
         const exitSignMat = new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 2});
@@ -841,7 +838,7 @@
             redbullModelTemplate.scale.set(REDBULL_MODEL_SCALE, REDBULL_MODEL_SCALE, REDBULL_MODEL_SCALE);
             pendingCans.forEach(canGrp => {
                 const clone = redbullModelTemplate.clone();
-                clone.traverse(child => { if (child.isMesh) { child.userData = { isTrash: true }; castAndReceive(child); } });
+                clone.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
                 canGrp.add(clone);
                 if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; 
             });
@@ -893,16 +890,15 @@
         loader.load(TRASHBIN_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(TRASHBIN_MODEL_SCALE, TRASHBIN_MODEL_SCALE, TRASHBIN_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) { child.userData = { isTrashBin: true }; castAndReceive(child); } });
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
             trashBinGroup.add(model);
             if(trashBinGroup.userData.fallback) trashBinGroup.userData.fallback.visible = false;
-            interactables.push(model);
         }, undefined, function() { console.log('3D Модель Мусорки не найдена'); });
 
         loader.load(FLASHLIGHT_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(FLASHLIGHT_MODEL_SCALE, FLASHLIGHT_MODEL_SCALE, FLASHLIGHT_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) { child.userData = { isFlashlightItem: true }; castAndReceive(child); } });
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
             flashlightGroup.add(model);
             if(flashlightGroup.userData.fallback) {
                 flashlightGroup.userData.fallback.forEach(part => part.visible = false);
@@ -912,19 +908,17 @@
         loader.load(STABILIZER_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(STABILIZER_MODEL_SCALE, STABILIZER_MODEL_SCALE, STABILIZER_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) { child.userData = { isStabilizer: true }; castAndReceive(child); } });
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
             stabilizerGroup.add(model);
             if(stabilizerGroup.userData.fallback) stabilizerGroup.userData.fallback.visible = false;
-            interactables.push(model);
         }, undefined, function() { console.log('3D Модель Стабилизатора не найдена'); });
 
         loader.load(DOOR_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(DOOR_MODEL_SCALE, DOOR_MODEL_SCALE, DOOR_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) { child.userData = { isDoor: true }; castAndReceive(child); } });
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
             exitDoorGroup.add(model);
             if(exitDoorGroup.userData.fallback) exitDoorGroup.userData.fallback.visible = false;
-            interactables.push(model);
         }, undefined, function() { console.log('3D Модель Двери не найдена'); });
 
 
@@ -985,14 +979,15 @@
         function spawnTrashAt(deskGroup) {
             const canGrp = new THREE.Group();
             const sideX = Math.random() > 0.5 ? 0.45 : -0.45; const offsetZ = Math.random() * 0.2;
-            canGrp.position.set(sideX, 0.075, offsetZ); canGrp.userData = { isTrash: true };
+            canGrp.position.set(sideX, 0.075, offsetZ); 
+            canGrp.userData = { isTrash: true };
             
             const fallbackCan = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 16), canMat);
-            fallbackCan.userData = { isTrash: true }; canGrp.add(fallbackCan);
+            canGrp.add(fallbackCan);
             
             if (redbullModelTemplate) {
                 const clone = redbullModelTemplate.clone();
-                clone.traverse(child => { if (child.isMesh) { child.userData = { isTrash: true }; castAndReceive(child); } });
+                clone.traverse(child => { if (child.isMesh) castAndReceive(child); });
                 canGrp.add(clone); fallbackCan.visible = false;
             } else { canGrp.userData.fallback = fallbackCan; pendingCans.push(canGrp); }
             
