@@ -131,6 +131,9 @@
         // ================= ПОЛЬЗОВАТЕЛЬСКИЕ НАСТРОЙКИ МОДЕЛЕЙ И МАСШТАБА =================
         const CLIENT_MODEL_PATH = 'client.glb'; 
         const CLIENT_MODEL_SCALE = 1.0; 
+
+        const PC_MODEL_PATH = 'pc.glb'; 
+        const PC_MODEL_SCALE = 0.8; 
         
         const CHAIR_MODEL_PATH = 'kreslo.glb';
         const CHAIR_MODEL_SCALE = 0.100; 
@@ -422,6 +425,7 @@
         const roomW = 18, roomD = 12, roomH = 3.8; 
         const floorTex = createTileTexture(); const wallTex = createWallTexture(); wallTex.repeat.set(roomW/2, 1); const wallTexShort = createWallTexture(); wallTexShort.repeat.set(roomD/2, 1);
         
+        // Изменили цвет стола на темный админский
         const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, bumpMap: floorTex, bumpScale: 0.02, roughness: 0.5, metalness: 0.1 }); 
         const wallMatLong = new THREE.MeshStandardMaterial({ map: wallTex, bumpMap: wallTex, bumpScale: 0.05, roughness: 0.9 });
         const wallMatShort = new THREE.MeshStandardMaterial({ map: wallTexShort, bumpMap: wallTexShort, bumpScale: 0.05, roughness: 0.9 }); 
@@ -462,7 +466,7 @@
         const pcScreenMatSpooky = new THREE.MeshStandardMaterial({ map: spookyFrames[0], emissiveMap: spookyFrames[0], emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.2 }); 
         const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 0.2, metalness: 0.8 }); 
         const pcBodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.9 }); 
-        const deskMat = new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.7 }); 
+        const deskMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); 
         const chairMatBlack = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8 }); 
         const chairMatRed = new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.7 }); 
         const canMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.9, roughness: 0.2 });
@@ -555,6 +559,44 @@
         const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); castAndReceive(aLeg2); adminDeskShort.add(aLeg2);
         scene.add(adminDeskShort);
 
+        // Админский ПК
+        const adminPCSet = new THREE.Group();
+        adminPCSet.position.set(-6.2, 0.75, -2); // Стоит на столе
+        adminPCSet.rotation.y = -Math.PI / 2; // Повернут экраном к креслу
+        
+        const adminScreen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 0.5, roughness: 0.2 }));
+        adminScreen.position.set(0, 0.22, 0.01);
+        castAndReceive(adminScreen);
+        adminPCSet.add(adminScreen);
+        
+        const adminFallbackPC = new THREE.Group();
+        const adminBezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); adminBezel.position.set(0, 0.22, -0.01); castAndReceive(adminBezel); adminFallbackPC.add(adminBezel);
+        const adminStandNeck = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.02), pcBodyMat); adminStandNeck.position.set(0, 0.1, -0.03); adminStandNeck.rotation.x = -0.15; castAndReceive(adminStandNeck); adminFallbackPC.add(adminStandNeck);
+        const adminStandBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.15), pcBodyMat); adminStandBase.position.set(0, 0.005, -0.02); castAndReceive(adminStandBase); adminFallbackPC.add(adminStandBase);
+        const adminMousepad = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.002, 0.3), mousepadMat); adminMousepad.position.set(0.05, 0.001, 0.22); castAndReceive(adminMousepad); adminFallbackPC.add(adminMousepad);
+        
+        const adminKlava = new THREE.Group();
+        adminKlava.position.set(-0.12, 0.040, 0.22);
+        const fallbackAdminKbd = new THREE.Group(); fallbackAdminKbd.rotation.x = 0.05; 
+        const admKbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(admKbdBase); fallbackAdminKbd.add(admKbdBase);
+        adminKlava.add(fallbackAdminKbd);
+        adminKlava.userData = { fallback: fallbackAdminKbd };
+        pendingKeyboards.push(adminKlava);
+        adminFallbackPC.add(adminKlava);
+        
+        const adminMouse = new THREE.Group();
+        adminMouse.position.set(0.28, 0.040, 0.22);
+        adminMouse.rotation.y = Math.PI; 
+        const fallbackAdminMouse = new THREE.Group(); 
+        const admMouseBody = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.1, 12), pcBodyMat); admMouseBody.rotation.x = Math.PI / 2; admMouseBody.scale.set(1, 0.5, 1); admMouseBody.position.y = 0.015; castAndReceive(admMouseBody); fallbackAdminMouse.add(admMouseBody);
+        adminMouse.add(fallbackAdminMouse);
+        adminMouse.userData = { fallback: fallbackAdminMouse };
+        pendingMice.push(adminMouse);
+        adminFallbackPC.add(adminMouse);
+        
+        adminPCSet.add(adminFallbackPC);
+        scene.add(adminPCSet);
+
         // Админское кресло (с фоллбэком)
         const adminChair = new THREE.Group(); adminChair.position.set(-6.8, 0, -2); adminChair.rotation.y = Math.PI/2; 
         const fallbackAdminChair = new THREE.Group(); buildChairMesh(fallbackAdminChair); adminChair.add(fallbackAdminChair);
@@ -603,7 +645,7 @@
             
             // --- ЗАМЕНА КЛАВИАТУРЫ ---
             const klavaContainer = new THREE.Group();
-            klavaContainer.position.set(-0.12, 0.040, 0.22); 
+            klavaContainer.position.set(-0.12, 0.040, 0.22); // Высота 0.040
             
             const fallbackKbdGroup = new THREE.Group(); fallbackKbdGroup.rotation.x = 0.05; 
             const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); fallbackKbdGroup.add(kbdBase);
@@ -618,8 +660,8 @@
 
             // --- ЗАМЕНА МЫШКИ ---
             const mouseContainer = new THREE.Group();
-            mouseContainer.position.set(0.28, 0.040, 0.22); 
-            mouseContainer.rotation.y = -0.15;
+            mouseContainer.position.set(0.28, 0.040, 0.22); // Высота 0.040
+            mouseContainer.rotation.y = Math.PI; // Повернули мышку
             
             const fallbackMouseGroup = new THREE.Group(); 
             const mouseBody = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.1, 12), pcBodyMat); mouseBody.rotation.x = Math.PI / 2; mouseBody.scale.set(1, 0.5, 1); mouseBody.position.y = 0.015; castAndReceive(mouseBody); fallbackMouseGroup.add(mouseBody);
@@ -805,11 +847,21 @@
             loader.load(CLIENT_MODEL_PATH, function (gltf) {
                 const model = gltf.scene; model.scale.set(CLIENT_MODEL_SCALE, CLIENT_MODEL_SCALE, CLIENT_MODEL_SCALE); 
                 model.traverse(node => { if (node.isMesh) castAndReceive(node); }); clientObj.mesh.add(model);
+                
+                // Находим ноги и сохраняем их для скрытия при сидении
+                clientObj.legNodes = [];
+                model.traverse(node => { 
+                    if (node.isMesh && (node.name.toLowerCase().includes('leg') || node.name.toLowerCase().includes('foot') || node.name.toLowerCase().includes('toe') || node.name.toLowerCase().includes('calf') || node.name.toLowerCase().includes('thigh'))) {
+                        clientObj.legNodes.push(node);
+                    }
+                });
+
                 if (gltf.animations && gltf.animations.length > 0) { clientObj.mixer = new THREE.AnimationMixer(model); clientObj.walkAction = clientObj.mixer.clipAction(gltf.animations[0]); clientObj.walkAction.play(); }
             }, undefined, function () {
                 const fallbackGroup = new THREE.Group(); const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.3, 12), clientMat); body.position.y = 0.65; castAndReceive(body); fallbackGroup.add(body);
                 const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), new THREE.MeshStandardMaterial({color: 0xffccaa})); head.position.y = 1.4; fallbackGroup.add(head);
                 clientObj.mesh.add(fallbackGroup);
+                clientObj.legNodes = []; // Пустой массив для фоллбэка
             });
 
             clientObj.mesh.position.set(-roomW/2 + 0.5, 0, 3.5); scene.add(clientObj.mesh); playSound(doorOpenBuffer, 0.4); clients.push(clientObj);
@@ -987,13 +1039,24 @@
                         c.timer -= delta; if (c.timer <= 0) { c.state = 'going_to_pc'; c.waypoints = []; }
                     } 
                     else if (c.state === 'going_to_pc') {
-                        processMovement(chairPos, () => { c.state = 'sitting'; c.timer = 10 + Math.random() * 5; c.targetPC.material = pcScreenMatOn; c.targetPC.userData.isOn = true; c.mesh.position.copy(chairPos); c.mesh.position.y = 0; c.mesh.rotation.y = deskRotation + Math.PI; updateUI(); });
+                        processMovement(chairPos, () => { 
+                            c.state = 'sitting'; c.timer = 10 + Math.random() * 5; 
+                            c.targetPC.material = pcScreenMatOn; c.targetPC.userData.isOn = true; 
+                            c.mesh.position.copy(chairPos); c.mesh.position.y = 0; c.mesh.rotation.y = deskRotation + Math.PI; 
+                            if (!c.legsHidden && c.legNodes) { c.legsHidden = true; c.legNodes.forEach(n => { n.userData.origScale = n.scale.clone(); n.scale.set(0.0001, 0.0001, 0.0001); }); }
+                            updateUI(); 
+                        });
                     } 
                     else if (c.state === 'sitting') {
                         c.timer -= delta;
-                        if (c.timer <= 0) { c.state = 'leaving'; c.waypoints = []; c.mesh.position.y = 0; c.targetPC.userData.reserved = false; if (c.wantsDrink) spawnTrashAt(c.targetPC.userData.deskGroup); }
+                        if (c.timer <= 0) { 
+                            c.state = 'leaving'; c.waypoints = []; c.mesh.position.y = 0; c.targetPC.userData.reserved = false; 
+                            if (c.legsHidden && c.legNodes) { c.legsHidden = false; c.legNodes.forEach(n => { if (n.userData.origScale) n.scale.copy(n.userData.origScale); }); }
+                            if (c.wantsDrink) spawnTrashAt(c.targetPC.userData.deskGroup); 
+                        }
                     } 
                     else if (c.state === 'leaving') {
+                        if (c.legsHidden && c.legNodes) { c.legsHidden = false; c.legNodes.forEach(n => { if (n.userData.origScale) n.scale.copy(n.userData.origScale); }); }
                         processMovement(new THREE.Vector3(-roomW/2 + 0.5, 0, 3.5), () => { scene.remove(c.mesh); clients.splice(i, 1); playSound(doorOpenBuffer, 0.4); });
                     }
                 }
