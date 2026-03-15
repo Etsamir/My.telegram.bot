@@ -107,7 +107,7 @@
     </div>
     
     <div id="bodycam-ui">
-        <div id="ui-time" class="time-text">--:--:-- <br> SYS: ONLINE</div>
+        <div id="ui-time" class="time-text">01:00 <br> SYS: ONLINE</div>
         <div id="ui-task" class="task-text">ЗАДАЧИ:<br>[ ] Выключить ПК: 0/20<br>[ ] Выбросить мусор: 0/0</div>
         <div id="ui-inventory" class="inventory-text" style="display:none;">В РУКАХ: 0 / 3</div>
         <div id="ui-stats" class="stats-text">HP: 100% | STM: 100%</div>
@@ -136,13 +136,17 @@
         const CHAIR_MODEL_SCALE = 0.100; 
         
         const REDBULL_MODEL_PATH = 'redbull.glb'; 
-        const REDBULL_MODEL_SCALE = 0.5; 
+        // ИЗМЕНЕНО: Сделал банку намного больше (в 30 раз больше, чем была). Меняй это число, если она всё ещё маленькая.
+        const REDBULL_MODEL_SCALE = 15.0; 
 
         const KLAVA_MODEL_PATH = 'klava.glb';
         const KLAVA_MODEL_SCALE = 0.2; 
 
         const MOUSE_MODEL_PATH = 'mouse.glb';
-        const MOUSE_MODEL_SCALE = 0.6; // Масштаб мышки
+        const MOUSE_MODEL_SCALE = 0.6; 
+
+        // Игровое время: 60 = 01:00
+        let gameTimeMinutes = 60; 
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -284,9 +288,35 @@
         let gameEnded = false; let gameWin = false; let mobileControlsInitialized = false;
         let health = 100; let stamina = 100; let isSprinting = false; let isSprintToggledMobile = false; 
 
-        // Переменные для сидения админа
         let isSitting = false;
         let preSitPos = new THREE.Vector3();
+
+        // ================= ТЕКСТУРА ЭКРАНА С ЧАСАМИ =================
+        const desktopCanvas = document.createElement('canvas'); 
+        desktopCanvas.width = 512; desktopCanvas.height = 256; 
+        const desktopCtx = desktopCanvas.getContext('2d');
+        const desktopTexMat = new THREE.CanvasTexture(desktopCanvas);
+
+        function updateDesktopTexture(timeStr) {
+            desktopCtx.fillStyle = '#0b1d2e'; desktopCtx.fillRect(0,0,512,256); 
+            desktopCtx.strokeStyle = '#1e3d59'; desktopCtx.lineWidth = 2; 
+            for(let i=0; i<512; i+=40) { desktopCtx.beginPath(); desktopCtx.moveTo(i,0); desktopCtx.lineTo(i,256); desktopCtx.stroke(); }
+            for(let i=0; i<256; i+=40) { desktopCtx.beginPath(); desktopCtx.moveTo(0,i); desktopCtx.lineTo(512,i); desktopCtx.stroke(); }
+            desktopCtx.fillStyle = '#111'; desktopCtx.fillRect(100, 30, 312, 176); 
+            desktopCtx.fillStyle = '#556b2f'; desktopCtx.fillRect(100, 150, 312, 56); 
+            desktopCtx.fillStyle = '#87ceeb'; desktopCtx.fillRect(100, 30, 312, 120); 
+            desktopCtx.fillStyle = '#ff0000'; desktopCtx.font = 'bold 20px Courier'; desktopCtx.fillText("SYSTEM ACTIVE", 150, 100);
+            desktopCtx.fillStyle = '#050505'; desktopCtx.fillRect(0,230,512,26); 
+            desktopCtx.fillStyle = '#00a8ff'; desktopCtx.fillRect(5,233,30,20);
+            desktopCtx.fillStyle = '#ffffff'; for(let i=0; i<4; i++) { desktopCtx.fillRect(10, 10 + i*35, 20, 20); }
+            
+            // ОТРИСОВКА ВРЕМЕНИ НА ЭКРАНЕ
+            desktopCtx.fillStyle = '#ffffff'; desktopCtx.font = 'bold 18px Courier';
+            desktopCtx.fillText(timeStr, 440, 248);
+
+            desktopTexMat.needsUpdate = true;
+        }
+        updateDesktopTexture("01:00");
 
         function applyGraphicsSettings() {
             if (currentGraphics === 'low') { renderer.setPixelRatio(0.7); renderer.shadowMap.enabled = false; renderer.toneMapping = THREE.LinearToneMapping; floorMat.bumpMap = null; wallMatLong.bumpMap = null; wallMatShort.bumpMap = null; } 
@@ -400,17 +430,6 @@
             ctx.fillStyle = '#181818'; ctx.fillRect(0,0,128,256); ctx.fillStyle = '#222'; ctx.fillRect(0,0,64,256); 
             const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; return tex;
         }
-        function createDesktopTexture() {
-            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 256; const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#0b1d2e'; ctx.fillRect(0,0,512,256); ctx.strokeStyle = '#1e3d59'; ctx.lineWidth = 2; 
-            for(let i=0; i<512; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,256); ctx.stroke(); }
-            for(let i=0; i<256; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(512,i); ctx.stroke(); }
-            ctx.fillStyle = '#111'; ctx.fillRect(100, 30, 312, 176); ctx.fillStyle = '#556b2f'; ctx.fillRect(100, 150, 312, 56); 
-            ctx.fillStyle = '#87ceeb'; ctx.fillRect(100, 30, 312, 120); ctx.fillStyle = '#ff0000'; ctx.font = 'bold 20px Courier'; ctx.fillText("MATCH IN PROGRESS", 150, 100);
-            ctx.fillStyle = '#050505'; ctx.fillRect(0,230,512,26); ctx.fillStyle = '#00a8ff'; ctx.fillRect(5,233,30,20);
-            ctx.fillStyle = '#ffffff'; for(let i=0; i<4; i++) { ctx.fillRect(10, 10 + i*35, 20, 20); }
-            return new THREE.CanvasTexture(canvas);
-        }
 
         const spookyFrames = [];
         for (let f = 0; f < 4; f++) {
@@ -461,15 +480,11 @@
 
         const spookyLight = new THREE.PointLight(0xddddff, 0, 4); spookyLight.castShadow = true; scene.add(spookyLight);
 
-        const desktopTexMat = createDesktopTexture();
         const pcScreenMatOn = new THREE.MeshStandardMaterial({ map: desktopTexMat, emissiveMap: desktopTexMat, emissive: 0xffffff, emissiveIntensity: 0.8, roughness: 0.2 }); 
         const pcScreenMatSpooky = new THREE.MeshStandardMaterial({ map: spookyFrames[0], emissiveMap: spookyFrames[0], emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.2 }); 
         const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 0.2, metalness: 0.8 }); 
         const pcBodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.9 }); 
-        
-        // Столы теперь тёмно-серые, как у администратора
         const deskMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); 
-        
         const chairMatBlack = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8 }); 
         const chairMatRed = new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.7 }); 
         const canMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.9, roughness: 0.2 });
@@ -496,7 +511,7 @@
 
         let interactables = []; let monitorsTurnedOff = 0; let trashCollected = 0; let currentInventory = 0; const MAX_INVENTORY = 3; let totalTrash = 0; 
         let isBlackout = false; let hasFlashlight = false; let allPCScreens = []; let spookyEventTriggered = false;
-        let blackoutTimer = 45 + Math.random() * 30; 
+        let blackoutTimer = 120; // ИЗМЕНЕНО: Строго 2 минуты (120 сек)
         
         let klavaModelTemplate = null; let chairModelTemplate = null; let redbullModelTemplate = null; let mouseModelTemplate = null;
         let pendingChairs = []; let pendingCans = []; let pendingKeyboards = []; let pendingMice = [];
@@ -523,7 +538,7 @@
 
         // ================= ХОЛОДИЛЬНИК =================
         const fridgeGroup = new THREE.Group(); 
-        fridgeGroup.position.set(-8.4, 0, -3.5); 
+        fridgeGroup.position.set(-8.4, 0, -5.0); // ИЗМЕНЕНО: подвинул левее (в угол)
         fridgeGroup.rotation.y = Math.PI / 2; 
 
         const fridgeBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.2, 1.0), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.5, metalness: 0.8}));
@@ -541,7 +556,7 @@
                         const fallbackCan = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.12, 12), canMat);
                         canGrp.add(fallbackCan);
                         
-                        canGrp.userData = { fallback: fallbackCan }; // Сохраняем фоллбэк для удаления позже
+                        canGrp.userData = { fallback: fallbackCan }; 
                         pendingCans.push(canGrp);
                         fridgeGroup.add(canGrp); 
                     } 
@@ -564,8 +579,8 @@
 
         // Стол админа: Монитор, Клава, Мышь
         const adminPCSet = new THREE.Group();
-        adminPCSet.position.set(-6.2, 0.75, -2); // На столе
-        adminPCSet.rotation.y = -Math.PI / 2; // Повернут к креслу админа
+        adminPCSet.position.set(-6.2, 0.75, -2); 
+        adminPCSet.rotation.y = -Math.PI / 2; 
         
         const adminFallbackPC = new THREE.Group();
         const adminBezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); adminBezel.position.set(0, 0.22, -0.01); castAndReceive(adminBezel); adminFallbackPC.add(adminBezel);
@@ -601,7 +616,6 @@
         const fallbackAdminChair = new THREE.Group(); buildChairMesh(fallbackAdminChair); adminChair.add(fallbackAdminChair);
         adminChair.userData = { fallback: fallbackAdminChair }; pendingChairs.push(adminChair); 
         
-        // Зона клика для посадки в кресло
         const adminChairClickBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.8), new THREE.MeshBasicMaterial({visible: false}));
         adminChairClickBox.position.set(0, 0.75, 0);
         adminChairClickBox.userData = { isAdminChair: true };
@@ -609,7 +623,6 @@
         interactables.push(adminChairClickBox);
         scene.add(adminChair);
 
-        // Сидение админа
         function sitDown() {
             isSitting = true;
             preSitPos.copy(camera.position);
@@ -783,7 +796,7 @@
             const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat); torso.position.y = 0.9; castAndReceive(torso); group.add(torso);
             const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), skinMat); head.position.y = 2.0; castAndReceive(head); group.add(head);
             const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeL.position.set(-0.1, 2.0, 0.18); group.add(eyeL);
-            const eyeR = new Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
+            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
             group.visible = false; scene.add(group); monsters[index].group = group; monsters[index].useCustomAnimation = true;
         }
         loadMonster(0, 0xff0000); loadMonster(1, 0x00ff00); loadMonster(2, 0x0000ff);
@@ -923,8 +936,15 @@
 
         setInterval(() => {
             if (gameEnded) return;
-            const now = new Date(); const timeStr = now.toLocaleTimeString('ru-RU', { hour12: false }); const t = translations[currentLanguage];
+            gameTimeMinutes += 1;
+            let h = Math.floor(gameTimeMinutes / 60) % 24;
+            let m = gameTimeMinutes % 60;
+            let timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            
+            const t = translations[currentLanguage];
             if (!isBlackout) uiTime.innerHTML = `${timeStr} <br> ${t.sysOnline}`; else uiTime.innerHTML = `${timeStr} <br> <span style="color:#ff0000">${t.powerFail}</span>`;
+            
+            updateDesktopTexture(timeStr);
         }, 1000);
 
         function updateUI() {
@@ -952,7 +972,7 @@
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const intersects = raycaster.intersectObjects(interactables, true);
             if (intersects.length > 0) {
-                if (intersects[0].distance > 2.5) return; 
+                if (intersects[0].distance > 2.5) return; // Ограничение дистанции
 
                 let obj = intersects[0].object;
                 while (obj.parent && !obj.userData.isAdminChair && !obj.userData.isTrash && !obj.userData.isPC && !obj.userData.isCustomPCBox && !obj.userData.isStabilizer && !obj.userData.isTrashBin && !obj.userData.isDoor && !obj.userData.isFlashlightItem) { obj = obj.parent; }
@@ -1099,11 +1119,12 @@
                     blackoutTimer -= delta;
                     if (blackoutTimer <= 0) {
                         triggerBlackout();
-                        blackoutTimer = 45 + Math.random() * 45; 
+                        blackoutTimer = 120; // 2 минуты
                     }
                 }
 
                 let isInputActive = false;
+
                 if (currentPlatform === 'pc') {
                     direction.z = Number(moveForward) - Number(moveBackward); direction.x = Number(moveRight) - Number(moveLeft); direction.normalize(); isInputActive = (moveForward || moveBackward || moveLeft || moveRight);
                 } else {
