@@ -135,23 +135,24 @@
         const CHAIR_MODEL_PATH = 'kreslo.glb';
         const CHAIR_MODEL_SCALE = 0.100; 
         
-        const REDBULL_MODEL_PATH = 'redbull.glb'; 
-        const REDBULL_MODEL_SCALE = 0.5; // Изменено на 0.05
-
         const KLAVA_MODEL_PATH = 'klava.glb';
         const KLAVA_MODEL_SCALE = 0.2; 
 
         const MOUSE_MODEL_PATH = 'mouse.glb';
         const MOUSE_MODEL_SCALE = 0.6; 
 
+        // ИСПРАВЛЕННЫЕ МАСШТАБЫ ДЛЯ НОВЫХ МОДЕЛЕЙ
+        const REDBULL_MODEL_PATH = 'redbull.glb'; 
+        const REDBULL_MODEL_SCALE = 0.5; // 0.5
+
         const FRIDGE_MODEL_PATH = 'xoladilnik.glb';
-        const FRIDGE_MODEL_SCALE = 30.0; // Изменено на 30.0
+        const FRIDGE_MODEL_SCALE = 30.0; // 30.0
 
         const FLASHLIGHT_MODEL_PATH = 'fonar.glb';
-        const FLASHLIGHT_MODEL_SCALE = 0.05; // Изменено на 0.05
+        const FLASHLIGHT_MODEL_SCALE = 0.05; // 0.05
 
         const TRASHBIN_MODEL_PATH = 'musorka.glb';
-        const TRASHBIN_MODEL_SCALE = 0.3;
+        const TRASHBIN_MODEL_SCALE = 0.3; // 0.3
 
         const STABILIZER_MODEL_PATH = 'stabilizator.glb';
         const STABILIZER_MODEL_SCALE = 1.0;
@@ -576,7 +577,6 @@
 
         // ================= МУСОРНЫЙ БАК =================
         const trashBinGroup = new THREE.Group();
-        // ПЕРЕНЕС МУСОРНЫЙ БАК В УГОЛ К ДВЕРИ (x: -8.5, z: 5.2)
         trashBinGroup.position.set(-8.5, 0.0, 5.2); 
 
         const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
@@ -603,22 +603,10 @@
 
         let fridgeFallbackParts = [fridgeBody, fridgeGlass];
 
+        // Полки пустые, убрали генерацию банок внутри
         for(let i=1; i<=4; i++) {
             const shelfHeight = i * 0.45; const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.02, 0.8), new THREE.MeshStandardMaterial({color: 0x444444})); shelf.position.set(0, shelfHeight, 0); fridgeGroup.add(shelf);
             fridgeFallbackParts.push(shelf);
-            for(let x=-0.3; x<=0.3; x+=0.3) { 
-                for(let z=-0.2; z<=0.2; z+=0.2) { 
-                    if (Math.random() > 0.3) { 
-                        const canGrp = new THREE.Group(); canGrp.position.set(x, shelfHeight + 0.07, z);
-                        const fallbackCan = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.12, 12), canMat);
-                        canGrp.add(fallbackCan);
-                        
-                        canGrp.userData = { fallback: fallbackCan }; 
-                        pendingCans.push(canGrp);
-                        fridgeGroup.add(canGrp); 
-                    } 
-                } 
-            }
         }
         const fridgeLight = new THREE.PointLight(0x00aaff, 0.8, 3); fridgeLight.position.set(0, 1.1, 0.4); fridgeGroup.add(fridgeLight); scene.add(fridgeGroup);
         fridgeGroup.userData = { fallbacks: fridgeFallbackParts };
@@ -634,6 +622,59 @@
         const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); castAndReceive(aLeg2); adminDeskShort.add(aLeg2);
         scene.add(adminDeskShort);
 
+        // ================= КЛАДОВКА (ТУМБОЧКА) С ФОНАРИКОМ =================
+        const cabinetGroup = new THREE.Group();
+        cabinetGroup.position.set(-5.6, 0.35, -1.0);
+        cabinetGroup.rotation.y = Math.PI / 2; // Разворачиваем дверцей в сторону комнаты
+        
+        const cabMat = new THREE.MeshStandardMaterial({color: 0x221100, roughness: 0.9});
+        const cabLeft = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), cabMat); cabLeft.position.set(-0.275, 0, 0);
+        const cabRight = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), cabMat); cabRight.position.set(0.275, 0, 0);
+        const cabTop = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), cabMat); cabTop.position.set(0, 0.275, 0);
+        const cabBot = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), cabMat); cabBot.position.set(0, -0.275, 0);
+        const cabBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.05), cabMat); cabBack.position.set(0, 0, -0.275);
+        
+        cabinetGroup.add(cabLeft, cabRight, cabTop, cabBot, cabBack);
+        castAndReceive(cabLeft); castAndReceive(cabRight); castAndReceive(cabTop); castAndReceive(cabBot); castAndReceive(cabBack);
+
+        // Дверца тумбочки на шарнире
+        const hinge = new THREE.Group();
+        hinge.position.set(-0.275, 0, 0.275); // левый передний край
+        
+        const cabDoor = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.05), cabMat);
+        cabDoor.position.set(0.3, 0, 0); // сдвигаем вправо от шарнира
+        castAndReceive(cabDoor);
+        
+        const doorHandleObj = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), new THREE.MeshStandardMaterial({color: 0x888888, metalness: 0.8}));
+        doorHandleObj.position.set(0.5, 0, 0.05); // ручка справа
+        cabDoor.add(doorHandleObj);
+
+        hinge.add(cabDoor);
+        cabinetGroup.add(hinge);
+        scene.add(cabinetGroup);
+
+        cabDoor.userData = { isCabinetDoor: true, hinge: hinge, isOpen: false };
+        interactables.push(cabDoor); // Делаем дверцу кликабельной
+
+        // ФОНАРИК ВНУТРИ КЛАДОВКИ (С САМОГО НАЧАЛА)
+        const flashlightGroup = new THREE.Group();
+        flashlightGroup.position.set(-5.6, 0.15, -1.0); // Координаты внутри тумбочки
+        flashlightGroup.rotation.z = Math.PI / 2; // Лежит на боку
+        flashlightGroup.visible = true;
+
+        const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.3, metalness: 0.8}));
+        flBody.rotation.x = Math.PI / 2; flBody.userData = { isFlashlightItem: true }; castAndReceive(flBody); 
+        flashlightGroup.add(flBody);
+
+        const flLens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16), new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0xffffff, emissiveIntensity: 5}));
+        flLens.rotation.x = Math.PI / 2; flLens.position.set(0, 0, -0.1); flLens.userData = { isFlashlightItem: true }; 
+        flashlightGroup.add(flLens);
+
+        flashlightGroup.userData = { fallback: [flBody, flLens], isFlashlightItem: true };
+        scene.add(flashlightGroup);
+        interactables.push(flashlightGroup); // Можно подобрать с самого начала
+
+        // ================= АДМИНСКИЙ КОМП И КРЕСЛО =================
         const adminPCSet = new THREE.Group();
         adminPCSet.position.set(-6.2, 0.75, -2); 
         adminPCSet.rotation.y = -Math.PI / 2; 
@@ -670,7 +711,6 @@
         adminPCSet.add(adminFallbackPC);
         scene.add(adminPCSet);
 
-        // Кресло админа 
         const adminChair = new THREE.Group(); adminChair.position.set(-6.8, 0, -2); adminChair.rotation.y = Math.PI/2; 
         const fallbackAdminChair = new THREE.Group(); buildChairMesh(fallbackAdminChair); adminChair.add(fallbackAdminChair);
         adminChair.userData = { fallback: fallbackAdminChair }; pendingChairs.push(adminChair); 
@@ -693,24 +733,6 @@
             isSitting = false;
             camera.position.copy(preSitPos);
         }
-
-        // ================= ФОНАРИК =================
-        const flashlightGroup = new THREE.Group();
-        flashlightGroup.position.set(-6.2, 1.05, -2.5); 
-        flashlightGroup.rotation.y = Math.PI / 4; 
-        flashlightGroup.visible = false;
-
-        const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.3, metalness: 0.8}));
-        flBody.rotation.x = Math.PI / 2; flBody.userData = { isFlashlightItem: true }; castAndReceive(flBody); 
-        flashlightGroup.add(flBody);
-
-        const flLens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16), new THREE.MeshStandardMaterial({color: 0x000000, emissive: 0xffffff, emissiveIntensity: 5}));
-        flLens.rotation.x = Math.PI / 2; flLens.position.set(0, 0, -0.1); flLens.userData = { isFlashlightItem: true }; 
-        flashlightGroup.add(flLens);
-
-        flashlightGroup.userData = { fallback: [flBody, flLens], isFlashlightItem: true };
-        scene.add(flashlightGroup);
-
 
         // ================= ДВЕРЬ =================
         const doorFrameMat = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.9});
@@ -857,8 +879,6 @@
                 if (mouseGrp.userData.fallback) mouseGrp.userData.fallback.visible = false; 
             });
         }, undefined, function() { console.log('3D Модель Мышки не найдена, используем стандартную'); });
-
-        // === НОВЫЕ МОДЕЛИ ===
 
         loader.load(FRIDGE_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
@@ -1048,11 +1068,6 @@
             ledTopMat.emissive.setHex(0x000022); ledBotMat.emissive.setHex(0x000022); rgbLedStripMat.emissive.setHex(0x220000); 
             stabLight.material.emissive.setHex(0xff0000); stabLight.material.color.setHex(0xff0000);
             
-            // Замена показа фонарика
-            if (!hasFlashlight) { 
-                flashlightGroup.visible = true; 
-                interactables.push(flashlightGroup); 
-            }
             if (blackoutBuffer) { const source = audioContext.createBufferSource(); source.buffer = blackoutBuffer; source.loop = true; const gainNode = audioContext.createGain(); gainNode.gain.value = 0.3; source.connect(gainNode).connect(audioContext.destination); source.start(); window.blackoutLoop = source; }
             updateUI();
         }
@@ -1124,7 +1139,24 @@
                 if (intersects[0].distance > 2.5) return; 
 
                 let obj = intersects[0].object;
-                while (obj.parent && !obj.userData.isAdminChair && !obj.userData.isTrash && !obj.userData.isPC && !obj.userData.isCustomPCBox && !obj.userData.isStabilizer && !obj.userData.isTrashBin && !obj.userData.isDoor && !obj.userData.isFlashlightItem) { obj = obj.parent; }
+                
+                // Ищем родительский объект, у которого есть наши игровые данные
+                while (obj.parent && !obj.userData.isAdminChair && !obj.userData.isTrash && !obj.userData.isPC && !obj.userData.isCustomPCBox && !obj.userData.isStabilizer && !obj.userData.isTrashBin && !obj.userData.isDoor && !obj.userData.isFlashlightItem && !obj.userData.isCabinetDoor) { 
+                    obj = obj.parent; 
+                }
+
+                // ЛОГИКА ДВЕРЦЫ КЛАДОВКИ
+                if (obj.userData.isCabinetDoor) {
+                    obj.userData.isOpen = !obj.userData.isOpen;
+                    if (obj.userData.isOpen) {
+                        obj.userData.hinge.rotation.y = -Math.PI / 2; // Открыть наружу
+                        playSound(pickupBuffer, 0.3, 0.8); // Звук открытия 
+                    } else {
+                        obj.userData.hinge.rotation.y = 0; // Закрыть
+                        playSound(pickupBuffer, 0.3, 0.6); // Звук закрытия
+                    }
+                    return;
+                }
 
                 if (obj.userData.isAdminChair) {
                     if (!isSitting) sitDown();
@@ -1132,6 +1164,7 @@
                 }
 
                 if (obj.userData.isStabilizer && isBlackout) { restorePower(); playSound(pickupBuffer, 0.4); }
+                
                 if (obj.userData.isFlashlightItem) { pickupFlashlight(); playSound(pickupBuffer, 0.3); }
                 
                 if (obj.userData.isPC && obj.userData.isOn) {
