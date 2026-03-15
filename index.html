@@ -291,7 +291,7 @@
         let stepTimer = 0; function playFootstep(isSprint) { if (gameEnded) return; playSound(footstepsBuffer, isSprint ? 0.3 : 0.2, isSprint ? 1.2 : 0.8 + Math.random()*0.4); }
 
         // ================= ОСНОВНАЯ СЦЕНА =================
-        const scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x050505, 0.08); 
+        const scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x020205, 0.04); 
         const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 100); camera.rotation.order = 'YXZ'; 
         
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -449,12 +449,12 @@
         // ================= ГЕНЕРАЦИЯ ТЕКСТУР И СЦЕНЫ =================
         function createTileTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#111'; ctx.fillRect(0,0,256,256); ctx.strokeStyle = '#222'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
+            ctx.fillStyle = '#0a0a0c'; ctx.fillRect(0,0,256,256); ctx.strokeStyle = '#1a1a20'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
             const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(18, 12); return tex;
         }
         function createWallTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 256; const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#181818'; ctx.fillRect(0,0,128,256); ctx.fillStyle = '#222'; ctx.fillRect(0,0,64,256); 
+            ctx.fillStyle = '#111115'; ctx.fillRect(0,0,128,256); ctx.fillStyle = '#1a1a20'; ctx.fillRect(0,0,64,256); 
             const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; return tex;
         }
         function createDesktopTexture() {
@@ -483,7 +483,7 @@
         const roomW = 18, roomD = 12, roomH = 3.8; 
         const floorTex = createTileTexture(); const wallTex = createWallTexture(); wallTex.repeat.set(roomW/2, 1); const wallTexShort = createWallTexture(); wallTexShort.repeat.set(roomD/2, 1);
         
-        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, bumpMap: floorTex, bumpScale: 0.02, roughness: 0.5, metalness: 0.1 }); 
+        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, bumpMap: floorTex, bumpScale: 0.02, roughness: 0.15, metalness: 0.7 }); 
         const wallMatLong = new THREE.MeshStandardMaterial({ map: wallTex, bumpMap: wallTex, bumpScale: 0.05, roughness: 0.9 });
         const wallMatShort = new THREE.MeshStandardMaterial({ map: wallTexShort, bumpMap: wallTexShort, bumpScale: 0.05, roughness: 0.9 }); 
         const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1 });
@@ -495,26 +495,54 @@
         createWall(roomW, roomH, 0, roomH/2, -roomD/2, 0, wallMatLong); createWall(roomW, roomH, 0, roomH/2, roomD/2, Math.PI, wallMatLong); 
         createWall(roomD, roomH, -roomW/2, roomH/2, 0, Math.PI/2, wallMatShort); createWall(roomD, roomH, roomW/2, roomH/2, 0, -Math.PI/2, wallMatShort); 
 
-        const columnMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
+        const columnMat = new THREE.MeshStandardMaterial({ color: 0x1a1a20, roughness: 0.9 });
         function addColumn(x, z) { const col = new THREE.Mesh(new THREE.BoxGeometry(0.6, roomH, 0.6), columnMat); col.position.set(x, roomH/2, z); col.castShadow = true; col.receiveShadow = true; scene.add(col); }
         addColumn(-8.8, -5.8); addColumn(8.8, -5.8); addColumn(-8.8, 5.8); addColumn(8.8, 5.8); addColumn(0, -5.8); addColumn(0, 5.8); 
 
-        const centerWallMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 1 });
+        const centerWallMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 1 });
         const centerWall = new THREE.Mesh(new THREE.BoxGeometry(11, roomH, 0.5), centerWallMat); centerWall.position.set(2, roomH/2, 0); centerWall.castShadow = true; centerWall.receiveShadow = true; scene.add(centerWall);
 
-        const mainAmbient = new THREE.AmbientLight(0xffffff, 0.3); scene.add(mainAmbient);
-        const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.4); scene.add(hemiLight);
+        // ОБНОВЛЕННОЕ, БОЛЕЕ ЯРКОЕ ОСВЕЩЕНИЕ (чтобы игроки видели окружение)
+        const mainAmbient = new THREE.AmbientLight(0x666677, 0.7); scene.add(mainAmbient);
+        const hemiLight = new THREE.HemisphereLight(0xeef0ff, 0x444444, 0.6); scene.add(hemiLight);
 
-        const ledTopMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x2255ff, emissiveIntensity: 2 }); 
-        const ledBotMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ffff, emissiveIntensity: 2 }); 
-        function createLedStrip(w, d, x, y, z, material) { const strip = new THREE.Mesh(new THREE.BoxGeometry(w, d, 0.05), material); strip.position.set(x, y, z); scene.add(strip); }
+        let neonLightsList = []; // Храним тут, чтобы выключать при блэкауте
+        
+        // НОВОЕ: RGB Текст "GAME CLUB" на стене по центру
+        function createNeonTextTexture(text) {
+            const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 256; const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,1024,256);
+            ctx.font = 'bold 140px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff'; ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 20;
+            ctx.fillText(text, 512, 128); return new THREE.CanvasTexture(canvas);
+        }
+        const neonTextTex = createNeonTextTexture("GAME CLUB");
+        const neonTextMat = new THREE.MeshStandardMaterial({ map: neonTextTex, emissiveMap: neonTextTex, emissive: 0xffffff, emissiveIntensity: 3, transparent: true });
+        
+        const signGeo = new THREE.PlaneGeometry(6, 1.5);
+        const signSide1 = new THREE.Mesh(signGeo, neonTextMat); signSide1.position.set(2, 2.6, 0.26); scene.add(signSide1);
+        const signSide2 = new THREE.Mesh(signGeo, neonTextMat); signSide2.position.set(2, 2.6, -0.26); signSide2.rotation.y = Math.PI; scene.add(signSide2);
+        
+        neonLightsList.push({mesh: signSide1, light: null, origIntensity: 3});
+        neonLightsList.push({mesh: signSide2, light: null, origIntensity: 3});
+
+        // Подсветка по периметру
+        const ledTopMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00aaff, emissiveIntensity: 2 }); 
+        const ledBotMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff00aa, emissiveIntensity: 2 }); 
+        function createLedStrip(w, d, x, y, z, material) { 
+            const strip = new THREE.Mesh(new THREE.BoxGeometry(w, d, 0.05), material); 
+            strip.position.set(x, y, z); 
+            scene.add(strip); 
+            neonLightsList.push({mesh: strip, light: null, origIntensity: 2});
+        }
         createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, -roomD/2 + 0.025, ledTopMat); createLedStrip(roomW - 0.2, 0.05, 0, roomH - 0.025, roomD/2 - 0.025, ledTopMat);  
         createLedStrip(0.05, roomD - 0.2, -roomW/2 + 0.025, roomH - 0.025, 0, ledTopMat); createLedStrip(0.05, roomD - 0.2, roomW/2 - 0.025, roomH - 0.025, 0, ledTopMat);  
         createLedStrip(roomW - 0.2, 0.05, 0, 0.025, -roomD/2 + 0.025, ledBotMat); createLedStrip(roomW - 0.2, 0.05, 0, 0.025, roomD/2 - 0.025, ledBotMat);  
         createLedStrip(0.05, roomD - 0.2, -roomW/2 + 0.025, 0.025, 0, ledBotMat); createLedStrip(0.05, roomD - 0.2, roomW/2 - 0.025, 0.025, 0, ledBotMat);
 
-        const ledStripGeo = new THREE.BoxGeometry(10.8, 0.1, 0.6); const rgbLedStripMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff0000, emissiveIntensity: 2 }); 
+        const ledStripGeo = new THREE.BoxGeometry(10.8, 0.1, 0.6); const rgbLedStripMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff00ff, emissiveIntensity: 3 }); 
         const rgbLedStrip = new THREE.Mesh(ledStripGeo, rgbLedStripMat); rgbLedStrip.position.set(2, roomH - 0.2, 0); scene.add(rgbLedStrip);
+        neonLightsList.push({mesh: rgbLedStrip, light: null, origIntensity: 3});
 
         const spookyLight = new THREE.PointLight(0xddddff, 0, 4); spookyLight.castShadow = true; scene.add(spookyLight);
 
@@ -523,14 +551,13 @@
         const pcScreenMatSpooky = new THREE.MeshStandardMaterial({ map: spookyFrames[0], emissiveMap: spookyFrames[0], emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.2 }); 
         const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 0.2, metalness: 0.8 }); 
         const pcBodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.9 }); 
-        const deskMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); 
+        const deskMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8, metalness: 0.2 }); 
         const chairMatBlack = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8 }); 
         const chairMatRed = new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.7 }); 
         const canMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.9, roughness: 0.2 });
-        const legMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8, metalness: 0.5 });
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8, metalness: 0.8 });
         
-        // ВОССТАНОВЛЕННЫЕ МАТЕРИАЛЫ
-        const mousepadMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+        const mousepadMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 });
         const kbdKeysMat = new THREE.MeshStandardMaterial({ color: 0x020202, roughness: 0.8 });
         const adminScreenMatOn = new THREE.MeshStandardMaterial({ map: adminDesktopTexMat, emissiveMap: adminDesktopTexMat, emissive: 0xffffff, emissiveIntensity: 0.8, roughness: 0.2 }); 
 
@@ -600,7 +627,6 @@
 
         let fridgeFallbackParts = [fridgeBody, fridgeGlass];
 
-        // Полки пустые, убрали генерацию банок внутри
         for(let i=1; i<=4; i++) {
             const shelfHeight = i * 0.45; const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.02, 0.8), new THREE.MeshStandardMaterial({color: 0x444444})); shelf.position.set(0, shelfHeight, 0); fridgeGroup.add(shelf);
             fridgeFallbackParts.push(shelf);
@@ -622,28 +648,27 @@
         // ================= КЛАДОВКА (ТУМБОЧКА) С ФОНАРИКОМ =================
         const cabinetGroup = new THREE.Group();
         cabinetGroup.position.set(-5.6, 0.35, -1.0);
-        cabinetGroup.rotation.y = Math.PI / 2; // Разворачиваем дверцей в сторону комнаты
+        cabinetGroup.rotation.y = Math.PI / 2; 
         
         const cabMat = new THREE.MeshStandardMaterial({color: 0x221100, roughness: 0.9});
-        const cabLeft = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), cabMat); cabLeft.position.set(-0.275, 0, 0);
-        const cabRight = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), cabMat); cabRight.position.set(0.275, 0, 0);
-        const cabTop = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), cabMat); cabTop.position.set(0, 0.275, 0);
-        const cabBot = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), cabMat); cabBot.position.set(0, -0.275, 0);
-        const cabBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.05), cabMat); cabBack.position.set(0, 0, -0.275);
+        const cabLeft = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), deskMat); cabLeft.position.set(-0.275, 0, 0);
+        const cabRight = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), deskMat); cabRight.position.set(0.275, 0, 0);
+        const cabTop = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), deskMat); cabTop.position.set(0, 0.275, 0);
+        const cabBot = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), deskMat); cabBot.position.set(0, -0.275, 0);
+        const cabBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.05), deskMat); cabBack.position.set(0, 0, -0.275);
         
         cabinetGroup.add(cabLeft, cabRight, cabTop, cabBot, cabBack);
         castAndReceive(cabLeft); castAndReceive(cabRight); castAndReceive(cabTop); castAndReceive(cabBot); castAndReceive(cabBack);
 
-        // Дверца тумбочки на шарнире
         const hinge = new THREE.Group();
-        hinge.position.set(-0.275, 0, 0.275); // левый передний край
+        hinge.position.set(-0.275, 0, 0.275); 
         
-        const cabDoor = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.05), cabMat);
-        cabDoor.position.set(0.3, 0, 0); // сдвигаем вправо от шарнира
+        const cabDoor = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.05), deskMat);
+        cabDoor.position.set(0.3, 0, 0); 
         castAndReceive(cabDoor);
         
         const doorHandleObj = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), new THREE.MeshStandardMaterial({color: 0x888888, metalness: 0.8}));
-        doorHandleObj.position.set(0.5, 0, 0.05); // ручка справа
+        doorHandleObj.position.set(0.5, 0, 0.05); 
         cabDoor.add(doorHandleObj);
 
         hinge.add(cabDoor);
@@ -651,12 +676,12 @@
         scene.add(cabinetGroup);
 
         cabDoor.userData = { isCabinetDoor: true, hinge: hinge, isOpen: false };
-        interactables.push(cabDoor); // Делаем дверцу кликабельной
+        interactables.push(cabDoor); 
 
-        // ФОНАРИК ВНУТРИ КЛАДОВКИ (С САМОГО НАЧАЛА)
         const flashlightGroup = new THREE.Group();
-        flashlightGroup.position.set(-5.6, 0.15, -1.0); // Координаты внутри тумбочки
-        flashlightGroup.rotation.z = Math.PI / 2; // Лежит на боку
+        flashlightGroup.position.set(-5.6, 0.12, -1.2); 
+        flashlightGroup.rotation.z = Math.PI / 2; 
+        flashlightGroup.rotation.x = Math.PI / 2; 
         flashlightGroup.visible = true;
 
         const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.3, metalness: 0.8}));
@@ -669,7 +694,7 @@
 
         flashlightGroup.userData = { fallback: [flBody, flLens], isFlashlightItem: true };
         scene.add(flashlightGroup);
-        interactables.push(flashlightGroup); // Можно подобрать с самого начала
+        interactables.push(flashlightGroup); 
 
         // ================= АДМИНСКИЙ КОМП И КРЕСЛО =================
         const adminPCSet = new THREE.Group();
@@ -763,7 +788,6 @@
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
             
-            // --- ЭКРАН (НЕОБХОДИМ ДЛЯ ИГРЫ) ---
             const screen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOff); 
             screen.position.set(0, 0.22, 0.01); 
             screen.userData = { isOn: false, isPC: true, isSpooky: false, deskGroup: group }; 
@@ -772,38 +796,30 @@
 
             const table = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.8), deskMat); table.position.set(0, 0, 0); group.add(table);
             
-            // --- СТАНДАРТНЫЙ ПК ---
             const fallbackPCGroup = new THREE.Group();
             const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); bezel.position.set(0, 0.22, -0.01); castAndReceive(bezel); fallbackPCGroup.add(bezel);
             const standNeck = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.02), pcBodyMat); standNeck.position.set(0, 0.1, -0.03); standNeck.rotation.x = -0.15; castAndReceive(standNeck); fallbackPCGroup.add(standNeck);
             const standBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.15), pcBodyMat); standBase.position.set(0, 0.005, -0.02); castAndReceive(standBase); fallbackPCGroup.add(standBase);
             const mousepad = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.002, 0.3), mousepadMat); mousepad.position.set(0.05, 0.001, 0.22); castAndReceive(mousepad); fallbackPCGroup.add(mousepad);
             
-            // --- ЗАМЕНА КЛАВИАТУРЫ ---
             const klavaContainer = new THREE.Group();
             klavaContainer.position.set(-0.12, 0.040, 0.22); 
-            
             const fallbackKbdGroup = new THREE.Group(); fallbackKbdGroup.rotation.x = 0.05; 
             const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); fallbackKbdGroup.add(kbdBase);
             const kbdRGBBase = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.016, 0.15), rgbLedStripMat); kbdRGBBase.position.y = 0.002; fallbackKbdGroup.add(kbdRGBBase);
             const kbdKeysMain = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.02, 0.13), kbdKeysMat); kbdKeysMain.position.set(-0.05, 0.005, 0); castAndReceive(kbdKeysMain); fallbackKbdGroup.add(kbdKeysMain);
             const kbdKeysNum = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.02, 0.13), kbdKeysMat); kbdKeysNum.position.set(0.15, 0.005, 0); castAndReceive(kbdKeysNum); fallbackKbdGroup.add(kbdKeysNum);
-            
             klavaContainer.add(fallbackKbdGroup);
             klavaContainer.userData = { fallback: fallbackKbdGroup };
             pendingKeyboards.push(klavaContainer);
             fallbackPCGroup.add(klavaContainer);
 
-            // --- ЗАМЕНА МЫШКИ ---
             const mouseContainer = new THREE.Group();
             mouseContainer.position.set(0.28, 0.040, 0.22); 
             mouseContainer.rotation.y = Math.PI; 
-            
             const fallbackMouseGroup = new THREE.Group(); 
             const mouseBody = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.1, 12), pcBodyMat); mouseBody.rotation.x = Math.PI / 2; mouseBody.scale.set(1, 0.5, 1); mouseBody.position.y = 0.015; castAndReceive(mouseBody); fallbackMouseGroup.add(mouseBody);
-            const mouseRGB = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.02, 12), rgbLedStripMat); mouseRGB.rotation.x = Math.PI / 2; mouseRGB.scale.set(1, 0.5, 1); mouseRGB.position.set(0, 0.005, 0.02); fallbackMouseGroup.add(mouseRGB);
-            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 8), rgbLedStripMat); wheel.rotation.z = Math.PI / 2; wheel.position.set(0, 0.022, -0.035); fallbackMouseGroup.add(wheel);
-            
+            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 8), new THREE.MeshStandardMaterial({color: 0x222222})); wheel.rotation.z = Math.PI / 2; wheel.position.set(0, 0.022, -0.035); fallbackMouseGroup.add(wheel);
             mouseContainer.add(fallbackMouseGroup);
             mouseContainer.userData = { fallback: fallbackMouseGroup };
             pendingMice.push(mouseContainer);
@@ -811,7 +827,6 @@
             
             group.add(fallbackPCGroup);
 
-            // --- КРЕСЛО ---
             const chairGroup = new THREE.Group(); chairGroup.position.set(0, -0.75, 0.4); chairGroup.rotation.y = Math.PI; 
             const fallbackChairGroup = new THREE.Group(); buildChairMesh(fallbackChairGroup); chairGroup.add(fallbackChairGroup);
             chairGroup.userData = { fallback: fallbackChairGroup };
@@ -825,6 +840,12 @@
             const tableGroup = new THREE.Group(); tableGroup.position.set(startX + 3.5, 0, zPos);
             const top = new THREE.Mesh(new THREE.BoxGeometry(8, 0.05, 1.4), deskMat); top.position.y = 0.75; castAndReceive(top); tableGroup.add(top);
             for(let lx of [-3.9, 0, 3.9]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 1.3), legMat); leg.position.set(lx, 0.75/2, 0); castAndReceive(leg); tableGroup.add(leg); }
+            
+            const underGlow = new THREE.PointLight(0xff00aa, 1.0, 5); 
+            underGlow.position.set(0, 0.3, 0);
+            tableGroup.add(underGlow);
+            neonLightsList.push({mesh: null, light: underGlow, origIntensity: 0, origLight: 1.0});
+
             scene.add(tableGroup);
             for (let i = 0; i < 5; i++) { const posX = startX + i * 1.7; createPCAndChair(posX, zPos - 0.3, Math.PI); createPCAndChair(posX, zPos + 0.3, 0); }
         }
@@ -838,7 +859,7 @@
             redbullModelTemplate.scale.set(REDBULL_MODEL_SCALE, REDBULL_MODEL_SCALE, REDBULL_MODEL_SCALE);
             pendingCans.forEach(canGrp => {
                 const clone = redbullModelTemplate.clone();
-                clone.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
+                clone.traverse(child => { if (child.isMesh) castAndReceive(child); }); 
                 canGrp.add(clone);
                 if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; 
             });
@@ -890,7 +911,7 @@
         loader.load(TRASHBIN_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(TRASHBIN_MODEL_SCALE, TRASHBIN_MODEL_SCALE, TRASHBIN_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); 
             trashBinGroup.add(model);
             if(trashBinGroup.userData.fallback) trashBinGroup.userData.fallback.visible = false;
         }, undefined, function() { console.log('3D Модель Мусорки не найдена'); });
@@ -898,7 +919,7 @@
         loader.load(FLASHLIGHT_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(FLASHLIGHT_MODEL_SCALE, FLASHLIGHT_MODEL_SCALE, FLASHLIGHT_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); 
             flashlightGroup.add(model);
             if(flashlightGroup.userData.fallback) {
                 flashlightGroup.userData.fallback.forEach(part => part.visible = false);
@@ -908,7 +929,7 @@
         loader.load(STABILIZER_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(STABILIZER_MODEL_SCALE, STABILIZER_MODEL_SCALE, STABILIZER_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); 
             stabilizerGroup.add(model);
             if(stabilizerGroup.userData.fallback) stabilizerGroup.userData.fallback.visible = false;
         }, undefined, function() { console.log('3D Модель Стабилизатора не найдена'); });
@@ -916,7 +937,7 @@
         loader.load(DOOR_MODEL_PATH, function(gltf) {
             const model = gltf.scene;
             model.scale.set(DOOR_MODEL_SCALE, DOOR_MODEL_SCALE, DOOR_MODEL_SCALE);
-            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); // УБРАЛИ userData отсюда
+            model.traverse(child => { if (child.isMesh) castAndReceive(child); }); 
             exitDoorGroup.add(model);
             if(exitDoorGroup.userData.fallback) exitDoorGroup.userData.fallback.visible = false;
         }, undefined, function() { console.log('3D Модель Двери не найдена'); });
@@ -1059,18 +1080,34 @@
 
         function triggerBlackout() {
             if (isBlackout) return; isBlackout = true;
+            
+            // Выключаем свет
             scene.remove(mainAmbient); hemiLight.intensity = 0.05; 
-            ledTopMat.emissive.setHex(0x000022); ledBotMat.emissive.setHex(0x000022); rgbLedStripMat.emissive.setHex(0x220000); 
             stabLight.material.emissive.setHex(0xff0000); stabLight.material.color.setHex(0xff0000);
+            
+            // Выключаем неон
+            neonLightsList.forEach(item => {
+                if (item.mesh) item.mesh.material.emissiveIntensity = 0;
+                if (item.light) item.light.intensity = 0;
+            });
             
             if (blackoutBuffer) { const source = audioContext.createBufferSource(); source.buffer = blackoutBuffer; source.loop = true; const gainNode = audioContext.createGain(); gainNode.gain.value = 0.3; source.connect(gainNode).connect(audioContext.destination); source.start(); window.blackoutLoop = source; }
             updateUI();
         }
 
         function restorePower() {
-            isBlackout = false; scene.add(mainAmbient); hemiLight.intensity = 0.4;
-            ledTopMat.emissive.setHex(0x2255ff); ledBotMat.emissive.setHex(0x00ffff); rgbLedStripMat.emissive.setHex(0xff0000);
+            isBlackout = false; 
+            
+            // Включаем свет
+            scene.add(mainAmbient); hemiLight.intensity = 0.6; // Вернули яркий свет
             stabLight.material.emissive.setHex(0x00ff00); stabLight.material.color.setHex(0x00ff00);
+            
+            // Включаем неон
+            neonLightsList.forEach(item => {
+                if (item.mesh) item.mesh.material.emissiveIntensity = item.origIntensity;
+                if (item.light) item.light.intensity = item.origLight;
+            });
+
             if (window.blackoutLoop) { window.blackoutLoop.stop(); window.blackoutLoop = null; }
             updateUI();
         }
@@ -1107,9 +1144,8 @@
             if (allTasksDone && !isBlackout) {
                 uiTask.innerHTML = t.taskComplete; uiTask.style.color = "#00ff00";
                 
-                // Проверяем, загружена ли модель двери (Group) или это базовый Mesh
-                let actualDoorObj = exitDoorGroup.userData.fallback; // если нет glb
-                if(exitDoorGroup.children.length > 1) { // Если загружен GLB, ищем нужный флаг
+                let actualDoorObj = exitDoorGroup.userData.fallback; 
+                if(exitDoorGroup.children.length > 1) { 
                     exitDoorGroup.traverse(child => { if(child.userData && child.userData.isDoor) actualDoorObj = child; });
                 }
                 
@@ -1135,20 +1171,18 @@
 
                 let obj = intersects[0].object;
                 
-                // Ищем родительский объект, у которого есть наши игровые данные
                 while (obj.parent && !obj.userData.isAdminChair && !obj.userData.isTrash && !obj.userData.isPC && !obj.userData.isCustomPCBox && !obj.userData.isStabilizer && !obj.userData.isTrashBin && !obj.userData.isDoor && !obj.userData.isFlashlightItem && !obj.userData.isCabinetDoor) { 
                     obj = obj.parent; 
                 }
 
-                // ЛОГИКА ДВЕРЦЫ КЛАДОВКИ
                 if (obj.userData.isCabinetDoor) {
                     obj.userData.isOpen = !obj.userData.isOpen;
                     if (obj.userData.isOpen) {
-                        obj.userData.hinge.rotation.y = -Math.PI / 2; // Открыть наружу
-                        playSound(pickupBuffer, 0.3, 0.8); // Звук открытия 
+                        obj.userData.hinge.rotation.y = -Math.PI / 2; 
+                        playSound(pickupBuffer, 0.3, 0.8);  
                     } else {
-                        obj.userData.hinge.rotation.y = 0; // Закрыть
-                        playSound(pickupBuffer, 0.3, 0.6); // Звук закрытия
+                        obj.userData.hinge.rotation.y = 0; 
+                        playSound(pickupBuffer, 0.3, 0.6); 
                     }
                     return;
                 }
@@ -1212,7 +1246,6 @@
             if ((controls.isLocked || currentPlatform === 'mobile') && !gameEnded) {
                 const time = performance.now(); const delta = (time - prevTime) / 1000;
                 
-                // === ОБНОВЛЕНИЕ КЛИЕНТОВ И СБОЙ СВЕТА ===
                 if (!isBlackout) {
                     clientSpawnTimer -= delta;
                     if (clientSpawnTimer <= 0) {
@@ -1294,7 +1327,7 @@
                     blackoutTimer -= delta;
                     if (blackoutTimer <= 0) {
                         triggerBlackout();
-                        blackoutTimer = 120; // 2 минуты
+                        blackoutTimer = 120; 
                     }
                 }
 
@@ -1314,11 +1347,12 @@
                         camera.position.set(-6.8, 1.2, -2);
                     }
                 } else {
-                    velocity.x -= velocity.x * 10.0 * delta; velocity.z -= velocity.z * 10.0 * delta;
+                    velocity.x -= velocity.x * 15.0 * delta;
+                    velocity.z -= velocity.z * 15.0 * delta;
                     
-                    let currentSpeed = 13.0;
+                    let currentSpeed = 18.0;
                     if (isInputActive) {
-                        if (isSprinting && stamina > 0) { currentSpeed = 22.0; stamina -= delta * 25; } else { stamina += delta * 10; if (stamina <= 0 && isSprintToggledMobile) { isSprintToggledMobile = false; isSprinting = false; sprintBtn.classList.remove('sprint-active'); } }
+                        if (isSprinting && stamina > 0) { currentSpeed = 30.0; stamina -= delta * 25; } else { stamina += delta * 10; if (stamina <= 0 && isSprintToggledMobile) { isSprintToggledMobile = false; isSprinting = false; sprintBtn.classList.remove('sprint-active'); } }
                     } else { stamina += delta * 20; }
                     stamina = Math.max(0, Math.min(100, stamina));
                     
@@ -1337,12 +1371,21 @@
                     if (!colX && !colZ && colBoth) { camera.position.x = oldX; camera.position.z = oldZ; }
                     camera.position.y = 1.7; 
 
-                    if (isInputActive) { stepAccum += delta; const stepThreshold = (currentSpeed > 15) ? 0.3 : 0.5; if (stepAccum > stepThreshold) { playFootstep(currentSpeed > 15); stepAccum = 0; } idleTimer = 0; } 
+                    if (isInputActive) { stepAccum += delta; const stepThreshold = (currentSpeed > 20) ? 0.3 : 0.5; if (stepAccum > stepThreshold) { playFootstep(currentSpeed > 20); stepAccum = 0; } idleTimer = 0; } 
                     else { stepAccum = 0; idleTimer += delta; if (idleTimer >= IDLE_TIME && !monsters[2].spawned) spawnMonster(2); }
                 }
 
                 if (!isBlackout) {
-                    const elapsedTime = clock.getElapsedTime(); const r = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5; const g = Math.sin(elapsedTime * 0.5 + Math.PI/2) * 0.5 + 0.5; const b = Math.sin(elapsedTime * 0.5 + Math.PI) * 0.5 + 0.5; rgbLedStripMat.emissive.setRGB(r, g, b); 
+                    const elapsedTime = clock.getElapsedTime(); const r = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5; const g = Math.sin(elapsedTime * 0.5 + Math.PI/2) * 0.5 + 0.5; const b = Math.sin(elapsedTime * 0.5 + Math.PI) * 0.5 + 0.5; 
+                    
+                    rgbLedStripMat.emissive.setRGB(r, g, b); 
+                    neonTextMat.emissive.setRGB(r, g, b); // Анимация надписи GAME CLUB
+                    
+                    neonLightsList.forEach(item => {
+                        if (item.light && !item.mesh) {
+                            item.light.color.setRGB(r, 0.2, b);
+                        }
+                    });
                 } else if (isBlackout && hasFlashlight) {
                     const elapsedTime = clock.getElapsedTime(); const flicker = Math.sin(elapsedTime * 20) * 0.2 + 0.8; playerFlashlight.intensity = 2.5 * flicker;
                 }
