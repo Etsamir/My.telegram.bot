@@ -131,9 +131,6 @@
         // ================= ПОЛЬЗОВАТЕЛЬСКИЕ НАСТРОЙКИ МОДЕЛЕЙ И МАСШТАБА =================
         const CLIENT_MODEL_PATH = 'client.glb'; 
         const CLIENT_MODEL_SCALE = 1.0; 
-
-        const PC_MODEL_PATH = 'pc.glb'; 
-        const PC_MODEL_SCALE = 0.8; 
         
         const CHAIR_MODEL_PATH = 'kreslo.glb';
         const CHAIR_MODEL_SCALE = 0.100; 
@@ -287,6 +284,10 @@
         let gameEnded = false; let gameWin = false; let mobileControlsInitialized = false;
         let health = 100; let stamina = 100; let isSprinting = false; let isSprintToggledMobile = false; 
 
+        // Переменные для сидения админа
+        let isSitting = false;
+        let preSitPos = new THREE.Vector3();
+
         function applyGraphicsSettings() {
             if (currentGraphics === 'low') { renderer.setPixelRatio(0.7); renderer.shadowMap.enabled = false; renderer.toneMapping = THREE.LinearToneMapping; floorMat.bumpMap = null; wallMatLong.bumpMap = null; wallMatShort.bumpMap = null; } 
             else if (currentGraphics === 'medium') { renderer.setPixelRatio(1.0); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.BasicShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping; floorMat.bumpMap = null; wallMatLong.bumpMap = null; wallMatShort.bumpMap = null; } 
@@ -425,7 +426,6 @@
         const roomW = 18, roomD = 12, roomH = 3.8; 
         const floorTex = createTileTexture(); const wallTex = createWallTexture(); wallTex.repeat.set(roomW/2, 1); const wallTexShort = createWallTexture(); wallTexShort.repeat.set(roomD/2, 1);
         
-        // Изменили цвет стола на темный админский
         const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, bumpMap: floorTex, bumpScale: 0.02, roughness: 0.5, metalness: 0.1 }); 
         const wallMatLong = new THREE.MeshStandardMaterial({ map: wallTex, bumpMap: wallTex, bumpScale: 0.05, roughness: 0.9 });
         const wallMatShort = new THREE.MeshStandardMaterial({ map: wallTexShort, bumpMap: wallTexShort, bumpScale: 0.05, roughness: 0.9 }); 
@@ -466,7 +466,10 @@
         const pcScreenMatSpooky = new THREE.MeshStandardMaterial({ map: spookyFrames[0], emissiveMap: spookyFrames[0], emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.2 }); 
         const pcScreenMatOff = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 0.2, metalness: 0.8 }); 
         const pcBodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.9 }); 
+        
+        // Столы теперь тёмно-серые, как у администратора
         const deskMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); 
+        
         const chairMatBlack = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.8 }); 
         const chairMatRed = new THREE.MeshStandardMaterial({ color: 0xaa0000, roughness: 0.7 }); 
         const canMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.9, roughness: 0.2 });
@@ -559,18 +562,14 @@
         const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); castAndReceive(aLeg2); adminDeskShort.add(aLeg2);
         scene.add(adminDeskShort);
 
-        // Админский ПК
+        // Стол админа: Монитор, Клава, Мышь
         const adminPCSet = new THREE.Group();
-        adminPCSet.position.set(-6.2, 0.75, -2); // Стоит на столе
-        adminPCSet.rotation.y = -Math.PI / 2; // Повернут экраном к креслу
-        
-        const adminScreen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 0.5, roughness: 0.2 }));
-        adminScreen.position.set(0, 0.22, 0.01);
-        castAndReceive(adminScreen);
-        adminPCSet.add(adminScreen);
+        adminPCSet.position.set(-6.2, 0.75, -2); // На столе
+        adminPCSet.rotation.y = -Math.PI / 2; // Повернут к креслу админа
         
         const adminFallbackPC = new THREE.Group();
         const adminBezel = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.35, 0.03), pcBodyMat); adminBezel.position.set(0, 0.22, -0.01); castAndReceive(adminBezel); adminFallbackPC.add(adminBezel);
+        const adminScreenMesh = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.01), pcScreenMatOff); adminScreenMesh.position.set(0, 0.22, 0.01); castAndReceive(adminScreenMesh); adminFallbackPC.add(adminScreenMesh);
         const adminStandNeck = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.02), pcBodyMat); adminStandNeck.position.set(0, 0.1, -0.03); adminStandNeck.rotation.x = -0.15; castAndReceive(adminStandNeck); adminFallbackPC.add(adminStandNeck);
         const adminStandBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.15), pcBodyMat); adminStandBase.position.set(0, 0.005, -0.02); castAndReceive(adminStandBase); adminFallbackPC.add(adminStandBase);
         const adminMousepad = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.002, 0.3), mousepadMat); adminMousepad.position.set(0.05, 0.001, 0.22); castAndReceive(adminMousepad); adminFallbackPC.add(adminMousepad);
@@ -597,10 +596,31 @@
         adminPCSet.add(adminFallbackPC);
         scene.add(adminPCSet);
 
-        // Админское кресло (с фоллбэком)
+        // Кресло админа 
         const adminChair = new THREE.Group(); adminChair.position.set(-6.8, 0, -2); adminChair.rotation.y = Math.PI/2; 
         const fallbackAdminChair = new THREE.Group(); buildChairMesh(fallbackAdminChair); adminChair.add(fallbackAdminChair);
-        adminChair.userData = { fallback: fallbackAdminChair }; pendingChairs.push(adminChair); scene.add(adminChair);
+        adminChair.userData = { fallback: fallbackAdminChair }; pendingChairs.push(adminChair); 
+        
+        // Зона клика для посадки в кресло
+        const adminChairClickBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 0.8), new THREE.MeshBasicMaterial({visible: false}));
+        adminChairClickBox.position.set(0, 0.75, 0);
+        adminChairClickBox.userData = { isAdminChair: true };
+        adminChair.add(adminChairClickBox);
+        interactables.push(adminChairClickBox);
+        scene.add(adminChair);
+
+        // Сидение админа
+        function sitDown() {
+            isSitting = true;
+            preSitPos.copy(camera.position);
+            camera.position.set(-6.8, 1.2, -2);
+            velocity.set(0,0,0);
+        }
+
+        function standUp() {
+            isSitting = false;
+            camera.position.copy(preSitPos);
+        }
 
         // Фонарик
         const flBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 16), new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.3, metalness: 0.8}));
@@ -645,7 +665,7 @@
             
             // --- ЗАМЕНА КЛАВИАТУРЫ ---
             const klavaContainer = new THREE.Group();
-            klavaContainer.position.set(-0.12, 0.040, 0.22); // Высота 0.040
+            klavaContainer.position.set(-0.12, 0.040, 0.22); 
             
             const fallbackKbdGroup = new THREE.Group(); fallbackKbdGroup.rotation.x = 0.05; 
             const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.015, 0.16), pcBodyMat); castAndReceive(kbdBase); fallbackKbdGroup.add(kbdBase);
@@ -660,8 +680,8 @@
 
             // --- ЗАМЕНА МЫШКИ ---
             const mouseContainer = new THREE.Group();
-            mouseContainer.position.set(0.28, 0.040, 0.22); // Высота 0.040
-            mouseContainer.rotation.y = Math.PI; // Повернули мышку
+            mouseContainer.position.set(0.28, 0.040, 0.22); 
+            mouseContainer.rotation.y = Math.PI; 
             
             const fallbackMouseGroup = new THREE.Group(); 
             const mouseBody = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.1, 12), pcBodyMat); mouseBody.rotation.x = Math.PI / 2; mouseBody.scale.set(1, 0.5, 1); mouseBody.position.y = 0.015; castAndReceive(mouseBody); fallbackMouseGroup.add(mouseBody);
@@ -706,7 +726,7 @@
                 const clone = redbullModelTemplate.clone();
                 clone.traverse(child => { if (child.isMesh) { child.userData = { isTrash: true }; castAndReceive(child); } });
                 canGrp.add(clone);
-                if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; // Прячем стандартную банку
+                if (canGrp.userData.fallback) canGrp.userData.fallback.visible = false; 
             });
         }, undefined, function() { console.log('3D Модель банки не найдена, используем стандартные цилиндры'); });
 
@@ -717,11 +737,10 @@
                 const clone = chairModelTemplate.clone();
                 clone.traverse(child => { if (child.isMesh) castAndReceive(child); });
                 chairGrp.add(clone);
-                if (chairGrp.userData.fallback) chairGrp.userData.fallback.visible = false; // Прячем квадратное кресло
+                if (chairGrp.userData.fallback) chairGrp.userData.fallback.visible = false; 
             });
         }, undefined, function() { console.log('3D Модель Кресла не найдена, используем стандартное'); });
 
-        // Загрузка кастомной клавиатуры
         loader.load(KLAVA_MODEL_PATH, function(gltf) {
             klavaModelTemplate = gltf.scene;
             klavaModelTemplate.scale.set(KLAVA_MODEL_SCALE, KLAVA_MODEL_SCALE, KLAVA_MODEL_SCALE);
@@ -729,11 +748,10 @@
                 const clone = klavaModelTemplate.clone();
                 clone.traverse(child => { if (child.isMesh) castAndReceive(child); });
                 kbGrp.add(clone);
-                if (kbGrp.userData.fallback) kbGrp.userData.fallback.visible = false; // Прячем квадратную клавиатуру
+                if (kbGrp.userData.fallback) kbGrp.userData.fallback.visible = false; 
             });
         }, undefined, function() { console.log('3D Модель Клавиатуры не найдена, используем стандартную'); });
 
-        // Загрузка кастомной мышки
         loader.load(MOUSE_MODEL_PATH, function(gltf) {
             mouseModelTemplate = gltf.scene;
             mouseModelTemplate.scale.set(MOUSE_MODEL_SCALE, MOUSE_MODEL_SCALE, MOUSE_MODEL_SCALE);
@@ -741,7 +759,7 @@
                 const clone = mouseModelTemplate.clone();
                 clone.traverse(child => { if (child.isMesh) castAndReceive(child); });
                 mouseGrp.add(clone);
-                if (mouseGrp.userData.fallback) mouseGrp.userData.fallback.visible = false; // Прячем стандартную мышку
+                if (mouseGrp.userData.fallback) mouseGrp.userData.fallback.visible = false; 
             });
         }, undefined, function() { console.log('3D Модель Мышки не найдена, используем стандартную'); });
 
@@ -765,7 +783,7 @@
             const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.5, 12), skinMat); torso.position.y = 0.9; castAndReceive(torso); group.add(torso);
             const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10), skinMat); head.position.y = 2.0; castAndReceive(head); group.add(head);
             const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeL.position.set(-0.1, 2.0, 0.18); group.add(eyeL);
-            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
+            const eyeR = new Mesh(new THREE.SphereGeometry(0.08, 8), eyeMat); eyeR.position.set(0.1, 2.0, 0.18); group.add(eyeR);
             group.visible = false; scene.add(group); monsters[index].group = group; monsters[index].useCustomAnimation = true;
         }
         loadMonster(0, 0xff0000); loadMonster(1, 0x00ff00); loadMonster(2, 0x0000ff);
@@ -841,27 +859,29 @@
             const wantsDrink = Math.random() > 0.2; 
             const clientObj = {
                 mesh: new THREE.Group(), state: wantsDrink ? 'going_to_fridge' : 'going_to_pc', targetPC: targetPC, wantsDrink: wantsDrink,
-                timer: 0, speed: 1.5 + Math.random() * 0.8, waypoints: [], mixer: null, walkAction: null  
+                timer: 0, speed: 1.5 + Math.random() * 0.8, waypoints: [], mixer: null, walkAction: null,
+                legNodes: [], legsHidden: false 
             };
 
             loader.load(CLIENT_MODEL_PATH, function (gltf) {
                 const model = gltf.scene; model.scale.set(CLIENT_MODEL_SCALE, CLIENT_MODEL_SCALE, CLIENT_MODEL_SCALE); 
-                model.traverse(node => { if (node.isMesh) castAndReceive(node); }); clientObj.mesh.add(model);
                 
-                // Находим ноги и сохраняем их для скрытия при сидении
-                clientObj.legNodes = [];
                 model.traverse(node => { 
-                    if (node.isMesh && (node.name.toLowerCase().includes('leg') || node.name.toLowerCase().includes('foot') || node.name.toLowerCase().includes('toe') || node.name.toLowerCase().includes('calf') || node.name.toLowerCase().includes('thigh'))) {
-                        clientObj.legNodes.push(node);
+                    if (node.isMesh || node.isBone) {
+                        const name = node.name.toLowerCase();
+                        if (name.includes('leg') || name.includes('foot') || name.includes('toe') || name.includes('calf') || name.includes('thigh') || name.includes('knee') || name.includes('shin') || name.includes('pants') || name.includes('shoe')) {
+                            clientObj.legNodes.push(node);
+                        }
                     }
+                    if (node.isMesh) castAndReceive(node); 
                 });
 
+                clientObj.mesh.add(model);
                 if (gltf.animations && gltf.animations.length > 0) { clientObj.mixer = new THREE.AnimationMixer(model); clientObj.walkAction = clientObj.mixer.clipAction(gltf.animations[0]); clientObj.walkAction.play(); }
             }, undefined, function () {
                 const fallbackGroup = new THREE.Group(); const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.3, 12), clientMat); body.position.y = 0.65; castAndReceive(body); fallbackGroup.add(body);
                 const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), new THREE.MeshStandardMaterial({color: 0xffccaa})); head.position.y = 1.4; fallbackGroup.add(head);
                 clientObj.mesh.add(fallbackGroup);
-                clientObj.legNodes = []; // Пустой массив для фоллбэка
             });
 
             clientObj.mesh.position.set(-roomW/2 + 0.5, 0, 3.5); scene.add(clientObj.mesh); playSound(doorOpenBuffer, 0.4); clients.push(clientObj);
@@ -932,12 +952,16 @@
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const intersects = raycaster.intersectObjects(interactables, true);
             if (intersects.length > 0) {
-                if (intersects[0].distance > 2.5) return; // Ограничение дистанции
+                if (intersects[0].distance > 2.5) return; 
 
                 let obj = intersects[0].object;
-                while (obj.parent && !obj.userData.isTrash && !obj.userData.isPC && !obj.userData.isCustomPCBox && !obj.userData.isStabilizer && !obj.userData.isTrashBin && !obj.userData.isDoor && !obj.userData.isFlashlightItem) { obj = obj.parent; }
+                while (obj.parent && !obj.userData.isAdminChair && !obj.userData.isTrash && !obj.userData.isPC && !obj.userData.isCustomPCBox && !obj.userData.isStabilizer && !obj.userData.isTrashBin && !obj.userData.isDoor && !obj.userData.isFlashlightItem) { obj = obj.parent; }
 
-                // Перенаправляем клик с корпуса ПК на экран
+                if (obj.userData.isAdminChair) {
+                    if (!isSitting) sitDown();
+                    return;
+                }
+
                 if (obj.userData.isCustomPCBox) { obj = obj.userData.screenRef; }
 
                 if (obj.userData.isStabilizer && isBlackout) { restorePower(); playSound(pickupBuffer, 0.4); }
@@ -1043,7 +1067,12 @@
                             c.state = 'sitting'; c.timer = 10 + Math.random() * 5; 
                             c.targetPC.material = pcScreenMatOn; c.targetPC.userData.isOn = true; 
                             c.mesh.position.copy(chairPos); c.mesh.position.y = 0; c.mesh.rotation.y = deskRotation + Math.PI; 
-                            if (!c.legsHidden && c.legNodes) { c.legsHidden = true; c.legNodes.forEach(n => { n.userData.origScale = n.scale.clone(); n.scale.set(0.0001, 0.0001, 0.0001); }); }
+                            
+                            if (c.walkAction) c.walkAction.stop();
+                            if (!c.legsHidden && c.legNodes) { 
+                                c.legsHidden = true; 
+                                c.legNodes.forEach(n => { n.userData.origScale = n.scale.clone(); n.scale.set(0.0001, 0.0001, 0.0001); }); 
+                            }
                             updateUI(); 
                         });
                     } 
@@ -1051,7 +1080,12 @@
                         c.timer -= delta;
                         if (c.timer <= 0) { 
                             c.state = 'leaving'; c.waypoints = []; c.mesh.position.y = 0; c.targetPC.userData.reserved = false; 
-                            if (c.legsHidden && c.legNodes) { c.legsHidden = false; c.legNodes.forEach(n => { if (n.userData.origScale) n.scale.copy(n.userData.origScale); }); }
+                            
+                            if (c.walkAction) c.walkAction.play();
+                            if (c.legsHidden && c.legNodes) { 
+                                c.legsHidden = false; 
+                                c.legNodes.forEach(n => { if (n.userData.origScale) n.scale.copy(n.userData.origScale); }); 
+                            }
                             if (c.wantsDrink) spawnTrashAt(c.targetPC.userData.deskGroup); 
                         }
                     } 
@@ -1061,7 +1095,6 @@
                     }
                 }
 
-                // === СЛУЧАЙНЫЙ СБОЙ ПИТАНИЯ ===
                 if (!isBlackout && !gameEnded) {
                     blackoutTimer -= delta;
                     if (blackoutTimer <= 0) {
@@ -1070,38 +1103,47 @@
                     }
                 }
 
-                velocity.x -= velocity.x * 10.0 * delta; velocity.z -= velocity.z * 10.0 * delta;
                 let isInputActive = false;
-
                 if (currentPlatform === 'pc') {
                     direction.z = Number(moveForward) - Number(moveBackward); direction.x = Number(moveRight) - Number(moveLeft); direction.normalize(); isInputActive = (moveForward || moveBackward || moveLeft || moveRight);
                 } else {
                     direction.x = joystickVector.x; direction.z = -joystickVector.y; isInputActive = (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1);
                 }
 
-                let currentSpeed = 13.0;
-                if (isInputActive) {
-                    if (isSprinting && stamina > 0) { currentSpeed = 22.0; stamina -= delta * 25; } else { stamina += delta * 10; if (stamina <= 0 && isSprintToggledMobile) { isSprintToggledMobile = false; isSprinting = false; sprintBtn.classList.remove('sprint-active'); } }
-                } else { stamina += delta * 20; }
-                stamina = Math.max(0, Math.min(100, stamina));
-                
-                if (isInputActive || velocity.length() > 0.1) { velocity.z -= direction.z * currentSpeed * delta; velocity.x -= direction.x * currentSpeed * delta; }
+                if (isSitting) {
+                    if (isInputActive) {
+                        standUp();
+                    } else {
+                        velocity.set(0,0,0);
+                        camera.position.set(-6.8, 1.2, -2);
+                    }
+                } else {
+                    velocity.x -= velocity.x * 10.0 * delta; velocity.z -= velocity.z * 10.0 * delta;
+                    
+                    let currentSpeed = 13.0;
+                    if (isInputActive) {
+                        if (isSprinting && stamina > 0) { currentSpeed = 22.0; stamina -= delta * 25; } else { stamina += delta * 10; if (stamina <= 0 && isSprintToggledMobile) { isSprintToggledMobile = false; isSprinting = false; sprintBtn.classList.remove('sprint-active'); } }
+                    } else { stamina += delta * 20; }
+                    stamina = Math.max(0, Math.min(100, stamina));
+                    
+                    if (isInputActive || velocity.length() > 0.1) { velocity.z -= direction.z * currentSpeed * delta; velocity.x -= direction.x * currentSpeed * delta; }
 
-                const oldX = camera.position.x; const oldZ = camera.position.z;
-                if (currentPlatform === 'pc') { controls.moveRight(-velocity.x * delta); controls.moveForward(-velocity.z * delta); } else {
-                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-                    forward.y = 0; forward.normalize(); right.y = 0; right.normalize();
-                    camera.position.addScaledVector(forward, -velocity.z * delta); camera.position.addScaledVector(right, -velocity.x * delta);
+                    const oldX = camera.position.x; const oldZ = camera.position.z;
+                    if (currentPlatform === 'pc') { controls.moveRight(-velocity.x * delta); controls.moveForward(-velocity.z * delta); } else {
+                        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+                        forward.y = 0; forward.normalize(); right.y = 0; right.normalize();
+                        camera.position.addScaledVector(forward, -velocity.z * delta); camera.position.addScaledVector(right, -velocity.x * delta);
+                    }
+
+                    const newX = camera.position.x; const newZ = camera.position.z;
+                    let colX = checkCollision(newX, oldZ); let colZ = checkCollision(oldX, newZ); let colBoth = checkCollision(newX, newZ);
+                    if (colX) camera.position.x = oldX; if (colZ) camera.position.z = oldZ;
+                    if (!colX && !colZ && colBoth) { camera.position.x = oldX; camera.position.z = oldZ; }
+                    camera.position.y = 1.7; 
+
+                    if (isInputActive) { stepAccum += delta; const stepThreshold = (currentSpeed > 15) ? 0.3 : 0.5; if (stepAccum > stepThreshold) { playFootstep(currentSpeed > 15); stepAccum = 0; } idleTimer = 0; } 
+                    else { stepAccum = 0; idleTimer += delta; if (idleTimer >= IDLE_TIME && !monsters[2].spawned) spawnMonster(2); }
                 }
-
-                const newX = camera.position.x; const newZ = camera.position.z;
-                let colX = checkCollision(newX, oldZ); let colZ = checkCollision(oldX, newZ); let colBoth = checkCollision(newX, newZ);
-                if (colX) camera.position.x = oldX; if (colZ) camera.position.z = oldZ;
-                if (!colX && !colZ && colBoth) { camera.position.x = oldX; camera.position.z = oldZ; }
-                camera.position.y = 1.7; 
-
-                if (isInputActive) { stepAccum += delta; const stepThreshold = (currentSpeed > 15) ? 0.3 : 0.5; if (stepAccum > stepThreshold) { playFootstep(currentSpeed > 15); stepAccum = 0; } idleTimer = 0; } 
-                else { stepAccum = 0; idleTimer += delta; if (idleTimer >= IDLE_TIME && !monsters[2].spawned) spawnMonster(2); }
 
                 if (!isBlackout) {
                     const elapsedTime = clock.getElapsedTime(); const r = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5; const g = Math.sin(elapsedTime * 0.5 + Math.PI/2) * 0.5 + 0.5; const b = Math.sin(elapsedTime * 0.5 + Math.PI) * 0.5 + 0.5; rgbLedStripMat.emissive.setRGB(r, g, b); 
