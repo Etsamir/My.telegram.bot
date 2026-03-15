@@ -136,7 +136,7 @@
         const CHAIR_MODEL_SCALE = 0.100; 
         
         const REDBULL_MODEL_PATH = 'redbull.glb'; 
-        const REDBULL_MODEL_SCALE = 0.5; 
+        const REDBULL_MODEL_SCALE = 0.05; // Изменено на 0.05
 
         const KLAVA_MODEL_PATH = 'klava.glb';
         const KLAVA_MODEL_SCALE = 0.2; 
@@ -144,15 +144,14 @@
         const MOUSE_MODEL_PATH = 'mouse.glb';
         const MOUSE_MODEL_SCALE = 0.6; 
 
-        // ИСПРАВЛЕННЫЕ МАСШТАБЫ ДЛЯ НОВЫХ МОДЕЛЕЙ
         const FRIDGE_MODEL_PATH = 'xoladilnik.glb';
-        const FRIDGE_MODEL_SCALE = 30.0; // Увеличили холодильник
+        const FRIDGE_MODEL_SCALE = 30.0; // Изменено на 30.0
 
         const FLASHLIGHT_MODEL_PATH = 'fonar.glb';
-        const FLASHLIGHT_MODEL_SCALE = 0.05; // Сильно уменьшили фонарик
+        const FLASHLIGHT_MODEL_SCALE = 0.05; // Изменено на 0.05
 
         const TRASHBIN_MODEL_PATH = 'musorka.glb';
-        const TRASHBIN_MODEL_SCALE = 100.0; // Сделали мусорку больше
+        const TRASHBIN_MODEL_SCALE = 3.0;
 
         const STABILIZER_MODEL_PATH = 'stabilizator.glb';
         const STABILIZER_MODEL_SCALE = 1.0;
@@ -577,12 +576,12 @@
 
         // ================= МУСОРНЫЙ БАК =================
         const trashBinGroup = new THREE.Group();
-        // ВНИМАНИЕ: Опустил мусорку на 0 по оси Y, чтобы модель стояла на полу
-        trashBinGroup.position.set(-8.5, 0.0, -2.0); 
+        // ПЕРЕНЕС МУСОРНЫЙ БАК В УГОЛ К ДВЕРИ (x: -8.5, z: 5.2)
+        trashBinGroup.position.set(-8.5, 0.0, 5.2); 
 
         const trashBinMat = new THREE.MeshStandardMaterial({ color: 0x1a441a, roughness: 0.8 }); 
         const trashBinFallback = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.8, 16), trashBinMat); 
-        trashBinFallback.position.y = 0.4; // Подняли заглушку, чтобы она не проваливалась
+        trashBinFallback.position.y = 0.4; 
         trashBinFallback.userData = { isTrashBin: true }; 
         castAndReceive(trashBinFallback); 
         trashBinGroup.add(trashBinFallback);
