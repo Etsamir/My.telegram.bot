@@ -304,6 +304,9 @@
 
         let isSitting = false;
         let preSitPos = new THREE.Vector3();
+        
+        // --- YANGI: Taymer rare (kamyob) skrimerlar uchun ---
+        let randomScareTimer = 90 + Math.random() * 60; // 1.5 - 2.5 daqiqa
 
         // ================= ТЕКСТУРА ЭКРАНА АДМИНА С ЧАСАМИ И ОС =================
         const adminDesktopCanvas = document.createElement('canvas'); 
@@ -854,6 +857,17 @@
         // ================= АСИНХРОННАЯ ЗАГРУЗКА GLB МОДЕЛЕЙ =================
         const loader = new THREE.GLTFLoader();
 
+        // --- YANGI: QORA ODAM (MODEL 4) YUKLASH ---
+        let pcGhostTemplate = null;
+        loader.load('model4.glb', function(gltf) {
+            pcGhostTemplate = gltf.scene;
+            pcGhostTemplate.scale.set(1.5, 1.5, 1.5);
+            pcGhostTemplate.traverse(child => { if (child.isMesh) castAndReceive(child); });
+        }, undefined, function() { 
+            console.log('model4.glb topilmadi'); 
+        });
+        // ------------------------------------------
+
         loader.load(REDBULL_MODEL_PATH, function(gltf) {
             redbullModelTemplate = gltf.scene;
             redbullModelTemplate.scale.set(REDBULL_MODEL_SCALE, REDBULL_MODEL_SCALE, REDBULL_MODEL_SCALE);
@@ -1196,10 +1210,49 @@
                 
                 if (obj.userData.isFlashlightItem) { pickupFlashlight(); playSound(pickupBuffer, 0.3); }
                 
+                // --- YANGI: Kompyuter o'chirish logikasi model4 skrimeri bilan ---
                 if (obj.userData.isPC && obj.userData.isOn) {
                     if (obj.userData.reserved) return; 
-                    if (obj.userData.isSpooky) { obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2); spookyLight.intensity = 0; updateUI(); } 
-                    else {
+
+                    // 15% holatda model4 ekrandan yuzga sakraydi
+                    if (!obj.userData.isSpooky && Math.random() < 0.15 && pcGhostTemplate) {
+                        obj.material = pcScreenMatOff; 
+                        playSound(pcOffBuffer, 0.5);
+
+                        setTimeout(() => {
+                            obj.material = pcScreenMatSpooky; 
+                            playSound(jumpscareBuffer, 1.0); 
+
+                            const ghost = pcGhostTemplate.clone();
+                            const pcWorldPos = new THREE.Vector3();
+                            obj.getWorldPosition(pcWorldPos);
+                            const pcWorldDir = new THREE.Vector3();
+                            obj.getWorldDirection(pcWorldDir);
+
+                            ghost.position.copy(pcWorldPos).add(pcWorldDir.multiplyScalar(0.4));
+                            ghost.position.y -= 0.3; 
+                            ghost.lookAt(camera.position);
+
+                            scene.add(ghost);
+
+                            noiseOpacity = 1.0;
+                            bodycamUI.style.boxShadow = "inset 0 0 200px rgba(255, 0, 0, 0.9)";
+
+                            setTimeout(() => {
+                                scene.remove(ghost);
+                                obj.material = pcScreenMatOff;
+                                obj.userData.isOn = false;
+                                monitorsTurnedOff++;
+                                updateUI();
+                            }, 1500);
+
+                        }, 400); 
+                        return; 
+                    }
+
+                    if (obj.userData.isSpooky) { 
+                        obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2); spookyLight.intensity = 0; updateUI(); 
+                    } else {
                         obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2);
                         if (monitorsTurnedOff >= 7 && !monsters[1].spawned) spawnMonster(1);
                         if (monitorsTurnedOff === 20 && !spookyEventTriggered) {
@@ -1214,6 +1267,7 @@
                         updateUI();
                     }
                 }
+                // -----------------------------------------------------------------
 
                 if (obj.userData.isTrash && currentInventory < MAX_INVENTORY) {
                     let trashGroup = obj;
@@ -1329,6 +1383,32 @@
                         triggerBlackout();
                         blackoutTimer = 120; 
                     }
+
+                    // --- YANGI: Kamyob (Rare) Random Skrimerlar taymeri ---
+                    randomScareTimer -= delta;
+                    if (randomScareTimer <= 0) {
+                        let mIndex = Math.random() > 0.5 ? 1 : 2;
+                        let m = monsters[mIndex];
+
+                        if (!m.active && clients.length === 0) {
+                            const lookDir = camera.getWorldDirection(new THREE.Vector3()); 
+                            lookDir.y = 0; lookDir.normalize();
+                            
+                            let spawnX = camera.position.x - (lookDir.x * 6);
+                            let spawnZ = camera.position.z - (lookDir.z * 6);
+                            
+                            spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX));
+                            spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
+
+                            m.group.position.set(spawnX, 0, spawnZ);
+                            m.group.visible = true;
+                            m.active = true;
+                            m.spawned = true;
+                            playSound(monsterSpawnBuffer, 0.8);
+                        }
+                        randomScareTimer = 120 + Math.random() * 90; 
+                    }
+                    // ------------------------------------------------------
                 }
 
                 let isInputActive = false;
@@ -1434,7 +1514,21 @@
                                 m.group.position.x += moveDirToPlayer.x * m.speed * diffSpeedMulti * delta; m.group.position.z += moveDirToPlayer.z * m.speed * diffSpeedMulti * delta; m.group.lookAt(camera.position.x, 0, camera.position.z);
                                 if (Math.random() < delta * 2) playSound(monsterFootstepBuffer, 0.15, 0.7 + Math.random()*0.3);
                             } else {
-                                if (diffDamageMulti > 0) { isTakingDamage = true; health -= delta * 70 * diffDamageMulti; noiseOpacity = Math.max(noiseOpacity, 0.85); }
+                                if (diffDamageMulti > 0) { 
+                                    isTakingDamage = true; 
+                                    health -= delta * 70 * diffDamageMulti; 
+                                    noiseOpacity = Math.max(noiseOpacity, 0.85); 
+
+                                    // --- YANGI: Yuzma-yuz yopishganda Jumpscare sakrashi ---
+                                    if (m.stareTime < 100) {
+                                        playSound(jumpscareBuffer, 1.0);
+                                        m.stareTime = 100; // Qulflash
+                                        m.group.position.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(0.4));
+                                        m.group.position.y -= 0.2;
+                                        m.group.lookAt(camera.position);
+                                    }
+                                    // -------------------------------------------------------
+                                }
                             }
                         }
                     } else if (m.active && m.lookAwayTimer > 0) {
