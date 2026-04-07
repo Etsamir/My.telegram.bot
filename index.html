@@ -34,6 +34,10 @@
         
         #bodycam-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 8; display: none; box-shadow: inset 0 0 150px rgba(0,0,0,0.9); transition: box-shadow 0.2s; }
         .rec-text { position: absolute; top: 30px; right: 40px; color: #ff3333; font-family: 'Courier New', monospace; font-size: 24px; font-weight: bold; text-shadow: 0 0 5px red; animation: blink 1s infinite; }
+        
+        /* --- YANGI: Balans Matni --- */
+        .balance-text { position: absolute; top: 75px; right: 40px; color: #00ff00; font-family: 'Courier New', monospace; font-size: 22px; font-weight: bold; text-shadow: 0 0 5px #00ff00; }
+        
         .time-text { position: absolute; top: 35px; left: 40px; color: #ddd; font-family: 'Courier New', monospace; font-size: 18px; line-height: 1.3; }
         .task-text { position: absolute; top: 85px; left: 40px; color: #ccc; font-family: 'Courier New', monospace; font-size: 16px; line-height: 1.5; }
         .stats-text { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #ccc; font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; width: 100%; text-align: center; letter-spacing: 2px; }
@@ -112,7 +116,7 @@
         <div id="ui-inventory" class="inventory-text" style="display:none;">В РУКАХ: 0 / 3</div>
         <div id="ui-stats" class="stats-text">HP: 100% | STM: 100%</div>
         <div class="rec-text">● REC</div>
-        <div id="joystick-base"><div id="joystick-stick"></div></div>
+        <div id="ui-balance" class="balance-text">БАЛАНС: $0</div> <div id="joystick-base"><div id="joystick-stick"></div></div>
     </div>
     <div id="crosshair"></div>
 
@@ -159,8 +163,8 @@
         const DOOR_MODEL_PATH = 'dver.glb';
         const DOOR_MODEL_SCALE = 1.0;
 
-        // Игровое время: 60 минут = 01:00
         let gameTimeMinutes = 60; 
+        let moneyBalance = 0; // --- YANGI: Balans tizimi ---
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -175,7 +179,8 @@
                 loseTitle: 'СВЯЗЬ ПОТЕРЯНА', loseDesc: 'ЖИЗНЕННЫЕ ПОКАЗАТЕЛИ: 0', restartBtn: 'ПОВТОРИТЬ СМЕНУ',
                 diffEasy: 'Мирная', diffMedium: 'Средняя', diffHard: 'Кошмар',
                 gfxLow: 'Мин', gfxMedium: 'Сред', gfxHigh: 'Макс',
-                lblLang: 'ЯЗЫК СИСТЕМЫ', lblPlatform: 'ПЛАТФОРМА', lblDiff: 'УРОВЕНЬ УГРОЗЫ', lblGfx: 'КАЧЕСТВО ВИДЕО', rec: '● REC'
+                lblLang: 'ЯЗЫК СИСТЕМЫ', lblPlatform: 'ПЛАТФОРМА', lblDiff: 'УРОВЕНЬ УГРОЗЫ', lblGfx: 'КАЧЕСТВО ВИДЕО', rec: '● REC',
+                balance: 'БАЛАНС: ${val}' // YANGI
             },
             uz: { 
                 sysOnline: 'TIZIM: ISHLASH', powerFail: 'QUVVAT UZILDI', backupPower: 'ZAXIRA QUVVAT',
@@ -188,7 +193,8 @@
                 loseTitle: 'ALOQA UZILDI', loseDesc: 'HAYOTIY KO\'RSATKICHLAR: 0', restartBtn: 'SMENANI QAYTA BOSHLASH',
                 diffEasy: 'Tinch', diffMedium: "O'rta", diffHard: 'Dahshat',
                 gfxLow: 'Past', gfxMedium: 'O\'rta', gfxHigh: 'Yuqori',
-                lblLang: 'TIZIM TILI', lblPlatform: 'QURILMA', lblDiff: 'XAVF DARAJASI', lblGfx: 'VIDEO SIFATI', rec: '● REC'
+                lblLang: 'TIZIM TILI', lblPlatform: 'QURILMA', lblDiff: 'XAVF DARAJASI', lblGfx: 'VIDEO SIFATI', rec: '● REC',
+                balance: 'BALANS: ${val}' // YANGI
             },
             en: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'POWER FAILURE', backupPower: 'BACKUP POWER',
@@ -201,7 +207,8 @@
                 loseTitle: 'CONNECTION LOST', loseDesc: 'VITALS: 0', restartBtn: 'RESTART SHIFT',
                 diffEasy: 'Safe', diffMedium: 'Normal', diffHard: 'Nightmare',
                 gfxLow: 'Low', gfxMedium: 'Med', gfxHigh: 'High',
-                lblLang: 'SYSTEM LANGUAGE', lblPlatform: 'DEVICE PLATFORM', lblDiff: 'THREAT LEVEL', lblGfx: 'VIDEO GRAPHICS', rec: '● REC'
+                lblLang: 'SYSTEM LANGUAGE', lblPlatform: 'DEVICE PLATFORM', lblDiff: 'THREAT LEVEL', lblGfx: 'VIDEO GRAPHICS', rec: '● REC',
+                balance: 'BALANCE: ${val}' // YANGI
             }
         };
 
@@ -301,12 +308,13 @@
         let controls = { isLocked: false }; 
         let gameEnded = false; let gameWin = false; let mobileControlsInitialized = false;
         let health = 100; let stamina = 100; let isSprinting = false; let isSprintToggledMobile = false; 
+        
+        let healthRegenDelay = 0; // --- YANGI: Avto-jon to'lish taymeri ---
 
         let isSitting = false;
         let preSitPos = new THREE.Vector3();
         
-        // --- YANGI: Taymer rare (kamyob) skrimerlar uchun ---
-        let randomScareTimer = 90 + Math.random() * 60; // 1.5 - 2.5 daqiqa
+        let randomScareTimer = 90 + Math.random() * 60; 
 
         // ================= ТЕКСТУРА ЭКРАНА АДМИНА С ЧАСАМИ И ОС =================
         const adminDesktopCanvas = document.createElement('canvas'); 
@@ -320,13 +328,11 @@
             for(let i=0; i<512; i+=40) { adminDesktopCtx.beginPath(); adminDesktopCtx.moveTo(i,0); adminDesktopCtx.lineTo(i,256); adminDesktopCtx.stroke(); }
             for(let i=0; i<256; i+=40) { adminDesktopCtx.beginPath(); adminDesktopCtx.moveTo(0,i); adminDesktopCtx.lineTo(512,i); adminDesktopCtx.stroke(); }
             
-            // Окно 1 (Камеры)
             adminDesktopCtx.fillStyle = '#111'; adminDesktopCtx.fillRect(50, 20, 200, 140); 
             adminDesktopCtx.strokeStyle = '#555'; adminDesktopCtx.strokeRect(50, 20, 200, 140);
             adminDesktopCtx.fillStyle = '#ff0000'; adminDesktopCtx.font = '14px Courier'; adminDesktopCtx.fillText("● REC - CAM 1", 60, 40);
             adminDesktopCtx.fillStyle = '#00ff00'; adminDesktopCtx.font = '12px Courier'; adminDesktopCtx.fillText("NO SIGNAL", 110, 90);
 
-            // Окно 2 (Статус системы)
             adminDesktopCtx.fillStyle = '#111'; adminDesktopCtx.fillRect(260, 20, 200, 140); 
             adminDesktopCtx.strokeStyle = '#555'; adminDesktopCtx.strokeRect(260, 20, 200, 140);
             adminDesktopCtx.fillStyle = '#00ff00'; adminDesktopCtx.fillText("SYSTEM LOG:", 270, 40);
@@ -335,12 +341,10 @@
             adminDesktopCtx.fillText("> POWER STABLE", 270, 75);
             adminDesktopCtx.fillText("> MONITORS ACTIVE", 270, 90);
 
-            // Панель задач
             adminDesktopCtx.fillStyle = '#050505'; adminDesktopCtx.fillRect(0,230,512,26); 
             adminDesktopCtx.fillStyle = '#00a8ff'; adminDesktopCtx.fillRect(5,233,30,20);
             adminDesktopCtx.fillStyle = '#ffffff'; for(let i=0; i<4; i++) { adminDesktopCtx.fillRect(45 + i*30, 236, 20, 15); }
             
-            // ВРЕМЯ НА ЭКРАНЕ
             adminDesktopCtx.fillStyle = '#ffffff'; adminDesktopCtx.font = 'bold 18px Courier';
             adminDesktopCtx.fillText(timeStr, 450, 248);
 
@@ -449,7 +453,6 @@
         };
         document.addEventListener('touchend', handleTouchEnd); document.addEventListener('touchcancel', handleTouchEnd);
 
-        // ================= ГЕНЕРАЦИЯ ТЕКСТУР И СЦЕНЫ =================
         function createTileTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#0a0a0c'; ctx.fillRect(0,0,256,256); ctx.strokeStyle = '#1a1a20'; ctx.lineWidth = 4; ctx.strokeRect(0,0,256,256);
@@ -505,13 +508,11 @@
         const centerWallMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 1 });
         const centerWall = new THREE.Mesh(new THREE.BoxGeometry(11, roomH, 0.5), centerWallMat); centerWall.position.set(2, roomH/2, 0); centerWall.castShadow = true; centerWall.receiveShadow = true; scene.add(centerWall);
 
-        // ОБНОВЛЕННОЕ, БОЛЕЕ ЯРКОЕ ОСВЕЩЕНИЕ (чтобы игроки видели окружение)
         const mainAmbient = new THREE.AmbientLight(0x666677, 0.7); scene.add(mainAmbient);
         const hemiLight = new THREE.HemisphereLight(0xeef0ff, 0x444444, 0.6); scene.add(hemiLight);
 
-        let neonLightsList = []; // Храним тут, чтобы выключать при блэкауте
+        let neonLightsList = []; 
         
-        // НОВОЕ: RGB Текст "GAME CLUB" на стене по центру
         function createNeonTextTexture(text) {
             const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 256; const ctx = canvas.getContext('2d');
             ctx.clearRect(0,0,1024,256);
@@ -529,7 +530,6 @@
         neonLightsList.push({mesh: signSide1, light: null, origIntensity: 3});
         neonLightsList.push({mesh: signSide2, light: null, origIntensity: 3});
 
-        // Подсветка по периметру
         const ledTopMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00aaff, emissiveIntensity: 2 }); 
         const ledBotMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff00aa, emissiveIntensity: 2 }); 
         function createLedStrip(w, d, x, y, z, material) { 
@@ -586,6 +586,11 @@
         
         let klavaModelTemplate = null; let chairModelTemplate = null; let redbullModelTemplate = null; let mouseModelTemplate = null;
         let pendingChairs = []; let pendingCans = []; let pendingKeyboards = []; let pendingMice = [];
+
+        // --- YANGI: Zoom-skrimer uchun o'zgaruvchilar ---
+        let activeJumpscareGhost = null;
+        let jumpscareGhostTimer = 0;
+        let jumpscareGhostStartPos = new THREE.Vector3();
 
         // ================= СТАБИЛИЗАТОР =================
         const stabilizerGroup = new THREE.Group();
@@ -787,7 +792,6 @@
         const playerFlashlight = new THREE.SpotLight(0xffeedd, 2.5, 25, Math.PI/6, 0.5, 1);
         playerFlashlight.position.set(0.2, -0.2, 0); playerFlashlight.target.position.set(0, 0, -1); playerFlashlight.castShadow = true; playerFlashlight.shadow.mapSize.width = 1024; playerFlashlight.shadow.mapSize.height = 1024; playerFlashlight.shadow.camera.near = 0.5; playerFlashlight.shadow.camera.far = 25; playerFlashlight.shadow.bias = -0.001;
 
-        // Создание компьютеров и кресел (Клиентских)
         function createPCAndChair(x, z, rotY) {
             const group = new THREE.Group(); group.position.set(x, 0.75, z); group.rotation.y = rotY;
             
@@ -857,16 +861,12 @@
         // ================= АСИНХРОННАЯ ЗАГРУЗКА GLB МОДЕЛЕЙ =================
         const loader = new THREE.GLTFLoader();
 
-        // --- YANGI: QORA ODAM (MODEL 4) YUKLASH ---
         let pcGhostTemplate = null;
         loader.load('model4.glb', function(gltf) {
             pcGhostTemplate = gltf.scene;
             pcGhostTemplate.scale.set(1.5, 1.5, 1.5);
             pcGhostTemplate.traverse(child => { if (child.isMesh) castAndReceive(child); });
-        }, undefined, function() { 
-            console.log('model4.glb topilmadi'); 
-        });
-        // ------------------------------------------
+        }, undefined, function() { console.log('model4.glb topilmadi'); });
 
         loader.load(REDBULL_MODEL_PATH, function(gltf) {
             redbullModelTemplate = gltf.scene;
@@ -955,7 +955,6 @@
             exitDoorGroup.add(model);
             if(exitDoorGroup.userData.fallback) exitDoorGroup.userData.fallback.visible = false;
         }, undefined, function() { console.log('3D Модель Двери не найдена'); });
-
 
         const monsters = [
             { path: 'model1.glb', color: 0xff0000, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.2 },
@@ -1054,7 +1053,7 @@
             const clientObj = {
                 mesh: new THREE.Group(), state: wantsDrink ? 'going_to_fridge' : 'going_to_pc', targetPC: targetPC, wantsDrink: wantsDrink,
                 timer: 0, speed: 1.5 + Math.random() * 0.8, waypoints: [], mixer: null, walkAction: null,
-                legNodes: [], legsHidden: false 
+                legNodes: [], legsHidden: false, paidPC: false // YANGI
             };
 
             loader.load(CLIENT_MODEL_PATH, function (gltf) {
@@ -1081,7 +1080,6 @@
             clientObj.mesh.position.set(-roomW/2 + 0.5, 0, 3.5); scene.add(clientObj.mesh); playSound(doorOpenBuffer, 0.4); clients.push(clientObj);
         }
 
-        // ================= ЗАВЕРШЕНИЕ И ИГРОВЫЕ СОБЫТИЯ =================
         function endGame(isWin) {
             gameEnded = true; gameWin = isWin;
             if (currentPlatform === 'pc') controls.unlock(); else { bodycamUI.style.display = 'none'; mobileControls.style.display = 'none'; }
@@ -1095,11 +1093,9 @@
         function triggerBlackout() {
             if (isBlackout) return; isBlackout = true;
             
-            // Выключаем свет
             scene.remove(mainAmbient); hemiLight.intensity = 0.05; 
             stabLight.material.emissive.setHex(0xff0000); stabLight.material.color.setHex(0xff0000);
             
-            // Выключаем неон
             neonLightsList.forEach(item => {
                 if (item.mesh) item.mesh.material.emissiveIntensity = 0;
                 if (item.light) item.light.intensity = 0;
@@ -1112,11 +1108,9 @@
         function restorePower() {
             isBlackout = false; 
             
-            // Включаем свет
-            scene.add(mainAmbient); hemiLight.intensity = 0.6; // Вернули яркий свет
+            scene.add(mainAmbient); hemiLight.intensity = 0.6; 
             stabLight.material.emissive.setHex(0x00ff00); stabLight.material.color.setHex(0x00ff00);
             
-            // Включаем неон
             neonLightsList.forEach(item => {
                 if (item.mesh) item.mesh.material.emissiveIntensity = item.origIntensity;
                 if (item.light) item.light.intensity = item.origLight;
@@ -1152,6 +1146,9 @@
             let pcText = monitorsTurnedOff >= 20 ? t.taskPCDone : t.taskPC.replace('{current}', monitorsTurnedOff);
             let trashText = trashCollected >= totalTrash && totalTrash > 0 ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
             
+            // --- YANGI: Balansni UI'da yangilash ---
+            document.getElementById('ui-balance').textContent = t.balance.replace('{val}', moneyBalance);
+
             if (!isBlackout) { uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; uiTask.style.color = "#ccc";
             } else { uiTask.innerHTML = t.taskBlackout; uiTask.style.color = "#ff0000"; }
             
@@ -1210,11 +1207,10 @@
                 
                 if (obj.userData.isFlashlightItem) { pickupFlashlight(); playSound(pickupBuffer, 0.3); }
                 
-                // --- YANGI: Kompyuter o'chirish logikasi model4 skrimeri bilan ---
                 if (obj.userData.isPC && obj.userData.isOn) {
                     if (obj.userData.reserved) return; 
 
-                    // 15% holatda model4 ekrandan yuzga sakraydi
+                    // --- YANGI: Model4 Jumpscare Zoom effekti ---
                     if (!obj.userData.isSpooky && Math.random() < 0.15 && pcGhostTemplate) {
                         obj.material = pcScreenMatOff; 
                         playSound(pcOffBuffer, 0.5);
@@ -1229,17 +1225,23 @@
                             const pcWorldDir = new THREE.Vector3();
                             obj.getWorldDirection(pcWorldDir);
 
-                            ghost.position.copy(pcWorldPos).add(pcWorldDir.multiplyScalar(0.4));
-                            ghost.position.y -= 0.3; 
+                            let startPos = new THREE.Vector3().copy(pcWorldPos).add(pcWorldDir.multiplyScalar(0.4));
+                            startPos.y -= 0.3; 
+                            ghost.position.copy(startPos);
                             ghost.lookAt(camera.position);
 
                             scene.add(ghost);
+                            
+                            activeJumpscareGhost = ghost;
+                            jumpscareGhostTimer = 0;
+                            jumpscareGhostStartPos.copy(startPos);
 
                             noiseOpacity = 1.0;
                             bodycamUI.style.boxShadow = "inset 0 0 200px rgba(255, 0, 0, 0.9)";
 
                             setTimeout(() => {
                                 scene.remove(ghost);
+                                activeJumpscareGhost = null;
                                 obj.material = pcScreenMatOff;
                                 obj.userData.isOn = false;
                                 monitorsTurnedOff++;
@@ -1267,7 +1269,6 @@
                         updateUI();
                     }
                 }
-                // -----------------------------------------------------------------
 
                 if (obj.userData.isTrash && currentInventory < MAX_INVENTORY) {
                     let trashGroup = obj;
@@ -1309,6 +1310,15 @@
                 } else {
                     for (let i = 0; i < clients.length; i++) {
                         if (clients[i].state !== 'leaving') {
+                            
+                            // --- YANGI: Svet o'chganda mijozlarni kuzatish va $1 pul olish ---
+                            if (clients[i].state === 'sitting' && !clients[i].paidPC) {
+                                moneyBalance += 1;
+                                clients[i].paidPC = true;
+                                updateUI();
+                            }
+                            // ---------------------------------------------------------------
+                            
                             clients[i].state = 'leaving';
                             clients[i].waypoints = []; 
                             if (clients[i].targetPC) clients[i].targetPC.userData.reserved = false;
@@ -1339,7 +1349,15 @@
                     }
 
                     if (c.state === 'going_to_fridge') {
-                        processMovement(new THREE.Vector3(-7.2, 0, -4.8), () => { c.state = 'getting_drink'; c.timer = 2.0; c.mesh.position.y = 0; playSound(pickupBuffer, 0.3); });
+                        processMovement(new THREE.Vector3(-7.2, 0, -4.8), () => { 
+                            c.state = 'getting_drink'; c.timer = 2.0; c.mesh.position.y = 0; 
+                            playSound(pickupBuffer, 0.3); 
+                            
+                            // --- YANGI: Xolodilnikdan ichimlik olganda $1 qo'shish ---
+                            moneyBalance += 1;
+                            updateUI();
+                            // -------------------------------------------------------
+                        });
                     } 
                     else if (c.state === 'getting_drink') {
                         c.timer -= delta; if (c.timer <= 0) { c.state = 'going_to_pc'; c.waypoints = []; }
@@ -1363,6 +1381,14 @@
                         if (c.timer <= 0) { 
                             c.state = 'leaving'; c.waypoints = []; c.mesh.position.y = 0; c.targetPC.userData.reserved = false; 
                             
+                            // --- YANGI: To'liq o'ynagan mijoz ketish oldidan $2 pul beradi ---
+                            if (!c.paidPC) {
+                                moneyBalance += 2;
+                                c.paidPC = true;
+                                updateUI();
+                            }
+                            // -----------------------------------------------------------------
+
                             if (c.walkAction) c.walkAction.play();
                             if (c.legsHidden && c.legNodes) { 
                                 c.legsHidden = false; 
@@ -1377,6 +1403,24 @@
                     }
                 }
 
+                // --- YANGI: Skrimer Zoom harakati o'yinchiga qarab yurishi ---
+                if (activeJumpscareGhost) {
+                    jumpscareGhostTimer += delta;
+                    let progress = Math.min(jumpscareGhostTimer / 0.8, 1.0); 
+                    progress = 1 - Math.pow(1 - progress, 3); 
+                    
+                    let targetPos = new THREE.Vector3().copy(camera.position);
+                    targetPos.y -= 0.2; 
+                    
+                    let camForward = new THREE.Vector3();
+                    camera.getWorldDirection(camForward);
+                    targetPos.add(camForward.multiplyScalar(0.3));
+
+                    activeJumpscareGhost.position.lerpVectors(jumpscareGhostStartPos, targetPos, progress);
+                    activeJumpscareGhost.lookAt(camera.position);
+                }
+                // -------------------------------------------------------------
+
                 if (!isBlackout && !gameEnded) {
                     blackoutTimer -= delta;
                     if (blackoutTimer <= 0) {
@@ -1384,7 +1428,6 @@
                         blackoutTimer = 120; 
                     }
 
-                    // --- YANGI: Kamyob (Rare) Random Skrimerlar taymeri ---
                     randomScareTimer -= delta;
                     if (randomScareTimer <= 0) {
                         let mIndex = Math.random() > 0.5 ? 1 : 2;
@@ -1408,7 +1451,6 @@
                         }
                         randomScareTimer = 120 + Math.random() * 90; 
                     }
-                    // ------------------------------------------------------
                 }
 
                 let isInputActive = false;
@@ -1459,7 +1501,7 @@
                     const elapsedTime = clock.getElapsedTime(); const r = Math.sin(elapsedTime * 0.5) * 0.5 + 0.5; const g = Math.sin(elapsedTime * 0.5 + Math.PI/2) * 0.5 + 0.5; const b = Math.sin(elapsedTime * 0.5 + Math.PI) * 0.5 + 0.5; 
                     
                     rgbLedStripMat.emissive.setRGB(r, g, b); 
-                    neonTextMat.emissive.setRGB(r, g, b); // Анимация надписи GAME CLUB
+                    neonTextMat.emissive.setRGB(r, g, b); 
                     
                     neonLightsList.forEach(item => {
                         if (item.light && !item.mesh) {
@@ -1519,15 +1561,13 @@
                                     health -= delta * 70 * diffDamageMulti; 
                                     noiseOpacity = Math.max(noiseOpacity, 0.85); 
 
-                                    // --- YANGI: Yuzma-yuz yopishganda Jumpscare sakrashi ---
                                     if (m.stareTime < 100) {
                                         playSound(jumpscareBuffer, 1.0);
-                                        m.stareTime = 100; // Qulflash
+                                        m.stareTime = 100; 
                                         m.group.position.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(0.4));
                                         m.group.position.y -= 0.2;
                                         m.group.lookAt(camera.position);
                                     }
-                                    // -------------------------------------------------------
                                 }
                             }
                         }
@@ -1542,8 +1582,24 @@
                     }
                 }
                 
-                if (isTakingDamage) { bodycamUI.style.boxShadow = "inset 0 0 150px rgba(255, 0, 0, 0.8)"; } 
-                else { bodycamUI.style.boxShadow = "inset 0 0 150px rgba(0, 0, 0, 0.9)"; if (noiseOpacity > 0 && !spookyEventTriggered) noiseOpacity -= delta * 2; }
+                if (isTakingDamage) { 
+                    bodycamUI.style.boxShadow = "inset 0 0 150px rgba(255, 0, 0, 0.8)"; 
+                    healthRegenDelay = 3.0; // --- YANGI: Damage olganda HP to'lishini 3 sekund kutish ---
+                } 
+                else { 
+                    bodycamUI.style.boxShadow = "inset 0 0 150px rgba(0, 0, 0, 0.9)"; 
+                    if (noiseOpacity > 0 && !spookyEventTriggered) noiseOpacity -= delta * 2; 
+
+                    // --- YANGI: Avto Jon to'lishi (Sekin-asta to'ladi) ---
+                    if (health < 100) {
+                        if (healthRegenDelay > 0) {
+                            healthRegenDelay -= delta;
+                        } else {
+                            health += delta * 15; // Har sekundda 15% HP qo'shiladi
+                            health = Math.min(100, health); // Jon eng ko'pi bilan 100 bo'lishi mumkin
+                        }
+                    }
+                }
                 
                 if (health <= 0) { health = 0; endGame(false); }
                 updateUI(); prevTime = time;
