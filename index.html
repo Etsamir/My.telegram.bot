@@ -946,8 +946,7 @@
 
         const monsters = [
             { path: 'model1.glb', color: 0xff0000, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.2, type: 'stalker' },
-            // ВТОРОЙ МОНСТР - ТЕПЕРЬ "ПЛАЧУЩИЙ АНГЕЛ"
-            { path: 'model2.glb', color: 0x00ff00, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 1.2, type: 'angel' },
+            { path: 'model2.glb', color: 0x00ff00, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 1.2, type: 'angel', lifeTimer: 0 },
             { path: 'model3.glb', color: 0x0000ff, spawned: false, group: new THREE.Group(), active: false, lookAwayTimer: 0, stareTime: 0, mixer: null, useCustomAnimation: false, speed: 2.0, type: 'stalker' }
         ];
 
@@ -975,8 +974,8 @@
             if (monsters[index].spawned) return; monsters[index].spawned = true; monsters[index].active = true;
             
             if (monsters[index].type === 'angel') {
-                // Ангел спавнится ровно в углу у входной двери
                 monsters[index].group.position.set(-8.0, 0, 4.5); 
+                monsters[index].lifeTimer = 60.0; // 1 минута жизни
             } else {
                 const lookDir = new THREE.Vector3(); camera.getWorldDirection(lookDir); lookDir.y = 0; lookDir.normalize();
                 let spawnX = camera.position.x - (lookDir.x * 5); let spawnZ = camera.position.z - (lookDir.z * 5);
@@ -1193,14 +1192,17 @@
                 if (obj.userData.isPC && obj.userData.isOn) {
                     if (obj.userData.reserved) return; 
 
-                    // --- ВОЗВРАЩЕН ВЫЛЕТАЮЩИЙ ПРИЗРАК ИЗ ЭКРАНА (15% ШАНС) ---
                     if (!obj.userData.isSpooky && Math.random() < 0.15 && pcGhostTemplate) {
                         obj.material = pcScreenMatOff; 
                         playSound(pcOffBuffer, 0.5);
 
                         setTimeout(() => {
                             obj.material = pcScreenMatSpooky; 
-                            playSound(jumpscareBuffer, 1.0); 
+                            
+                            // ЗВУКОВОЙ СКРИМЕР ИЗ ПК СТАЛ ГРОМЧЕ И СТРАШНЕЕ
+                            playSound(jumpscareBuffer, 2.0); 
+                            playSound(deathBuffer, 1.5, 0.8); 
+                            playSound(monsterSpawnBuffer, 2.0, 1.5); 
 
                             const ghost = pcGhostTemplate.clone();
                             const pcWorldPos = new THREE.Vector3();
@@ -1239,7 +1241,7 @@
                         obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2); spookyLight.intensity = 0; updateUI(); 
                     } else {
                         obj.material = pcScreenMatOff; obj.userData.isOn = false; monitorsTurnedOff++; playSound(pcOffBuffer, 0.2);
-                        if (monitorsTurnedOff >= 7 && !monsters[1].spawned) spawnMonster(1); // СПАВН ПЛАЧУЩЕГО АНГЕЛА
+                        if (monitorsTurnedOff >= 7 && !monsters[1].spawned) spawnMonster(1);
                         if (monitorsTurnedOff === 20 && !spookyEventTriggered) {
                             spookyEventTriggered = true;
                             setTimeout(() => {
@@ -1507,7 +1509,8 @@
                 for (let i = 0; i < monsters.length; i++) {
                     const m = monsters[i];
                     
-                    if (areClientsPresent) {
+                    // Клиенты отпугивают только сталкеров, но НЕ Ангела
+                    if (areClientsPresent && m.type !== 'angel') {
                         if (m.group.visible) m.group.visible = false;
                         m.active = false; m.lookAwayTimer = 5.0; 
                         continue; 
@@ -1517,10 +1520,6 @@
 
                     if (m.active && m.group.visible) {
                         const elapsed = clock.getElapsedTime();
-                        if (m.useCustomAnimation && m.type !== 'angel') {
-                            m.group.position.y = Math.sin(elapsed * 3 + i) * 0.1; m.group.rotation.z = Math.sin(elapsed * 2 + i) * 0.05;
-                            const scale = 1.0 + Math.sin(elapsed * 5 + i) * 0.02; m.group.scale.set(scale, scale, scale);
-                        }
                         
                         const lookDirToMonster = new THREE.Vector3().subVectors(m.group.position, camera.position); lookDirToMonster.y = 0; const distance = lookDirToMonster.length(); lookDirToMonster.normalize();
                         const moveDirToPlayer = new THREE.Vector3().copy(lookDirToMonster).negate();
@@ -1530,9 +1529,13 @@
 
                         // --- ЛОГИКА ПЛАЧУЩЕГО АНГЕЛА ---
                         if (m.type === 'angel') {
-                            if (isLookingAtMonster) {
+                            m.lifeTimer -= delta;
+                            if (m.lifeTimer <= 0) {
+                                // Через минуту он уходит
+                                m.group.visible = false; m.active = false; m.spawned = false;
+                            } else if (isLookingAtMonster) {
                                 // Игрок смотрит на Ангела - он замирает
-                                baseNoise = Math.max(baseNoise, 0.15); // Легкое напряжение от зрительного контакта
+                                baseNoise = Math.max(baseNoise, 0.15); // Легкое напряжение
                             } else {
                                 // Игрок отвернулся - Ангел ползет к нему
                                 m.group.position.x += moveDirToPlayer.x * m.speed * diffSpeedMulti * delta; 
@@ -1560,6 +1563,11 @@
                         } 
                         // --- ЛОГИКА ОБЫЧНОГО МОНСТРА ---
                         else {
+                            if (m.useCustomAnimation) {
+                                m.group.position.y = Math.sin(elapsed * 3 + i) * 0.1; m.group.rotation.z = Math.sin(elapsed * 2 + i) * 0.05;
+                                const scale = 1.0 + Math.sin(elapsed * 5 + i) * 0.02; m.group.scale.set(scale, scale, scale);
+                            }
+                            
                             if (isLookingAtMonster) {
                                 m.stareTime += delta; 
                                 baseNoise = Math.max(baseNoise, 0.2 + m.stareTime * 0.5); 
@@ -1611,11 +1619,12 @@
                 else { 
                     bodycamUI.style.boxShadow = "inset 0 0 150px rgba(0, 0, 0, 0.9)"; 
 
+                    // --- НОВАЯ ЛОГИКА: Авто Джон (1 ХП в секунду) ---
                     if (health < 100) {
                         if (healthRegenDelay > 0) {
                             healthRegenDelay -= delta;
                         } else {
-                            health += delta * 15; 
+                            health += delta * 1.0; 
                             health = Math.min(100, health); 
                         }
                     }
