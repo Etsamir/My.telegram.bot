@@ -35,7 +35,6 @@
         #bodycam-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 8; display: none; box-shadow: inset 0 0 150px rgba(0,0,0,0.9); transition: box-shadow 0.2s; }
         .rec-text { position: absolute; top: 30px; right: 40px; color: #ff3333; font-family: 'Courier New', monospace; font-size: 24px; font-weight: bold; text-shadow: 0 0 5px red; animation: blink 1s infinite; }
         
-        /* --- YANGI: Balans Matni --- */
         .balance-text { position: absolute; top: 75px; right: 40px; color: #00ff00; font-family: 'Courier New', monospace; font-size: 22px; font-weight: bold; text-shadow: 0 0 5px #00ff00; }
         
         .time-text { position: absolute; top: 35px; left: 40px; color: #ddd; font-family: 'Courier New', monospace; font-size: 18px; line-height: 1.3; }
@@ -164,7 +163,7 @@
         const DOOR_MODEL_SCALE = 1.0;
 
         let gameTimeMinutes = 60; 
-        let moneyBalance = 0; // --- YANGI: Balans tizimi ---
+        let moneyBalance = 0; 
 
         // ================= ПЕРЕВОДЫ =================
         const translations = {
@@ -180,7 +179,7 @@
                 diffEasy: 'Мирная', diffMedium: 'Средняя', diffHard: 'Кошмар',
                 gfxLow: 'Мин', gfxMedium: 'Сред', gfxHigh: 'Макс',
                 lblLang: 'ЯЗЫК СИСТЕМЫ', lblPlatform: 'ПЛАТФОРМА', lblDiff: 'УРОВЕНЬ УГРОЗЫ', lblGfx: 'КАЧЕСТВО ВИДЕО', rec: '● REC',
-                balance: 'БАЛАНС: ${val}' // YANGI
+                balance: 'БАЛАНС: ${val}'
             },
             uz: { 
                 sysOnline: 'TIZIM: ISHLASH', powerFail: 'QUVVAT UZILDI', backupPower: 'ZAXIRA QUVVAT',
@@ -194,7 +193,7 @@
                 diffEasy: 'Tinch', diffMedium: "O'rta", diffHard: 'Dahshat',
                 gfxLow: 'Past', gfxMedium: 'O\'rta', gfxHigh: 'Yuqori',
                 lblLang: 'TIZIM TILI', lblPlatform: 'QURILMA', lblDiff: 'XAVF DARAJASI', lblGfx: 'VIDEO SIFATI', rec: '● REC',
-                balance: 'BALANS: ${val}' // YANGI
+                balance: 'BALANS: ${val}' 
             },
             en: { 
                 sysOnline: 'SYS: ONLINE', powerFail: 'POWER FAILURE', backupPower: 'BACKUP POWER',
@@ -208,7 +207,7 @@
                 diffEasy: 'Safe', diffMedium: 'Normal', diffHard: 'Nightmare',
                 gfxLow: 'Low', gfxMedium: 'Med', gfxHigh: 'High',
                 lblLang: 'SYSTEM LANGUAGE', lblPlatform: 'DEVICE PLATFORM', lblDiff: 'THREAT LEVEL', lblGfx: 'VIDEO GRAPHICS', rec: '● REC',
-                balance: 'BALANCE: ${val}' // YANGI
+                balance: 'BALANCE: ${val}'
             }
         };
 
@@ -254,8 +253,16 @@
         setupRadioButtons(gfxRadios, gfxLabels, (val) => { currentGraphics = val; });
         updateUILanguage();
 
-        // ================= АУДИО =================
+        // ================= АУДИО И ШУМ =================
         let audioContext = null; let footstepsBuffer = null; let pickupBuffer = null; let pcOffBuffer = null; let blackoutBuffer = null; let monsterSpawnBuffer = null; let monsterFootstepBuffer = null; let doorOpenBuffer = null; let deathBuffer = null; let jumpscareBuffer = null;
+
+        const noiseCanvas = document.createElement('canvas'); noiseCanvas.id = 'noise-canvas';
+        Object.assign(noiseCanvas.style, { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 7, opacity: 0, mixBlendMode: 'screen' });
+        document.body.appendChild(noiseCanvas); const noiseCtx = noiseCanvas.getContext('2d'); 
+        
+        let noiseOpacity = 0;
+        let noiseEffectTimer = 0;
+        let baseNoise = 0;
 
         function initAudio() {
             if (audioContext) return;
@@ -265,7 +272,10 @@
         }
 
         function createSounds() {
-            footstepsBuffer = createNoiseBuffer(0.2, 0.1, 200); pickupBuffer = createToneBuffer(0.15, 600, 'sine'); pcOffBuffer = createToneBuffer(0.2, 100, 'sawtooth'); blackoutBuffer = createNoiseBuffer(1.5, 0.3, 60); monsterSpawnBuffer = createNoiseBuffer(0.8, 0.2, 80); monsterFootstepBuffer = createToneBuffer(0.3, 60, 'triangle'); doorOpenBuffer = createToneBuffer(0.5, 400, 'sine', 0.3); deathBuffer = createNoiseBuffer(1.0, 0.5, 150);
+            footstepsBuffer = createNoiseBuffer(0.2, 0.1, 200); pickupBuffer = createToneBuffer(0.15, 600, 'sine'); pcOffBuffer = createToneBuffer(0.2, 100, 'sawtooth'); blackoutBuffer = createNoiseBuffer(1.5, 0.3, 60); monsterFootstepBuffer = createToneBuffer(0.3, 60, 'triangle'); doorOpenBuffer = createToneBuffer(0.5, 400, 'sine', 0.3); deathBuffer = createNoiseBuffer(1.0, 0.5, 150);
+            
+            monsterSpawnBuffer = createNoiseBuffer(1.5, 0.2, 80); 
+
             if (audioContext) {
                 const sr = audioContext.sampleRate; jumpscareBuffer = audioContext.createBuffer(1, sr * 1.5, sr); const data = jumpscareBuffer.getChannelData(0);
                 for (let i = 0; i < jumpscareBuffer.length; i++) { data[i] = (Math.random() * 2 - 1) * Math.exp(-i/(sr*0.5)); data[i] += Math.sin(i * 0.05) * 0.8 * Math.exp(-i/(sr*1.0)); }
@@ -297,6 +307,17 @@
 
         let stepTimer = 0; function playFootstep(isSprint) { if (gameEnded) return; playSound(footstepsBuffer, isSprint ? 0.3 : 0.2, isSprint ? 1.2 : 0.8 + Math.random()*0.4); }
 
+        function updateNoise() {
+            requestAnimationFrame(updateNoise);
+            if (!noiseCanvas) return;
+            if (noiseOpacity <= 0) { noiseCanvas.style.opacity = '0'; return; }
+            const w = 256; const h = 256; noiseCanvas.width = w; noiseCanvas.height = h;
+            const imageData = noiseCtx.createImageData(w, h); const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) { const val = Math.random() * 255; data[i] = val; data[i+1] = val; data[i+2] = val; data[i+3] = 200; }
+            noiseCtx.putImageData(imageData, 0, 0); noiseCanvas.style.opacity = noiseOpacity;
+        }
+        updateNoise(); 
+
         // ================= ОСНОВНАЯ СЦЕНА =================
         const scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x020205, 0.04); 
         const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 100); camera.rotation.order = 'YXZ'; 
@@ -309,7 +330,7 @@
         let gameEnded = false; let gameWin = false; let mobileControlsInitialized = false;
         let health = 100; let stamina = 100; let isSprinting = false; let isSprintToggledMobile = false; 
         
-        let healthRegenDelay = 0; // --- YANGI: Avto-jon to'lish taymeri ---
+        let healthRegenDelay = 0; 
 
         let isSitting = false;
         let preSitPos = new THREE.Vector3();
@@ -587,7 +608,6 @@
         let klavaModelTemplate = null; let chairModelTemplate = null; let redbullModelTemplate = null; let mouseModelTemplate = null;
         let pendingChairs = []; let pendingCans = []; let pendingKeyboards = []; let pendingMice = [];
 
-        // --- YANGI: Zoom-skrimer uchun o'zgaruvchilar ---
         let activeJumpscareGhost = null;
         let jumpscareGhostTimer = 0;
         let jumpscareGhostStartPos = new THREE.Vector3();
@@ -653,41 +673,10 @@
         const aLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.75, 0.1), legMat); aLeg2.position.set(0, 0.75/2, -0.65); castAndReceive(aLeg2); adminDeskShort.add(aLeg2);
         scene.add(adminDeskShort);
 
-        // ================= КЛАДОВКА (ТУМБОЧКА) С ФОНАРИКОМ =================
-        const cabinetGroup = new THREE.Group();
-        cabinetGroup.position.set(-5.6, 0.35, -1.0);
-        cabinetGroup.rotation.y = Math.PI / 2; 
-        
-        const cabMat = new THREE.MeshStandardMaterial({color: 0x221100, roughness: 0.9});
-        const cabLeft = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), deskMat); cabLeft.position.set(-0.275, 0, 0);
-        const cabRight = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.6), deskMat); cabRight.position.set(0.275, 0, 0);
-        const cabTop = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), deskMat); cabTop.position.set(0, 0.275, 0);
-        const cabBot = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.6), deskMat); cabBot.position.set(0, -0.275, 0);
-        const cabBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.05), deskMat); cabBack.position.set(0, 0, -0.275);
-        
-        cabinetGroup.add(cabLeft, cabRight, cabTop, cabBot, cabBack);
-        castAndReceive(cabLeft); castAndReceive(cabRight); castAndReceive(cabTop); castAndReceive(cabBot); castAndReceive(cabBack);
-
-        const hinge = new THREE.Group();
-        hinge.position.set(-0.275, 0, 0.275); 
-        
-        const cabDoor = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.05), deskMat);
-        cabDoor.position.set(0.3, 0, 0); 
-        castAndReceive(cabDoor);
-        
-        const doorHandleObj = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), new THREE.MeshStandardMaterial({color: 0x888888, metalness: 0.8}));
-        doorHandleObj.position.set(0.5, 0, 0.05); 
-        cabDoor.add(doorHandleObj);
-
-        hinge.add(cabDoor);
-        cabinetGroup.add(hinge);
-        scene.add(cabinetGroup);
-
-        cabDoor.userData = { isCabinetDoor: true, hinge: hinge, isOpen: false };
-        interactables.push(cabDoor); 
-
+        // ================= ФОНАРИК НА СТОЛЕ АДМИНА =================
         const flashlightGroup = new THREE.Group();
-        flashlightGroup.position.set(-5.6, 0.12, -1.2); 
+        // Позиционируем фонарик прямо на столе админа
+        flashlightGroup.position.set(-5.8, 0.78, -2.5); 
         flashlightGroup.rotation.z = Math.PI / 2; 
         flashlightGroup.rotation.x = Math.PI / 2; 
         flashlightGroup.visible = true;
@@ -982,27 +971,14 @@
 
         let idleTimer = 0; const IDLE_TIME = 10; 
 
-        const noiseCanvas = document.createElement('canvas'); noiseCanvas.id = 'noise-canvas';
-        Object.assign(noiseCanvas.style, { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 7, opacity: 0, mixBlendMode: 'screen' });
-        document.body.appendChild(noiseCanvas); const noiseCtx = noiseCanvas.getContext('2d'); let noiseOpacity = 0;
-
-        function updateNoise() {
-            requestAnimationFrame(updateNoise); 
-            if (!noiseCanvas) return;
-            if (noiseOpacity <= 0) { noiseCanvas.style.opacity = '0'; return; }
-            const w = 256; const h = 256; noiseCanvas.width = w; noiseCanvas.height = h;
-            const imageData = noiseCtx.createImageData(w, h); const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) { const val = Math.random() * 255; data[i] = val; data[i+1] = val; data[i+2] = val; data[i+3] = 200; }
-            noiseCtx.putImageData(imageData, 0, 0); noiseCanvas.style.opacity = noiseOpacity; 
-        }
-        updateNoise(); 
-
         function spawnMonster(index) {
             if (monsters[index].spawned) return; monsters[index].spawned = true; monsters[index].active = true;
             const lookDir = new THREE.Vector3(); camera.getWorldDirection(lookDir); lookDir.y = 0; lookDir.normalize();
             let spawnX = camera.position.x - (lookDir.x * 5); let spawnZ = camera.position.z - (lookDir.z * 5);
             spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX)); spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
-            monsters[index].group.position.set(spawnX, 0, spawnZ); monsters[index].group.visible = true; playSound(monsterSpawnBuffer, 0.4);
+            monsters[index].group.position.set(spawnX, 0, spawnZ); monsters[index].group.visible = true; 
+            playSound(monsterSpawnBuffer, 0.4);
+            noiseEffectTimer = 1.5; // Скример-эффект на 1.5 секунды
         }
 
         // ================= ИИ КЛИЕНТОВ КЛУБА =================
@@ -1053,7 +1029,7 @@
             const clientObj = {
                 mesh: new THREE.Group(), state: wantsDrink ? 'going_to_fridge' : 'going_to_pc', targetPC: targetPC, wantsDrink: wantsDrink,
                 timer: 0, speed: 1.5 + Math.random() * 0.8, waypoints: [], mixer: null, walkAction: null,
-                legNodes: [], legsHidden: false, paidPC: false // YANGI
+                legNodes: [], legsHidden: false, paidPC: false 
             };
 
             loader.load(CLIENT_MODEL_PATH, function (gltf) {
@@ -1146,7 +1122,6 @@
             let pcText = monitorsTurnedOff >= 20 ? t.taskPCDone : t.taskPC.replace('{current}', monitorsTurnedOff);
             let trashText = trashCollected >= totalTrash && totalTrash > 0 ? t.taskTrashDone.replace('{total}', totalTrash) : t.taskTrash.replace('{current}', trashCollected).replace('{total}', totalTrash);
             
-            // --- YANGI: Balansni UI'da yangilash ---
             document.getElementById('ui-balance').textContent = t.balance.replace('{val}', moneyBalance);
 
             if (!isBlackout) { uiTask.innerHTML = `${t.tasks}<br>${pcText}<br>${trashText}`; uiTask.style.color = "#ccc";
@@ -1210,8 +1185,7 @@
                 if (obj.userData.isPC && obj.userData.isOn) {
                     if (obj.userData.reserved) return; 
 
-                    // --- YANGI: Model4 Jumpscare Zoom effekti ---
-                    if (!obj.userData.isSpooky && Math.random() < 0.15 && pcGhostTemplate) {
+                    if (!obj.userData.isSpooky && false && pcGhostTemplate) {
                         obj.material = pcScreenMatOff; 
                         playSound(pcOffBuffer, 0.5);
 
@@ -1236,7 +1210,7 @@
                             jumpscareGhostTimer = 0;
                             jumpscareGhostStartPos.copy(startPos);
 
-                            noiseOpacity = 1.0;
+                            noiseEffectTimer = 1.5; 
                             bodycamUI.style.boxShadow = "inset 0 0 200px rgba(255, 0, 0, 0.9)";
 
                             setTimeout(() => {
@@ -1261,7 +1235,9 @@
                             spookyEventTriggered = true;
                             setTimeout(() => {
                                 const randomPC = allPCScreens[Math.floor(Math.random() * allPCScreens.length)];
-                                randomPC.material = pcScreenMatSpooky; randomPC.userData.isOn = true; randomPC.userData.isSpooky = true; monitorsTurnedOff--; playSound(jumpscareBuffer, 1.0);
+                                randomPC.material = pcScreenMatSpooky; randomPC.userData.isOn = true; randomPC.userData.isSpooky = true; monitorsTurnedOff--; 
+                                playSound(jumpscareBuffer, 1.0);
+                                noiseEffectTimer = 1.5; 
                                 const pos = new THREE.Vector3(); randomPC.getWorldPosition(pos); const dir = new THREE.Vector3(); randomPC.getWorldDirection(dir);
                                 spookyLight.position.copy(pos).add(dir.multiplyScalar(0.4)); updateUI();
                             }, 1000);
@@ -1301,6 +1277,8 @@
             if ((controls.isLocked || currentPlatform === 'mobile') && !gameEnded) {
                 const time = performance.now(); const delta = (time - prevTime) / 1000;
                 
+                baseNoise = 0; 
+
                 if (!isBlackout) {
                     clientSpawnTimer -= delta;
                     if (clientSpawnTimer <= 0) {
@@ -1311,13 +1289,11 @@
                     for (let i = 0; i < clients.length; i++) {
                         if (clients[i].state !== 'leaving') {
                             
-                            // --- YANGI: Svet o'chganda mijozlarni kuzatish va $1 pul olish ---
                             if (clients[i].state === 'sitting' && !clients[i].paidPC) {
                                 moneyBalance += 1;
                                 clients[i].paidPC = true;
                                 updateUI();
                             }
-                            // ---------------------------------------------------------------
                             
                             clients[i].state = 'leaving';
                             clients[i].waypoints = []; 
@@ -1353,10 +1329,8 @@
                             c.state = 'getting_drink'; c.timer = 2.0; c.mesh.position.y = 0; 
                             playSound(pickupBuffer, 0.3); 
                             
-                            // --- YANGI: Xolodilnikdan ichimlik olganda $1 qo'shish ---
                             moneyBalance += 1;
                             updateUI();
-                            // -------------------------------------------------------
                         });
                     } 
                     else if (c.state === 'getting_drink') {
@@ -1381,13 +1355,11 @@
                         if (c.timer <= 0) { 
                             c.state = 'leaving'; c.waypoints = []; c.mesh.position.y = 0; c.targetPC.userData.reserved = false; 
                             
-                            // --- YANGI: To'liq o'ynagan mijoz ketish oldidan $2 pul beradi ---
                             if (!c.paidPC) {
                                 moneyBalance += 2;
                                 c.paidPC = true;
                                 updateUI();
                             }
-                            // -----------------------------------------------------------------
 
                             if (c.walkAction) c.walkAction.play();
                             if (c.legsHidden && c.legNodes) { 
@@ -1403,7 +1375,6 @@
                     }
                 }
 
-                // --- YANGI: Skrimer Zoom harakati o'yinchiga qarab yurishi ---
                 if (activeJumpscareGhost) {
                     jumpscareGhostTimer += delta;
                     let progress = Math.min(jumpscareGhostTimer / 0.8, 1.0); 
@@ -1419,7 +1390,6 @@
                     activeJumpscareGhost.position.lerpVectors(jumpscareGhostStartPos, targetPos, progress);
                     activeJumpscareGhost.lookAt(camera.position);
                 }
-                // -------------------------------------------------------------
 
                 if (!isBlackout && !gameEnded) {
                     blackoutTimer -= delta;
@@ -1448,6 +1418,7 @@
                             m.active = true;
                             m.spawned = true;
                             playSound(monsterSpawnBuffer, 0.8);
+                            noiseEffectTimer = 1.5; 
                         }
                         randomScareTimer = 120 + Math.random() * 90; 
                     }
@@ -1548,8 +1519,13 @@
                         const isLookingAtMonster = (lookDir.angleTo(lookDirToMonster) < 0.5) && (distance < 15.0);
 
                         if (isLookingAtMonster) {
-                            m.stareTime += delta; noiseOpacity = Math.max(noiseOpacity, 0.2 + m.stareTime * 0.5); 
-                            if (m.stareTime > 0.8) { m.group.visible = false; m.lookAwayTimer = 10.0 + Math.random() * 3.0; m.stareTime = 0; playSound(monsterSpawnBuffer, 0.2, 1.5); }
+                            m.stareTime += delta; 
+                            baseNoise = Math.max(baseNoise, 0.2 + m.stareTime * 0.5); 
+                            if (m.stareTime > 0.8) { 
+                                m.group.visible = false; m.lookAwayTimer = 10.0 + Math.random() * 3.0; m.stareTime = 0; 
+                                playSound(monsterSpawnBuffer, 0.2, 1.5); 
+                                noiseEffectTimer = 1.5; 
+                            }
                         } else {
                             m.stareTime = 0;
                             if (distance > 2.0) {
@@ -1559,7 +1535,7 @@
                                 if (diffDamageMulti > 0) { 
                                     isTakingDamage = true; 
                                     health -= delta * 70 * diffDamageMulti; 
-                                    noiseOpacity = Math.max(noiseOpacity, 0.85); 
+                                    baseNoise = Math.max(baseNoise, 0.85); 
 
                                     if (m.stareTime < 100) {
                                         playSound(jumpscareBuffer, 1.0);
@@ -1567,6 +1543,7 @@
                                         m.group.position.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(0.4));
                                         m.group.position.y -= 0.2;
                                         m.group.lookAt(camera.position);
+                                        noiseEffectTimer = 1.5; 
                                     }
                                 }
                             }
@@ -1577,29 +1554,37 @@
                             const lookDir = camera.getWorldDirection(new THREE.Vector3()); lookDir.y = 0; lookDir.normalize();
                             let spawnX = camera.position.x - (lookDir.x * 5); let spawnZ = camera.position.z - (lookDir.z * 5);
                             spawnX = Math.max(-roomW/2 + 1, Math.min(roomW/2 - 1, spawnX)); spawnZ = Math.max(-roomD/2 + 1, Math.min(roomD/2 - 1, spawnZ));
-                            m.group.position.set(spawnX, 0, spawnZ); m.group.visible = true; m.lookAwayTimer = 0; playSound(monsterSpawnBuffer, 0.3);
+                            m.group.position.set(spawnX, 0, spawnZ); m.group.visible = true; m.lookAwayTimer = 0; 
+                            playSound(monsterSpawnBuffer, 0.3);
+                            noiseEffectTimer = 1.5; 
                         }
                     }
                 }
                 
                 if (isTakingDamage) { 
                     bodycamUI.style.boxShadow = "inset 0 0 150px rgba(255, 0, 0, 0.8)"; 
-                    healthRegenDelay = 3.0; // --- YANGI: Damage olganda HP to'lishini 3 sekund kutish ---
+                    healthRegenDelay = 3.0; 
                 } 
                 else { 
                     bodycamUI.style.boxShadow = "inset 0 0 150px rgba(0, 0, 0, 0.9)"; 
-                    if (noiseOpacity > 0 && !spookyEventTriggered) noiseOpacity -= delta * 2; 
 
-                    // --- YANGI: Avto Jon to'lishi (Sekin-asta to'ladi) ---
                     if (health < 100) {
                         if (healthRegenDelay > 0) {
                             healthRegenDelay -= delta;
                         } else {
-                            health += delta * 15; // Har sekundda 15% HP qo'shiladi
-                            health = Math.min(100, health); // Jon eng ko'pi bilan 100 bo'lishi mumkin
+                            health += delta * 15; 
+                            health = Math.min(100, health); 
                         }
                     }
                 }
+
+                if (noiseEffectTimer > 0) {
+                    noiseEffectTimer -= delta;
+                    noiseOpacity = baseNoise + (Math.random() * 0.5 + 0.5) * (noiseEffectTimer / 1.5);
+                } else {
+                    noiseOpacity = baseNoise;
+                }
+                noiseOpacity = Math.min(1.0, Math.max(0, noiseOpacity));
                 
                 if (health <= 0) { health = 0; endGame(false); }
                 updateUI(); prevTime = time;
